@@ -1,0 +1,327 @@
+\chapter{State of the Art}%
+\label{chapter:stateoftheart}
+
+\begin{introduction}
+This chapter presents a literature review and state of the art related to the theme of this dissertation. The most relevant works and existing technologies in the area are analyzed, focusing on simulation platforms for energy systems, mobility networks, telecommunications, and co-simulation frameworks.
+\end{introduction}
+
+\section{Introduction}
+
+This chapter provides a comprehensive overview of existing simulation tools and frameworks across multiple domains that are relevant to this work. The review is organized by domain: energy systems simulation, mobility and traffic simulation, telecommunications network simulation, and co-simulation frameworks that enable integration across these domains.
+
+
+\section{Context and Theoretical Foundations}
+
+% Present the fundamental concepts necessary to understand the work
+% Define important terms and present relevant theories
+
+\subsection{Domain-Specific Simulation}
+
+% Discuss the importance of simulation in different domains
+% Explain the challenges of single-domain vs. multi-domain simulation
+
+
+\subsection{Co-Simulation Paradigms}
+
+% Introduce co-simulation concepts
+% Discuss the benefits and challenges of integrating multiple simulators
+
+
+\section{Energy Systems Simulation}
+
+Energy system simulation tools are essential for analyzing power grid behavior, renewable energy integration, and smart grid operations. This section reviews the main platforms used for energy system modeling and analysis.
+
+\subsection{SimCES Platform}
+
+The SimCES platform~\cite{simces} provides a modular simulation framework featuring platform independence, container ecosystem, and a comprehensive development toolkit. This platform enables flexible and scalable simulation of complex energy systems through its containerized architecture, allowing researchers to develop and deploy simulation components in isolated environments.
+
+% Add more details about SimCES features, advantages, and applications
+
+
+\subsection{PyPSA: Python for Power System Analysis}
+
+PyPSA~\cite{pypsa} is an open-source toolbox for simulating and optimizing modern power systems. Written in Python, it provides a user-friendly interface for power flow analysis, optimal power flow calculations, and energy system optimization. PyPSA supports modeling of conventional and renewable generation, storage systems, and sector coupling.
+
+% Discuss PyPSA's capabilities, use cases, and community adoption
+
+
+\subsection{GridLAB-D}
+
+GridLAB-D~\cite{gridlabd} is an agent-based simulation framework specifically designed for smart grid analysis. It enables detailed modeling of distribution systems, including residential loads, distributed generation, and smart grid technologies. The agent-based approach allows for realistic representation of individual components and their interactions within the power distribution network.
+
+% Elaborate on GridLAB-D's architecture and applications
+
+
+\subsection{Pandapower}
+
+Pandapower~\cite{pandapower} is an open-source power system analysis and optimization tool written in Python. It combines the data analysis capabilities of pandas with the performance of PYPOWER to provide an easy-to-use yet powerful tool for power system analysis. Pandapower supports steady-state network analysis, optimal power flow, and includes extensive libraries of network elements, making it particularly suitable for distribution network studies and integration with data analytics workflows.
+
+% Discuss pandapower's integration with Python ecosystem and use cases
+
+
+\subsection{OpenDSS}
+
+OpenDSS (Open Distribution System Simulator)~\cite{opendss} is a comprehensive electrical power system simulation tool developed by the Electric Power Research Institute (EPRI). It specializes in distribution system and distributed resource analysis, supporting harmonic analysis, dynamic simulations, and renewable energy integration studies. OpenDSS is widely used in industry and academia for analyzing the impact of distributed generation, energy storage, and electric vehicles on distribution networks.
+
+% Elaborate on OpenDSS capabilities and industry adoption
+
+
+\section{Mobility and Traffic Simulation}
+
+Traffic and mobility simulation tools are crucial for analyzing transportation networks, optimizing traffic flow, and evaluating the impact of new mobility solutions on urban infrastructure.
+
+\subsection{Overview of Agent-Based Traffic Simulators}
+
+The work by~\cite{agent_traffic_overview} provides a comprehensive overview of agent-based traffic simulators, comparing different approaches and highlighting their respective strengths and limitations. Agent-based models allow for microscopic representation of individual vehicles and their decision-making processes.
+
+% Discuss the main categories and characteristics of traffic simulators
+
+
+\subsection{SUMO Simulator and Extensions}
+
+The Simulation of Urban Mobility (SUMO) is one of the most widely used open-source traffic simulation platforms. Recent advances include the integration of machine learning approaches for realistic traffic generation.
+
+\subsubsection{Realistic Traffic Generation with Federated Learning}
+
+Recent research~\cite{sumo_federated} has introduced a realistic urban traffic generator using decentralized federated learning for the SUMO simulator. This approach enables generation of more realistic traffic patterns while preserving privacy through decentralized learning mechanisms.
+
+% Discuss the benefits of this approach and its implications
+
+
+\subsection{MATSim}
+
+MATSim (Multi-Agent Transport Simulation)~\cite{matsim} is a large-scale agent-based transport simulation framework. It enables modeling of individual travelers' daily activity patterns and their interactions with transportation networks. MATSim is particularly suited for analyzing large metropolitan areas and evaluating transportation policies.
+
+% Elaborate on MATSim's capabilities and typical applications
+
+
+\subsection{VISSIM}
+
+VISSIM~\cite{vissim} is a commercial microscopic multi-modal traffic flow simulation software developed by PTV Group. It enables detailed modeling of urban traffic, public transport operations, and pedestrian dynamics. VISSIM provides advanced vehicle behavior models, 3D visualization capabilities, and extensive data collection features, making it a popular choice for traffic engineering applications, impact studies, and infrastructure planning.
+
+% Discuss VISSIM's features and applications in traffic engineering
+
+
+\subsection{AIMSUN}
+
+AIMSUN (Advanced Interactive Microscopic Simulator for Urban and Non-Urban Networks)~\cite{aimsun} is a comprehensive traffic modeling software that supports microscopic, mesoscopic, and macroscopic simulation approaches. It enables integrated modeling of traffic management strategies, public transport operations, and connected and autonomous vehicles. AIMSUN is extensively used for smart mobility studies, real-time traffic management, and transportation planning.
+
+% Elaborate on AIMSUN's multi-scale simulation capabilities
+
+
+\section{Telecommunications Network Simulation}
+
+Telecommunications simulation tools enable analysis of mobile networks, protocol performance, and network behavior under various conditions.
+
+\subsection{SiMoNe: Simulator for Mobile Networks}
+
+SiMoNe~\cite{simone,simone_icc} is a system-level simulator for mobile networks that enables realistic scenario modeling. It provides capabilities for simulating mobile network behavior in the context of realistic user mobility patterns and traffic demands. SiMoNe supports evaluation of network performance, resource allocation strategies, and quality of service metrics.
+
+% Discuss SiMoNe's architecture and key features
+
+
+\subsection{ns-3 Network Simulator}
+
+ns-3~\cite{ns3} is a discrete-event network simulator widely used in research and education. It provides detailed protocol implementations and supports simulation of various network types, including wireless sensor networks, cellular networks, and Internet protocols. ns-3 offers high fidelity in protocol modeling and is extensively validated against real-world measurements.
+
+% Discuss ns-3's capabilities and use cases
+
+
+\subsection{OMNeT++}
+
+OMNeT++~\cite{omnetpp} is a component-based, modular simulation framework primarily used for network simulation. Its modular architecture and extensive library of protocol models (INET Framework) make it suitable for telecommunications research. OMNeT++ supports both wired and wireless network simulation with detailed physical layer modeling.
+
+% Elaborate on OMNeT++'s architecture and applications
+
+
+\subsection{Vienna 5G System Level Simulator}
+
+The Vienna 5G System Level Simulator~\cite{vienna5g} is an open-source MATLAB-based simulator for 5G mobile networks. It provides detailed modeling of 5G NR (New Radio) physical layer and system-level performance evaluation. The simulator supports various deployment scenarios, antenna configurations, and enables analysis of massive MIMO, beamforming, and network slicing capabilities. It is widely used in academia for 5G research and standardization activities.
+
+% Discuss Vienna simulator's focus on 5G technologies and research applications
+
+
+\subsection{Network Simulator 2 (ns-2)}
+
+Network Simulator 2 (ns-2)~\cite{ns2} is a discrete-event network simulator that has been extensively used in networking research for decades. While largely superseded by ns-3, ns-2 remains relevant due to its extensive protocol libraries and large body of validated models. It supports simulation of TCP, routing protocols, multicast protocols, and wireless networks, with a particular strength in ad-hoc network simulation.
+
+% Discuss ns-2's historical significance and legacy protocols
+
+
+\section{Co-Simulation Frameworks}
+
+Co-simulation frameworks enable integration of multiple domain-specific simulators, allowing analysis of interdependencies and interactions across different systems.
+
+\subsection{HELICS Framework}
+
+The Hierarchical Engine for Large-scale Infrastructure Co-Simulation (HELICS)~\cite{helics} is a co-simulation framework designed for scalable multi-domain modeling and analysis. HELICS enables integration of diverse simulators from different domains (energy, transportation, telecommunications) through a flexible message-passing architecture. It supports large-scale simulations with thousands of federates and provides mechanisms for time synchronization and data exchange between heterogeneous simulation tools.
+
+HELICS was developed by the U.S. Department of Energy to address the need for analyzing interdependencies in large-scale infrastructure systems. The framework provides several key capabilities that make it particularly suitable for complex co-simulation scenarios:
+
+\textbf{Architecture and Components:} HELICS employs a hierarchical broker-based architecture that enables efficient communication between simulation components (federates). The core components include:
+\begin{itemize}
+    \item \textbf{Federates:} Individual simulation tools or components that participate in the co-simulation
+    \item \textbf{Brokers:} Intermediaries that manage communication and time synchronization between federates
+    \item \textbf{Core:} Communication layer that handles message routing and delivery
+\end{itemize}
+
+\textbf{Time Management:} HELICS implements sophisticated time synchronization algorithms that support both time-stepped and event-driven simulators. It provides conservative and optimistic time advancement strategies, ensuring causality is preserved across the co-simulation.
+
+\textbf{Data Exchange:} The framework supports multiple communication paradigms including publish-subscribe, value-based interfaces, and message-based communication. This flexibility allows simulators with different data exchange requirements to be integrated seamlessly.
+
+\textbf{Scalability:} HELICS has been demonstrated to scale to thousands of federates in distributed computing environments, making it suitable for analyzing city-scale or regional infrastructure systems.
+
+\textbf{Language Support:} HELICS provides APIs for multiple programming languages including C++, Python, Java, MATLAB, and Julia, facilitating integration with a wide variety of existing simulation tools.
+
+\textbf{Platform Independence:} The framework runs on Windows, Linux, and macOS, and supports both local and distributed co-simulation deployments.
+
+
+\subsection{Justification for HELICS Selection}
+
+For this work, HELICS was selected as the co-simulation framework based on the following criteria and comparative analysis:
+
+\textbf{Scalability Requirements:} The need to potentially simulate large-scale scenarios involving thousands of interacting components (energy nodes, vehicles, communication devices) necessitates a framework with proven scalability. HELICS has been demonstrated to scale to city-level and regional infrastructure simulations, outperforming alternatives like Mosaik in distributed scenarios.
+
+\textbf{Multi-Domain Support:} Unlike domain-specific frameworks (FMI for continuous systems, Mosaik for smart grids), HELICS is explicitly designed for heterogeneous multi-domain co-simulation, supporting the integration of energy, mobility, and telecommunications simulators required for this work.
+
+\textbf{Time Synchronization:} HELICS provides sophisticated time management algorithms that handle both time-stepped simulators (common in energy and mobility domains) and event-driven simulators (typical in telecommunications). This flexibility is essential for maintaining causality and accuracy across domains with different temporal characteristics.
+
+\textbf{Active Development and Community:} HELICS benefits from ongoing development supported by the U.S. Department of Energy and has an active user community. This ensures continued maintenance, bug fixes, and feature additions, as well as availability of support and documentation.
+
+\textbf{Language and Platform Support:} The availability of APIs for Python, C++, Java, and MATLAB enables integration with the diverse set of simulation tools used in this work without extensive wrapper development. Platform independence ensures deployment flexibility.
+
+\textbf{Performance and Efficiency:} HELICS's hierarchical broker architecture and optimized communication protocols provide better performance for large-scale distributed co-simulations compared to centralized approaches like Mosaik or agent-based frameworks like MECSYCO.
+
+\textbf{Industry and Research Adoption:} HELICS is increasingly adopted in research and industry projects related to infrastructure co-simulation, providing a pathway for practical application and validation of the work presented in this dissertation.
+
+Table~\ref{tab:cosim_comparison} summarizes the comparison of co-simulation frameworks against key requirements for this work.
+
+\begin{table}[h]
+    \centering
+    \caption{Comparison of co-simulation frameworks}
+    \label{tab:cosim_comparison}
+    \begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+        \hline
+        \textbf{Framework} & \textbf{Scalability} & \textbf{Multi-Domain} & \textbf{Time Sync} & \textbf{Language Support} & \textbf{Community} \\
+        \hline
+        HELICS & Excellent & Yes & Advanced & Multiple & Large \\
+        \hline
+        FMI/FMU & Moderate & Limited & Good & Standard & Very Large \\
+        \hline
+        Mosaik & Limited & Partial & Basic & Python-focused & Moderate \\
+        \hline
+        MECSYCO & Moderate & Yes & Moderate & Java-focused & Small \\
+        \hline
+        FNCS & Good & Yes & Good & Multiple & Deprecated \\
+        \hline
+    \end{tabular}
+\end{table}
+
+
+\section{Comparative Analysis}
+
+This section compares the different simulation approaches and tools presented, highlighting their strengths, limitations, and applicability to different use cases.
+
+\subsection{Energy Simulators Comparison}
+
+\begin{table}[h]
+    \centering
+    \caption{Comparison of energy system simulators}
+    \label{tab:energy_comparison}
+    \begin{tabular}{|p{2.5cm}|p{3.5cm}|p{3.5cm}|p{3cm}|}
+        \hline
+        \textbf{Tool} & \textbf{Strengths} & \textbf{Limitations} & \textbf{Primary Use} \\
+        \hline
+        SimCES & Modular, containerized, platform-independent & Relatively new, limited community & Flexible energy system modeling \\
+        \hline
+        PyPSA & Python-based, easy to use, optimization focus & Limited real-time capabilities & Power system optimization \\
+        \hline
+        GridLAB-D & Agent-based, detailed distribution modeling & Steep learning curve & Smart grid analysis \\
+        \hline
+        Pandapower & Python integration, extensive libraries & Steady-state focus & Distribution network analysis \\
+        \hline
+        OpenDSS & Industry standard, comprehensive features & Complex for beginners & DER and distribution studies \\
+        \hline
+    \end{tabular}
+\end{table}
+
+
+\subsection{Mobility Simulators Comparison}
+
+\begin{table}[h]
+    \centering
+    \caption{Comparison of mobility and traffic simulators}
+    \label{tab:mobility_comparison}
+    \begin{tabular}{|p{2.5cm}|p{3.5cm}|p{3.5cm}|p{3cm}|}
+        \hline
+        \textbf{Tool} & \textbf{Strengths} & \textbf{Limitations} & \textbf{Primary Use} \\
+        \hline
+        SUMO & Open-source, widely used, extensible & Limited multi-modal support & Urban traffic simulation \\
+        \hline
+        MATSim & Large-scale, agent-based, activity modeling & High computational requirements & Metropolitan transport planning \\
+        \hline
+        VISSIM & 3D visualization, detailed modeling & Commercial license required & Traffic engineering \\
+        \hline
+        AIMSUN & Multi-scale, real-time capable & High cost, steep learning curve & Smart mobility studies \\
+        \hline
+    \end{tabular}
+\end{table}
+
+
+\subsection{Telecommunications Simulators Comparison}
+
+\begin{table}[h]
+    \centering
+    \caption{Comparison of telecommunications simulators}
+    \label{tab:telecom_comparison}
+    \begin{tabular}{|p{2.5cm}|p{3.5cm}|p{3.5cm}|p{3cm}|}
+        \hline
+        \textbf{Tool} & \textbf{Strengths} & \textbf{Limitations} & \textbf{Primary Use} \\
+        \hline
+        SiMoNe & Realistic scenarios, system-level & Limited protocol detail & Mobile network planning \\
+        \hline
+        ns-3 & High fidelity, validated protocols & Steep learning curve & Protocol research \\
+        \hline
+        OMNeT++ & Modular, extensive libraries & Complex setup & Network protocol development \\
+        \hline
+        Vienna 5G & 5G NR focus, MATLAB-based & Limited to 5G scenarios & 5G research \\
+        \hline
+        ns-2 & Extensive legacy protocols & Outdated architecture & Ad-hoc networks \\
+        \hline
+    \end{tabular}
+\end{table}
+
+
+\subsection{Integration and Co-Simulation}
+
+% Discuss the need for co-simulation frameworks
+The reviewed simulators excel in their respective domains but lack native support for cross-domain interaction. HELICS addresses this gap by providing a standardized framework for co-simulation, enabling researchers to couple multiple simulators and analyze system-wide interactions.
+
+% Compare single-domain vs. multi-domain simulation approaches
+
+
+\section{Research Gaps and Opportunities}
+
+% Identify gaps in the literature
+Despite the availability of sophisticated simulation tools in each domain, several challenges remain:
+
+\begin{itemize}
+    \item \textbf{Limited integration:} Most simulators operate in isolation, making it difficult to analyze cross-domain dependencies
+    \item \textbf{Scalability:} Coupling multiple high-fidelity simulators presents computational challenges
+    \item \textbf{Data exchange:} Standardized interfaces for data exchange between heterogeneous simulators are lacking
+    \item \textbf{Synchronization:} Time synchronization across simulators with different time scales remains challenging
+    \item \textbf{Validation:} Limited validation of co-simulation results against real-world measurements
+\end{itemize}
+
+
+\section{Summary}
+
+% Synthesize the main points discussed
+This chapter reviewed the state of the art in simulation tools across energy, mobility, and telecommunications domains, as well as co-simulation frameworks. Each domain has mature simulation tools with specific strengths, but integration across domains remains an active research area.
+
+% Justify the relevance and originality of your proposal
+The identified gaps motivate the work presented in this dissertation, which aims to address the challenges of multi-domain simulation integration through [describe your approach here].
+
+% Transition to the next chapter
+The following chapter presents the methodology adopted to address these challenges and achieve the objectives of this work.
+
