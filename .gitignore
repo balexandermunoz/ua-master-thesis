@@ -7,6 +7,32 @@ build/**/*
 # And allow gitkeeps
 !build/**/.gitkeep
 
+# LaTeX auxiliary files (in case generated outside build dir)
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.mw
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*-blx.bib
+_minted*/
+.texpadtmp/
+
+# Generated PDFs (uncomment if you don't want to track PDFs)
+# *.pdf
+# !cover.pdf
+
 # Rest for linux,windows,osx,vim,emacs,sublimetext,visualstudiocode
 !.vscode/extensions.json
 !.vscode/launch.json

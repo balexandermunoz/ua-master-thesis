@@ -207,8 +207,8 @@
 % Include subsections in the TOC
 \settocdepth{subsection}
 
-% Numbering down to subsections as well
-\setsecnumdepth{subsection}
+% Number only sections (not subsections)
+\setsecnumdepth{section}
 
 % extra index for first lines
 \makeindex[lines]
@@ -306,9 +306,6 @@
 \tightlists
 \midsloppy
 \raggedbottom
-
-\setcounter{tocdepth}{2} %subsections are added to the TOC
-\setcounter{secnumdepth}{4} %subsubsections are numbered
 
 % Initial document tables start here: TOC, LOF, LOT, Glossary
 % Table of contents with slightly smaller font
