@@ -1,0 +1,9 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{} Example code snippet}
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{example\PYGZus{}function}\PYG{p}{(}\PYG{n}{param}\PYG{p}{):}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{    This is an example function}
+\PYG{l+s+sd}{    \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{n}{result} \PYG{o}{=} \PYG{n}{process\PYGZus{}data}\PYG{p}{(}\PYG{n}{param}\PYG{p}{)}
+    \PYG{k}{return} \PYG{n}{result}
+\end{MintedVerbatim}
