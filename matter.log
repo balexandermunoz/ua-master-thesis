@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.11.4)  11 JAN 2026 15:09
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.11.4)  11 JAN 2026 15:28
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1982,10 +1982,10 @@ LaTeX Warning: Reference `lbl:snippet-test' on page 2 undefined on input line 44
 
 \openout4 = `_BF7B83F5E1B17616CCF3E2AF66E54E47.data.minted'.
 
-runsystem(latexminted config  --timestamp 20260111150904Z BF7B83F5E1B17616CCF3E2AF66E54E47)...executed safely (allowed).
+runsystem(latexminted config  --timestamp 20260111152829Z BF7B83F5E1B17616CCF3E2AF66E54E47)...executed safely (allowed).
 
 (./_BF7B83F5E1B17616CCF3E2AF66E54E47.config.minted)
-runsystem(latexminted cleanconfig  --timestamp 20260111150904Z BF7B83F5E1B17616CCF3E2AF66E54E47)...executed safely (allowed).
+runsystem(latexminted cleanconfig  --timestamp 20260111152829Z BF7B83F5E1B17616CCF3E2AF66E54E47)...executed safely (allowed).
 
  (./_minted/default.style.minted) (./_minted/35CF175814F8E354F1BD8497CFAFEADF.highlight.minted
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <9> not available
@@ -2385,10 +2385,58 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 ] (./matter.mw)
 \openout4 = `matter.mw'.
 
-)
 \openout4 = `matter.mw'.
 
  [12] (./matter.mw)
+\openout4 = `matter.mw'.
+
+\openout4 = `matter.mw'.
+
+ [13] (./matter.mw)
+\openout4 = `matter.mw'.
+
+\openout4 = `matter.mw'.
+
+ [14] (./matter.mw)
+\openout4 = `matter.mw'.
+
+\openout4 = `matter.mw'.
+
+ [15] (./matter.mw)
+\openout4 = `matter.mw'.
+
+
+
+LaTeX Warning: Reference `tab:scenario_summary' on page 16 undefined on input line 251.
+
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <10> on input line 258.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <7> on input line 258.
+
+Underfull \hbox (badness 10000) in paragraph at lines 262--263
+\T1/lmr/m/n/10 (+20) flow, cur-tail-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 264--265
+[]|\T1/lmr/m/n/10 (+20) Load pro-file,
+ []
+
+
+Underfull \hbox (badness 4913) in paragraph at lines 264--265
+\T1/lmr/m/n/10 (+20) volt-age, charg-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 268--269
+\T1/lmr/m/n/10 (+20) fuel con-sump-
+ []
+
+)
+\openout4 = `matter.mw'.
+
+ [16] (./matter.mw)
 \openout4 = `matter.mw'.
 
 \openout2 = `chapters/chapter4.aux'.
@@ -2406,7 +2454,7 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 
 \openout4 = `matter.mw'.
 
-[13
+[17
 
 
 
@@ -2435,7 +2483,7 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 
 \openout4 = `matter.mw'.
 
-[14] (./matter.mw)
+[18] (./matter.mw)
 \openout4 = `matter.mw'.
 
 
@@ -2459,13 +2507,13 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 
 \openout4 = `matter.mw'.
 
-[15] (./matter.mw)
+[19] (./matter.mw)
 \openout4 = `matter.mw'.
 
 )
 \openout4 = `matter.mw'.
 
- [16] (./matter.mw)
+ [20] (./matter.mw)
 \openout4 = `matter.mw'.
 
 \openout2 = `chapters/chapter5.aux'.
@@ -2480,7 +2528,7 @@ Overfull \hbox (17.0pt too wide) in paragraph at lines 4--6
 )
 \openout4 = `matter.mw'.
 
- [17
+ [21
 
 
 
@@ -2499,7 +2547,7 @@ Appendix A.
 )
 \openout4 = `matter.mw'.
 
- [18
+ [22
 
 
 
@@ -2578,7 +2626,7 @@ Appendix A.
 
 \openout4 = `_BF7B83F5E1B17616CCF3E2AF66E54E47.data.minted'.
 
-runsystem(latexminted clean  --timestamp 20260111150904Z BF7B83F5E1B17616CCF3E2AF66E54E47)...executed safely (allowed).
+runsystem(latexminted clean  --timestamp 20260111152829Z BF7B83F5E1B17616CCF3E2AF66E54E47)...executed safely (allowed).
 
  (./matter.aux
 \openout4 = `matter.mw'.
@@ -2829,6 +2877,26 @@ runsystem(latexminted clean  --timestamp 20260111150904Z BF7B83F5E1B17616CCF3E2A
 \openout4 = `matter.mw'.
 
 ) (./chapters/chapter3.aux
+\openout4 = `matter.mw'.
+
+\openout4 = `matter.mw'.
+
+\openout4 = `matter.mw'.
+
+\openout4 = `matter.mw'.
+
+\openout4 = `matter.mw'.
+
+\openout4 = `matter.mw'.
+
+\openout4 = `matter.mw'.
+
+\openout4 = `matter.mw'.
+
+\openout4 = `matter.mw'.
+
+\openout4 = `matter.mw'.
+
 \openout4 = `matter.mw'.
 
 \openout4 = `matter.mw'.
@@ -3326,18 +3394,18 @@ Package logreq Info: Writing requests to 'matter.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 53852 strings out of 467578
- 1104318 string characters out of 5424739
+ 53942 strings out of 467578
+ 1105394 string characters out of 5424739
  2368530 words of memory out of 5000000
- 80927 multiletter control sequences out of 15000+600000
- 710274 words of font info for 177 fonts, out of 8000000 for 9000
+ 80954 multiletter control sequences out of 15000+600000
+ 718958 words of font info for 195 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  95i,17n,108p,1311b,1999s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx12.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmcsc10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmmi10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr12.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr17.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr6.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr7.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr8.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr9.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmri10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsy8.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmtk10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmtt10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmtt9.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/lm/lmtti10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb><c:/texlive/2025/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb><c:/texlive/2025/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb>
-Output written on matter.pdf (29 pages, 477995 bytes).
+Output written on matter.pdf (33 pages, 489855 bytes).
 PDF statistics:
- 687 PDF objects out of 1000 (max. 8388607)
- 597 compressed objects within 6 object streams
- 138 named destinations out of 1000 (max. 500000)
- 49954 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 713 PDF objects out of 1000 (max. 8388607)
+ 618 compressed objects within 7 object streams
+ 147 named destinations out of 1000 (max. 500000)
+ 54050 words of extra memory for PDF output out of 61914 (max. 10000000)
 

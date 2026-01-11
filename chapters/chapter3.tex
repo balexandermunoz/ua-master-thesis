@@ -84,9 +84,195 @@ This chapter describes the methodology adopted to achieve the objectives of this
 % List and describe the metrics used to evaluate performance
 
 
-\subsection{Test Scenarios}
+\subsection{Simulation Scenarios}
 
-% Describe the test cases or scenarios used for validation
+To validate the proposed co-simulation framework and evaluate its effectiveness in modeling cross-domain interactions, six distinct scenarios were designed covering energy systems, mobility networks, and telecommunications domains. Each scenario is designed to test specific aspects of the framework's capabilities and demonstrate realistic use cases.
+
+\subsubsection{Energy Domain Scenarios}
+
+\textbf{Scenario E1: Smart Grid with Renewable Integration}
+
+This scenario simulates a distribution network with high penetration of renewable energy sources (solar and wind) and distributed energy storage systems. The scenario focuses on:
+
+\begin{itemize}
+    \item Grid topology: IEEE 33-bus distribution system modified with 40\% renewable penetration
+    \item Time frame: 24-hour simulation with 15-minute time steps
+    \item Key components:
+    \begin{itemize}
+        \item 10 rooftop solar PV installations (2-5 kW each)
+        \item 2 wind turbines (100 kW each)
+        \item 5 battery energy storage systems (50 kWh each)
+        \item 800 residential loads with smart meters
+    \end{itemize}
+    \item Objectives:
+    \begin{itemize}
+        \item Analyze voltage profile stability under variable renewable generation
+        \item Evaluate energy storage dispatch strategies
+        \item Assess demand response effectiveness during peak hours
+        \item Quantify renewable energy curtailment
+    \end{itemize}
+    \item Expected outputs: Voltage profiles, power flows, storage state-of-charge, renewable curtailment metrics
+\end{itemize}
+
+\textbf{Scenario E2: Electric Vehicle Charging Infrastructure}
+
+This scenario models the impact of electric vehicle (EV) charging on the distribution network, with coordinated and uncoordinated charging strategies. The scenario includes:
+
+\begin{itemize}
+    \item Grid topology: Modified IEEE 13-node test feeder with residential and commercial areas
+    \item Time frame: 24-hour simulation with 5-minute time steps
+    \item Key components:
+    \begin{itemize}
+        \item 100 electric vehicles with varying arrival times and charging needs
+        \item 20 Level 2 charging stations (7.2 kW) in residential areas
+        \item 5 DC fast charging stations (50 kW) in commercial zones
+        \item Time-of-use tariff structure
+    \end{itemize}
+    \item Objectives:
+    \begin{itemize}
+        \item Compare uncoordinated vs. smart charging impacts on grid load
+        \item Analyze transformer loading and potential overload conditions
+        \item Evaluate vehicle-to-grid (V2G) potential for grid support
+        \item Assess economic benefits of different charging strategies
+    \end{itemize}
+    \item Expected outputs: Load profiles, transformer loading, voltage deviations, charging costs, grid support metrics
+\end{itemize}
+
+\subsubsection{Mobility Domain Scenarios}
+
+\textbf{Scenario M1: Urban Traffic Congestion Management}
+
+This scenario simulates traffic flow in an urban area with intelligent traffic management systems and evaluates congestion mitigation strategies. The scenario comprises:
+
+\begin{itemize}
+    \item Network topology: 5 km × 5 km urban grid with 25 signalized intersections
+    \item Time frame: 3-hour morning peak period with 1-second simulation steps
+    \item Key components:
+    \begin{itemize}
+        \item 2,500 vehicles with varied origin-destination pairs
+        \item Adaptive traffic signal control system
+        \item 3 alternative routes for major corridors
+        \item Real-time traffic information system
+    \end{itemize}
+    \item Objectives:
+    \begin{itemize}
+        \item Evaluate adaptive signal timing effectiveness on travel times
+        \item Analyze traffic flow distribution across alternative routes
+        \item Assess congestion hotspot formation and dissipation
+        \item Quantify emissions reduction from optimized traffic flow
+    \end{itemize}
+    \item Expected outputs: Average travel times, queue lengths, intersection delays, throughput, emissions
+\end{itemize}
+
+\textbf{Scenario M2: Autonomous Vehicle Integration}
+
+This scenario examines the integration of connected autonomous vehicles (CAVs) in mixed traffic conditions, focusing on safety and efficiency improvements. The scenario features:
+
+\begin{itemize}
+    \item Network topology: 10 km highway section with on/off ramps and urban arterial
+    \item Time frame: 2-hour simulation with 0.5-second time steps
+    \item Key components:
+    \begin{itemize}
+        \item 1,000 total vehicles with varying CAV penetration rates (0\%, 25\%, 50\%, 75\%)
+        \item Vehicle-to-vehicle (V2V) communication (200m range)
+        \item Cooperative adaptive cruise control (CACC)
+        \item Lane change assistance systems
+    \end{itemize}
+    \item Objectives:
+    \begin{itemize}
+        \item Analyze highway capacity improvements with increasing CAV penetration
+        \item Evaluate safety metrics (time-to-collision, hard braking events)
+        \item Assess platooning effectiveness on fuel consumption
+        \item Compare human driver vs. autonomous vehicle behavior patterns
+    \end{itemize}
+    \item Expected outputs: Capacity metrics, safety indicators, fuel consumption, platoon statistics
+\end{itemize}
+
+\subsubsection{Telecommunications Domain Scenarios}
+
+\textbf{Scenario T1: 5G Network Slicing for Smart City Services}
+
+This scenario simulates a 5G mobile network serving multiple smart city applications with different quality of service requirements through network slicing. The scenario includes:
+
+\begin{itemize}
+    \item Network topology: Urban area (4 km²) with 7 base stations (gNBs)
+    \item Time frame: 1-hour simulation with dynamic user mobility
+    \item Key components:
+    \begin{itemize}
+        \item 500 user devices with varying mobility patterns
+        \item 3 network slices: enhanced Mobile Broadband (eMBB), Ultra-Reliable Low-Latency (URLLC), massive Machine-Type Communications (mMTC)
+        \item Applications: video streaming (eMBB), autonomous vehicles (URLLC), smart meters (mMTC)
+        \item Heterogeneous network with macro and small cells
+    \end{itemize}
+    \item Objectives:
+    \begin{itemize}
+        \item Evaluate slice isolation and resource allocation efficiency
+        \item Analyze quality of service for different application types
+        \item Assess network capacity under varying load conditions
+        \item Measure handover performance for mobile users
+    \end{itemize}
+    \item Expected outputs: Throughput per slice, latency distributions, packet loss rates, resource utilization
+\end{itemize}
+
+\textbf{Scenario T2: IoT Network Performance Under High Density}
+
+This scenario evaluates telecommunications network performance in a dense IoT deployment typical of smart city or industrial environments. The scenario comprises:
+
+\begin{itemize}
+    \item Network topology: Industrial park (2 km²) with 4 LTE/5G base stations
+    \item Time frame: 24-hour simulation with periodic and event-driven traffic
+    \item Key components:
+    \begin{itemize}
+        \item 5,000 IoT devices (sensors, actuators, smart meters)
+        \item NB-IoT and LTE-M connectivity
+        \item Periodic reporting (every 15 minutes) and alarm-based events
+        \item Edge computing nodes for data aggregation
+    \end{itemize}
+    \item Objectives:
+    \begin{itemize}
+        \item Analyze network congestion during synchronized reporting periods
+        \item Evaluate coverage and penetration loss effects on connectivity
+        \item Assess battery life implications of different transmission strategies
+        \item Measure edge computing offloading benefits
+    \end{itemize}
+    \item Expected outputs: Connection success rates, latency statistics, energy consumption, coverage maps
+\end{itemize}
+
+\subsubsection{Cross-Domain Integration Scenarios}
+
+In addition to the domain-specific scenarios, integrated cross-domain scenarios will be developed to validate the co-simulation framework's ability to capture interdependencies:
+
+\begin{itemize}
+    \item \textbf{Integrated Scenario 1:} EV charging (Energy + Mobility) - Couples Scenario E2 with Scenario M1 to model EVs navigating to charging stations based on traffic conditions and station availability
+    \item \textbf{Integrated Scenario 2:} Connected mobility (Mobility + Telecommunications) - Combines Scenario M2 with Scenario T1 to analyze how 5G network performance affects CAV operations
+    \item \textbf{Integrated Scenario 3:} Smart grid with IoT monitoring (Energy + Telecommunications) - Integrates Scenario E1 with Scenario T2 to evaluate how network reliability affects smart grid monitoring and control
+\end{itemize}
+
+Table~\ref{tab:scenario_summary} provides a summary of all simulation scenarios with their key characteristics.
+
+\begin{table}[h]
+    \centering
+    \caption{Summary of simulation scenarios}
+    \label{tab:scenario_summary}
+    \small
+    \begin{tabular}{|p{1.8cm}|p{3.5cm}|p{2.5cm}|p{2cm}|p{2.5cm}|}
+        \hline
+        \textbf{Scenario} & \textbf{Description} & \textbf{Duration} & \textbf{Time Step} & \textbf{Key Metrics} \\
+        \hline
+        E1 & Smart grid with renewables & 24 hours & 15 min & Voltage, power flow, curtailment \\
+        \hline
+        E2 & EV charging impact & 24 hours & 5 min & Load profile, voltage, charging cost \\
+        \hline
+        M1 & Urban traffic management & 3 hours & 1 sec & Travel time, delays, emissions \\
+        \hline
+        M2 & Autonomous vehicles & 2 hours & 0.5 sec & Capacity, safety, fuel consumption \\
+        \hline
+        T1 & 5G network slicing & 1 hour & Dynamic & Throughput, latency, QoS \\
+        \hline
+        T2 & Dense IoT network & 24 hours & Event & Connection rate, coverage, energy \\
+        \hline
+    \end{tabular}
+\end{table}
 
 
 \section{Summary}
