@@ -30,8 +30,9 @@ _minted*/
 .texpadtmp/
 
 # Generated PDFs (uncomment if you don't want to track PDFs)
-# *.pdf
-# !cover.pdf
+*.pdf
+!cover.pdf
+!figs/*.pdf
 
 # Rest for linux,windows,osx,vim,emacs,sublimetext,visualstudiocode
 !.vscode/extensions.json
