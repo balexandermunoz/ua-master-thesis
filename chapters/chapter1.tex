@@ -1,86 +1,98 @@
-\chapter{Introdução}%
+\chapter{Introduction}%
 \label{chapter:introduction}
 
 \begin{introduction}
-A short description of the chapter.
-
-A memorable quote can also be used.
+Modern urban environments are increasingly complex systems where multiple domains—energy distribution, mobility networks, and telecommunications infrastructure—must operate in coordination to ensure the efficient delivery of essential services. Understanding the intricate interactions between these systems is critical for effective urban management, resilience planning, and strategic decision-making.
 \end{introduction}
 
 
+\section{Context and Motivation}
 
-\section{Acrónimos}
+Urban Management Platforms have emerged as essential tools for modern cities, providing integrated perspectives of territorial dynamics through real-time data aggregation, historical analysis, and predictive capabilities. Ubiwhere's Urban Management Platform, launched in 2018, exemplifies this approach by offering a comprehensive digital solution for efficient land management aligned with international standards and best practices. The platform enables stakeholders to not only monitor current conditions but also analyze historical trends and support strategic planning through the use of artificial intelligence.
 
-Primeira e seguintes referências: \ac{h2o}, \ac{h2o}
+However, a fundamental challenge persists in urban management systems: the need to predict and validate system behaviors under various scenarios before implementing changes in real infrastructure. Questions such as "How will increased electric vehicle adoption affect the power grid?", "What impact will autonomous vehicles have on traffic flow and 5G network demand?", or "How resilient is the telecommunications infrastructure during a power outage?" require sophisticated simulation capabilities that can model the interactions between different urban domains.
 
-Plural, acrónimo expandido e curto: \acp{h2o}, \acl{h2o}, \acs{h2o}
-
-Com citação\footnote{Necessária entrada na bibliografia}: \ac{adsl}, \ac{adsl}
+Current simulation tools are predominantly domain-specific—traffic simulators focus on mobility, power system simulators concentrate on energy distribution, and network simulators address telecommunications. While these specialized tools excel within their respective domains, they face significant limitations when modeling cross-domain interactions that characterize real urban environments. The strong coupling between simulation engines and domain logic makes it difficult to reuse components across contexts and nearly impossible to simulate multi-domain scenarios where systems influence each other.
 
 
-\section{Fontes}
+\section{Problem Statement}
 
-\begin{itemize}
-\item{\tiny Tiny}
-\item{\scriptsize Scriptsize}
-\item{\footnotesize Footnotes}
-\item{\small Small}
-\item{\normalsize Normal}
-\item{\large large}
-\item{\Large Large}
-\item{\LARGE LARGE}
-\item{\huge huge}
-\item{\Huge Huge}
-\end{itemize}
-
-\section{Unidades}
-
-Utilizando o pacote \verb|siunitx| é possível utilizar unidades do Sistema Internacional. Exemplo: a aceleração da gravidade é de \SI{9.8}{\metre\per\second\squared} e um ficheiro ocupa \SI{1}{\mebi\byte}. 
-
-\section{Code Blocks}
-%\lipsum[5]
-Uma listagem pode ser apresentada com o ambiente \texttt{listing}, que é um float (objeto flutuante, tal como uma figura ou uma tabela).
-
-A listagem em Código~\ref{lbl:snippet-test} mostra um exemplo em C.
-
-\begin{listing}[h]
-\begin{minted}{c}
-
-#include <stdio.h>
-#define N 10
-/* Block
- * comment */
- 
-int main()
-{
-    int i;
- 
-    // Line comment.
-    puts("Hello world!");
- 
-    for (i = 0; i < N; i++)
-    {
-        puts("LaTeX is also great for programmers!");
-    }
- 
-    return 0;
-}
-\end{minted}
-\caption{This caption appears below the code.}
-\label{lbl:snippet-test}
-\end{listing}
-
-%\lipsum[5]
-
-\section{Citações}
-
-Algumas formas distintas de citar:
+The fundamental problem addressed by this thesis is the lack of modular, reusable simulation architectures capable of supporting multiple domains while enabling the modeling of their interactions. Existing simulation engines are typically designed for specific environments—whether traffic networks, electrical grids, or telecommunications systems—with domain logic tightly integrated into the core simulation mechanisms. This tight coupling creates several critical limitations:
 
 \begin{itemize}
-    \item \textbf{Apenas referência}:~\cite{rfc44}
-    \item \textbf{Apenas data}:~\citedate{rfc44}
-    \item \textbf{Apenas ano}:~\citeyear{rfc44}
-    \item \textbf{Apenas autor}:~\citeauthor{rfc44}
-    \item \textbf{Apenas editor}:\citelist{rfc44}{organization}
-    \item \textbf{Autor e referência}:\citet{rfc44}
+    \item \textbf{Limited Reusability}: Simulation engines cannot be easily adapted to different domains without substantial modifications
+    \item \textbf{Cross-Domain Simulation Gaps}: Modeling interactions between different urban systems (e.g., electric vehicle charging impact on both power grids and traffic patterns) requires integrating disparate simulation tools with incompatible architectures
+    \item \textbf{Maintenance Complexity}: Domain-specific changes require modifications to core simulation logic, increasing the risk of introducing errors
+    \item \textbf{Extensibility Challenges}: Adding new domain capabilities or scenarios demands deep understanding of the entire codebase rather than isolated module development
 \end{itemize}
+
+For platforms like Ubiwhere's Urban Management Platform, which aggregate data across multiple urban domains, the ability to simulate complex scenarios involving interactions between energy systems, mobility networks, and telecommunications infrastructure is essential for predictive analysis and strategic planning. The absence of a unified, modular simulation framework limits the platform's capacity to model these critical cross-domain dynamics.
+
+
+\section{Thesis Objectives}
+
+This thesis proposes the development of a modular simulation algorithm capable of supporting multiple domains through a clear separation between a generic simulation engine and domain-specific modules. The primary objective is to design and implement a decoupled simulation architecture where the core engine is domain-independent and extensible to various scenarios.
+
+The specific objectives are:
+
+\begin{enumerate}
+    \item \textbf{Design a Domain-Agnostic Simulation Architecture}: Develop a simulation engine that is completely independent of domain logic, with well-defined interfaces and contracts for integrating domain-specific modules
+    
+    \item \textbf{Implement Domain-Specific Modules}: Create autonomous modules that encapsulate the logic for different environments including traffic networks, electrical infrastructure, and telecommunications systems
+    
+    \item \textbf{Enable Multi-Domain Co-Simulation}: Establish mechanisms for multiple domain modules to interact within the same simulation, enabling the modeling of cross-domain effects
+    
+    \item \textbf{Ensure Reproducibility and Configurability}: Design the system to support parametrizable and reproducible execution of different scenarios through configuration files
+    
+    \item \textbf{Validate Through Practical Scenarios}: Demonstrate the platform's capabilities through functional prototypes simulating at least two distinct domains and their interactions
+    
+    \item \textbf{Integrate with Urban Management Context}: Align the simulation framework with the needs of urban management platforms like Ubiwhere's solution, supporting data-driven decision-making and strategic planning
+\end{enumerate}
+
+
+\section{Methodology Overview}
+
+The research and development approach follows a systematic process:
+
+\begin{enumerate}
+    \item \textbf{Requirements Analysis}: Identify common and specific needs across different simulation types (traffic, energy, telecommunications) through literature review and stakeholder engagement
+    
+    \item \textbf{Architecture Design}: Define a modular simulation architecture with a decoupled engine, well-specified interfaces, and clear contracts between components
+    
+    \item \textbf{Core Implementation}: Develop the domain-independent simulation engine with support for agents, events, rules, and temporal control mechanisms
+    
+    \item \textbf{Domain Module Development}: Implement and integrate at least two domain-specific modules (e.g., traffic simulation and electrical failure modeling) according to defined interfaces
+    
+    \item \textbf{Integration and Configuration}: Build a configurable environment supporting scenario loading, parameter specification, and basic result visualization
+    
+    \item \textbf{Validation and Testing}: Execute comparative tests across different scenarios to validate the framework's capabilities and identify areas for improvement
+\end{enumerate}
+
+
+\section{Expected Contributions}
+
+This research aims to deliver the following contributions:
+
+\begin{itemize}
+    \item A \textbf{generic and reusable simulation engine} that is completely independent of domain-specific logic
+    \item \textbf{Autonomous domain modules} that encapsulate the logic for traffic networks, electrical systems, and telecommunications infrastructure
+    \item A \textbf{co-simulation framework} enabling multiple domains to interact within unified scenarios
+    \item \textbf{Parametrizable and reproducible} scenario execution supporting configuration-driven simulation
+    \item A \textbf{functional prototype} demonstrating multi-domain simulation capabilities with practical use cases
+    \item \textbf{Code architecture} prepared for comparative testing, future extensions, and integration with urban management platforms
+\end{itemize}
+
+These contributions will directly support the enhancement of platforms like Ubiwhere's Urban Management Platform by providing advanced simulation capabilities for predictive analysis and strategic planning across multiple urban infrastructure domains.
+
+
+\section{Document Structure}
+
+This thesis is organized as follows:
+
+\textbf{Chapter 2: State of the Art} presents a comprehensive review of existing simulation tools and frameworks across the three primary domains—energy systems, mobility and traffic, and telecommunications. It analyzes domain-specific simulators including their capabilities and limitations, examines co-simulation frameworks with particular emphasis on HELICS (Hierarchical Engine for Large-scale Infrastructure Co-Simulation), and identifies research gaps that motivate the proposed modular approach.
+
+\textbf{Chapter 3: Methodology} describes the research approach, architectural design decisions, and implementation strategy. It presents the proposed modular simulation architecture, defines the interfaces and contracts between components, and outlines a comprehensive set of simulation scenarios covering both domain-specific cases and cross-domain integration challenges.
+
+\textbf{Chapter 4: Implementation and Results} provides detailed information about the implementation of the simulation framework, including the development environment, code structure, and technical decisions. It presents the results of executing the defined scenarios, analyzes the framework's performance, and discusses the insights gained from the validation process.
+
+\textbf{Chapter 5: Conclusions and Future Work} summarizes the main contributions of this research, evaluates the achievement of the stated objectives, discusses the limitations of the current implementation, and proposes directions for future development and enhancement of the modular simulation framework.
