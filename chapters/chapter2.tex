@@ -5,26 +5,41 @@
 This chapter presents a literature review and state of the art related to the theme of this dissertation. The most relevant works and existing technologies in the area are analyzed, focusing on simulation platforms for energy systems, mobility networks, telecommunications, and co-simulation frameworks.
 \end{introduction}
 
-\section{Introduction}
-
-This chapter provides a comprehensive overview of existing simulation tools and frameworks across multiple domains that are relevant to this work. The review is organized by domain: energy systems simulation, mobility and traffic simulation, telecommunications network simulation, and co-simulation frameworks that enable integration across these domains.
-
-
 \section{Context and Theoretical Foundations}
 
-% Present the fundamental concepts necessary to understand the work
-% Define important terms and present relevant theories
+Understanding urban infrastructure systems requires appropriate simulation approaches that balance fidelity, complexity, and computational feasibility. Two primary paradigms have emerged in this context: domain-specific simulation and co-simulation.
+
+\textbf{Domain-specific simulation} focuses on high-fidelity modeling within a single domain (e.g., power systems, traffic networks, or telecommunications). These specialized tools provide detailed representations of domain physics, validated models, and extensive libraries of components specific to their field. The primary benefit is deep accuracy within the domain, supported by mature communities and extensive validation. However, their main limitation is the inability to natively model interactions with other domains—a critical gap given the increasingly interdependent nature of urban infrastructure systems.
+
+\textbf{Co-simulation} addresses this limitation by orchestrating multiple domain-specific simulators to execute concurrently while exchanging data and maintaining time synchronization. This approach preserves the strengths of specialized tools while enabling cross-domain interaction analysis. The benefits include the ability to model complex interdependencies, reuse existing validated simulators, and distribute computational load. The challenges include managing time synchronization across simulators with different temporal resolutions, ensuring data consistency during exchange, and addressing the computational overhead of coordinating multiple simulation instances.
+
+The following subsections explore how these paradigms apply to urban infrastructure management and the specific requirements for integrated multi-domain analysis.
+
+\subsection{Urban Infrastructure Integration and Management Platforms}
+
+Modern cities rely on the efficient operation and coordination of critical infrastructure systems across three primary domains: energy distribution, mobility networks, and telecommunications. These domains, often referred to as urban verticals, are increasingly interdependent—electric vehicles link energy and mobility systems, smart traffic management requires robust telecommunications, and renewable energy integration depends on communication networks for grid coordination.
+
+Urban Management Platforms have emerged as essential tools for city administrators and infrastructure operators, providing integrated perspectives of territorial dynamics and enabling data-driven decision-making. These platforms aggregate real-time data from multiple verticals, analyze historical trends, and support strategic planning through predictive analytics and artificial intelligence. Ubiwhere's Urban Management Platform, launched in 2018, exemplifies this integrated approach by providing comprehensive land management capabilities aligned with international standards and best practices. The platform enables stakeholders to move beyond siloed domain management toward holistic urban governance that recognizes cross-domain dependencies.
+
+However, while current urban platforms excel at data aggregation and visualization, they face limitations in predictive analysis of complex scenarios involving interactions between verticals. Questions such as "What is the impact of widespread electric vehicle adoption on both the power grid and traffic patterns?" or "How does a telecommunications network failure affect smart grid operations?" require simulation capabilities that can model cross-domain dynamics. This gap between operational monitoring and predictive multi-domain simulation motivates the development of integrated co-simulation frameworks capable of supporting the analytical needs of modern urban management platforms.
+
+% Figure placeholder for urban infrastructure integration diagram
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{figs/urban_verticals_integration.png}
+%     \caption{Integration of urban infrastructure domains in modern management platforms}
+%     \label{fig:urban_integration}
+% \end{figure}
+
 
 \subsection{Domain-Specific Simulation}
 
-% Discuss the importance of simulation in different domains
-% Explain the challenges of single-domain vs. multi-domain simulation
+Simulation tools within each urban vertical have evolved independently, driven by domain-specific requirements and communities. Energy system simulators focus on power flow analysis, stability, and optimization; mobility simulators emphasize traffic dynamics, route planning, and congestion management; telecommunications simulators prioritize network performance, protocol behavior, and resource allocation. While these specialized tools provide high fidelity within their respective domains, their isolated development creates challenges when analyzing the interdependent behaviors characteristic of real urban environments.
 
 
 \subsection{Co-Simulation Paradigms}
 
-% Introduce co-simulation concepts
-% Discuss the benefits and challenges of integrating multiple simulators
+Co-simulation addresses the challenge of multi-domain analysis by enabling multiple specialized simulators to execute concurrently while exchanging data and maintaining temporal synchronization. This paradigm preserves the strengths of domain-specific tools while enabling cross-domain interaction modeling. Co-simulation frameworks provide the infrastructure for orchestrating heterogeneous simulators, managing time advancement, and facilitating data exchange—capabilities essential for supporting the predictive analytical requirements of integrated urban management platforms.
 
 
 \section{Energy Systems Simulation}
