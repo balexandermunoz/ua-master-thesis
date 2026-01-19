@@ -50,39 +50,48 @@ The integration of renewable energy sources such as solar photovoltaic and wind 
 
 Energy system simulation tools address these challenges by enabling detailed modeling of power flow dynamics, voltage stability, frequency regulation, and optimal resource dispatch. These tools range from transmission-level simulators focused on bulk power transfer to distribution-focused platforms that model detailed component interactions including residential loads, DER integration, and grid-edge technologies. The following subsections review the principal simulation platforms used in energy systems research and industry, highlighting their capabilities, architectures, and primary applications.
 
-\subsection{SimCES Platform}
-
-The SimCES platform~\cite{simces} provides a modular simulation framework featuring platform independence, container ecosystem, and a comprehensive development toolkit. This platform enables flexible and scalable simulation of complex energy systems through its containerized architecture, allowing researchers to develop and deploy simulation components in isolated environments.
-
-% Add more details about SimCES features, advantages, and applications
-
-
 \subsection{PyPSA: Python for Power System Analysis}
 
-PyPSA~\cite{pypsa} is an open-source toolbox for simulating and optimizing modern power systems. Written in Python, it provides a user-friendly interface for power flow analysis, optimal power flow calculations, and energy system optimization. PyPSA supports modeling of conventional and renewable generation, storage systems, and sector coupling.
+PyPSA (Python for Power System Analysis)~\cite{pypsa} is an open-source toolbox specifically designed for simulating and optimizing modern power systems. Written entirely in Python and leveraging mature scientific libraries including NumPy, SciPy, and pandas, PyPSA provides a user-friendly yet powerful framework for power system analysis.
 
-% Discuss PyPSA's capabilities, use cases, and community adoption
+\textbf{Key Characteristics:} PyPSA employs a dataframe-based approach where network components (buses, lines, transformers, generators, loads, and storage units) are represented as pandas DataFrames. This design enables intuitive data manipulation, integration with Python's data science ecosystem, and efficient handling of large-scale networks. The framework supports both linearized and non-linear power flow calculations, optimal power flow (OPF) formulations, and multi-period optimization with temporal coupling constraints.
+
+\textbf{Modeling Capabilities:} PyPSA excels in analyzing energy system transitions, particularly scenarios involving high renewable energy penetration. It natively supports sector coupling—modeling interactions between electricity, heat, transport, and hydrogen sectors. The framework enables capacity expansion planning, where optimal investment decisions in generation, transmission, and storage infrastructure are determined alongside operational dispatch strategies. PyPSA's multi-period optimization can span hourly resolution over entire years, enabling realistic representation of seasonal storage and renewable variability.
+
+\textbf{Applications and Impact:} PyPSA has been extensively applied in European energy system studies, most notably in the PyPSA-Eur model~\cite{pypsa_application}, which analyzes continental-scale transmission system optimization and renewable integration strategies. The tool is widely adopted in academic research for studying net-zero pathways, evaluating policy scenarios, and assessing infrastructure requirements for decarbonization. Its open-source nature and comprehensive documentation have fostered an active community of users and contributors in energy system research.
 
 
 \subsection{GridLAB-D}
 
-GridLAB-D~\cite{gridlabd} is an agent-based simulation framework specifically designed for smart grid analysis. It enables detailed modeling of distribution systems, including residential loads, distributed generation, and smart grid technologies. The agent-based approach allows for realistic representation of individual components and their interactions within the power distribution network.
+GridLAB-D~\cite{gridlabd} is an open-source, agent-based simulation platform specifically developed for analyzing distribution systems and smart grid technologies. Developed by the U.S. Department of Energy's Pacific Northwest National Laboratory (PNNL), GridLAB-D pioneered the application of agent-based modeling to power distribution networks.
 
-% Elaborate on GridLAB-D's architecture and applications
+\textbf{Architecture and Approach:} GridLAB-D employs an object-oriented, agent-based architecture where individual components (houses, appliances, distributed generators, transformers) are modeled as autonomous agents with their own behavioral rules and state variables. This bottom-up approach enables realistic representation of heterogeneous device characteristics, behavioral diversity, and emergent system-level phenomena. The simulator uses a sophisticated time-stepping algorithm that adapts the time resolution based on system dynamics, balancing computational efficiency with accuracy.
+
+\textbf{Modeling Capabilities:} The framework provides detailed residential and commercial load models that capture thermal dynamics, occupancy patterns, and appliance usage. Its end-use load modeling represents individual appliances (HVAC systems, water heaters, refrigerators) with physics-based models that respond to price signals, temperature variations, and control strategies. GridLAB-D supports distribution network analysis including three-phase unbalanced power flow, voltage regulators, capacitor banks, and transformer modeling. It integrates renewable DER models (solar PV, battery storage) with sophisticated control algorithms enabling simulation of demand response, transactive energy markets, and grid-interactive buildings.
+
+\textbf{Research Applications:} GridLAB-D has been extensively used for evaluating smart grid technologies, demand response programs, and transactive energy systems. Research applications~\cite{gridlabd_application} include analyzing residential transactive control, assessing volt-VAR optimization strategies, and evaluating the grid impacts of electric vehicle charging and distributed solar adoption. The tool's strength in modeling consumer behavior and device-level interactions makes it particularly suitable for studying distribution system modernization and customer-side resource integration.
 
 
 \subsection{Pandapower}
 
-Pandapower~\cite{pandapower} is an open-source power system analysis and optimization tool written in Python. It combines the data analysis capabilities of pandas with the performance of PYPOWER to provide an easy-to-use yet powerful tool for power system analysis. Pandapower supports steady-state network analysis, optimal power flow, and includes extensive libraries of network elements, making it particularly suitable for distribution network studies and integration with data analytics workflows.
+Pandapower~\cite{pandapower} is an open-source Python-based tool that combines ease of use with computational performance for electric power system analysis and optimization. Developed collaboratively by the University of Kassel and Fraunhofer IEE, pandapower has become a widely adopted tool in both academic research and industry applications.
 
-% Discuss pandapower's integration with Python ecosystem and use cases
+\textbf{Design Philosophy:} Pandapower's architecture integrates the intuitive data structures of pandas (providing familiar interfaces for users experienced with Python data analysis) with the proven numerical performance of PYPOWER and MATPOWER solvers. This combination enables users to define networks using tabular data structures while benefiting from mature, validated power flow algorithms. The framework provides comprehensive element libraries including standard IEEE test feeders, European benchmark networks, and utilities for creating custom topologies.
+
+\textbf{Analysis Capabilities:} The tool supports a wide range of power system analyses including AC and DC power flow, optimal power flow with various objective functions (cost minimization, loss minimization), state estimation, short-circuit calculations according to IEC standards, and time-series simulations. Pandapower's optimization framework enables integration with generic optimization libraries (PYOMO, Gurobi, CPLEX), facilitating formulation of complex optimization problems including unit commitment, economic dispatch, and network expansion planning.
+
+\textbf{Practical Applications and Ecosystem:} Pandapower's integration with the Python scientific ecosystem enables seamless connection to machine learning libraries (scikit-learn, TensorFlow), visualization tools (matplotlib, plotly), and data processing frameworks. This interoperability has led to extensive use in data-driven power system applications. The SimBench project~\cite{pandapower_application} provides a comprehensive benchmark dataset built on pandapower, offering standardized test cases for comparing innovative power system solutions. Applications span distribution network planning, renewable integration studies, demand response analysis, and development of AI-based grid operation strategies.
 
 
 \subsection{OpenDSS}
 
-OpenDSS (Open Distribution System Simulator)~\cite{opendss} is a comprehensive electrical power system simulation tool developed by the Electric Power Research Institute (EPRI). It specializes in distribution system and distributed resource analysis, supporting harmonic analysis, dynamic simulations, and renewable energy integration studies. OpenDSS is widely used in industry and academia for analyzing the impact of distributed generation, energy storage, and electric vehicles on distribution networks.
+OpenDSS (Open Distribution System Simulator)~\cite{opendss} is a comprehensive, open-source electrical power system simulation tool developed and maintained by the Electric Power Research Institute (EPRI). It has become an industry-standard platform for distribution system analysis, particularly for studies involving distributed energy resources and advanced distribution management.
 
-% Elaborate on OpenDSS capabilities and industry adoption
+\textbf{Core Capabilities:} OpenDSS specializes in detailed distribution system modeling with support for unbalanced three-phase networks, diverse voltage levels, and complex transformer configurations. The simulator provides frequency-domain and time-domain analysis modes, enabling both steady-state studies and quasi-static time-series simulations. OpenDSS implements sophisticated models for distributed generation (solar PV, wind, micro-CHP), energy storage systems, electric vehicle charging stations, and various load types (constant power, constant impedance, motor loads).
+
+\textbf{Advanced Features:} The tool supports harmonic analysis for assessing power quality impacts, enabling evaluation of distortion caused by non-linear loads and inverter-based resources. Its yearly simulation mode efficiently models annual energy delivery and losses through intelligent load shape sampling. OpenDSS provides extensive options for modeling volt-VAR control devices (capacitor banks, voltage regulators, smart inverters), enabling studies of coordination strategies and voltage regulation performance. The simulator includes integrated scripting capabilities (COM interface, command-line, Python integration via DSS-Python or OpenDSSDirect.py) facilitating automation and integration with external applications.
+
+\textbf{Industry Adoption and Applications:} OpenDSS enjoys widespread adoption in utility companies and consulting firms for distribution planning studies, interconnection analysis, and hosting capacity assessments. Recent applications~\cite{opendss_application} include distribution system reconfiguration considering EV charging loads, renewable energy impact studies, and resilience analysis. The tool's strength in modeling detailed distribution system phenomena makes it particularly valuable for analyzing modern distribution challenges including high penetration of inverter-based resources, bidirectional power flows, and protection coordination under changing operational conditions. EPRI maintains extensive libraries of validated component models and example systems, supporting rapid model development for practical utility applications.
 
 
 \section{Mobility and Traffic Simulation}
@@ -247,15 +256,13 @@ This section compares the different simulation approaches and tools presented, h
         \hline
         \textbf{Tool} & \textbf{Strengths} & \textbf{Limitations} & \textbf{Primary Use} \\
         \hline
-        SimCES & Modular, containerized, platform-independent & Relatively new, limited community & Flexible energy system modeling \\
+        PyPSA & Python-based, optimization focus, sector coupling & Limited real-time simulation & Energy system planning \\
         \hline
-        PyPSA & Python-based, easy to use, optimization focus & Limited real-time capabilities & Power system optimization \\
+        GridLAB-D & Agent-based, detailed end-use loads, transactive energy & Steep learning curve, complex setup & Smart grid analysis \\
         \hline
-        GridLAB-D & Agent-based, detailed distribution modeling & Steep learning curve & Smart grid analysis \\
+        Pandapower & Python integration, comprehensive libraries, benchmarks & Primarily steady-state & Distribution network studies \\
         \hline
-        Pandapower & Python integration, extensive libraries & Steady-state focus & Distribution network analysis \\
-        \hline
-        OpenDSS & Industry standard, comprehensive features & Complex for beginners & DER and distribution studies \\
+        OpenDSS & Industry standard, harmonic analysis, extensive DER models & Steeper learning curve & Utility planning and DER integration \\
         \hline
     \end{tabular}
 \end{table}
