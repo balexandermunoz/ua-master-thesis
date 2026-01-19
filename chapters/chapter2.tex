@@ -174,72 +174,137 @@ Network Simulator 2 (ns-2)~\cite{ns2} is a discrete-event network simulator that
 
 \section{Co-Simulation Frameworks}
 
-Co-simulation frameworks enable integration of multiple domain-specific simulators, allowing analysis of interdependencies and interactions across different systems.
+Co-simulation frameworks enable integration of multiple domain-specific simulators, allowing analysis of interdependencies and interactions across different systems. These frameworks differ in their architectural approaches, target application domains, scalability characteristics, and integration mechanisms. This section reviews the principal co-simulation frameworks relevant to multi-domain infrastructure simulation, analyzing their strengths and limitations based on key characteristics essential for this work.
 
-\subsection{HELICS Framework}
 
-The Hierarchical Engine for Large-scale Infrastructure Co-Simulation (HELICS)~\cite{helics} is a co-simulation framework designed for scalable multi-domain modeling and analysis. HELICS enables integration of diverse simulators from different domains (energy, transportation, telecommunications) through a flexible message-passing architecture. It supports large-scale simulations with thousands of federates and provides mechanisms for time synchronization and data exchange between heterogeneous simulation tools.
+\subsection{FMI/FMU Standard}
 
-HELICS was developed by the U.S. Department of Energy to address the need for analyzing interdependencies in large-scale infrastructure systems. The framework provides several key capabilities that make it particularly suitable for complex co-simulation scenarios:
+The Functional Mock-up Interface (FMI) is an open standard for model exchange and co-simulation of dynamic systems. Developed through the MODELISAR project and maintained by the Modelica Association, FMI defines a standardized interface for exchanging models between different simulation tools using Functional Mock-up Units (FMUs).
 
-\textbf{Architecture and Components:} HELICS employs a hierarchical broker-based architecture that enables efficient communication between simulation components (federates). The core components include:
+\textbf{Architecture:} FMI employs a master-slave architecture where a master algorithm coordinates the execution of multiple FMUs (slaves). Each FMU encapsulates a simulation model with a standardized C-based API, enabling tool-independent model exchange. FMI supports two primary modes: Model Exchange (ME), where the master provides the numerical solver, and Co-Simulation (CS), where each FMU includes its own solver and the master handles coordination and data exchange.
+
+\textbf{Application Domain:} FMI originated in the automotive and aerospace industries for coupling continuous-time models (mechanical systems, control systems, hydraulics). It excels in scenarios involving differential-algebraic equations and tightly-coupled physical systems. However, FMI's continuous-time focus limits its applicability to discrete-event systems and large-scale distributed infrastructure simulations involving thousands of heterogeneous components with diverse temporal characteristics.
+
+\textbf{Strengths and Limitations:} FMI's primary strength is industry standardization—major simulation tools (Simulink, Dymola, AMESim, OpenModelica) support FMI export/import, facilitating model reuse across platforms. The standard is mature, well-documented, and supported by a large community. However, FMI's master-slave architecture creates scalability bottlenecks for large federations, and its emphasis on continuous-time modeling makes integration of discrete-event simulators (common in telecommunications and traffic domains) more complex. Time synchronization in FMI is relatively basic compared to specialized infrastructure co-simulation frameworks.
+
+
+\subsection{Mosaik Framework}
+
+Mosaik is a Python-based co-simulation framework developed specifically for smart grid applications. Created by the research group OFFIS in Germany, Mosaik focuses on ease of use and flexibility for coupling energy system simulators with communication network and control system models.
+
+\textbf{Architecture:} Mosaik employs a centralized orchestration architecture where a central scheduler manages time advancement and coordinates data exchange between simulators. Simulators are wrapped as "mosaik components" that communicate with the central coordinator via a simple API. The framework supports both time-stepped and event-based simulators through a unified interface.
+
+\textbf{Smart Grid Focus:} Mosaik was designed for smart grid co-simulation scenarios coupling power system simulators (PyPower, pandapower), communication network simulators (ns-3, OMNeT++), and control/optimization algorithms. It provides convenient abstractions for scenario definition, automated topology configuration, and result aggregation specifically tailored to energy system studies. The framework's Python ecosystem integration enables rapid prototyping and data analysis.
+
+\textbf{Strengths and Limitations:} Mosaik's centralized architecture simplifies scenario configuration and debugging, making it accessible to researchers without extensive distributed systems expertise. The framework's Python-centric design enables seamless integration with data analysis and machine learning workflows. However, this centralized approach limits scalability—the central coordinator becomes a bottleneck when federating hundreds of simulators or distributing computation across multiple machines. Mosaik's smart grid focus, while providing useful abstractions for that domain, makes it less suited for general-purpose multi-domain infrastructure co-simulation spanning mobility and telecommunications alongside energy systems.
+
+
+\subsection{MECSYCO Framework}
+
+MECSYCO (Multi-agent Environment for Complex-SYstem CO-simulation) is a Java-based framework that applies multi-agent system concepts to co-simulation. Developed by researchers at the University of Corsica, MECSYCO enables coupling heterogeneous simulators through a multi-agent middleware architecture.
+
+\textbf{Agent-Based Architecture:} MECSYCO wraps each simulator in a software agent that manages its lifecycle, time advancement, and communication with other agents. This decentralized approach avoids single points of failure and enables flexible federation topologies. The framework provides wrapping mechanisms for diverse simulator types including discrete-event, continuous-time, and agent-based models. Communication between simulators occurs through agent message passing with support for both synchronous and asynchronous interactions.
+
+\textbf{Flexibility and Extensibility:} MECSYCO's multi-agent foundation provides flexibility in defining coupling topologies and communication patterns. The framework supports dynamic reconfiguration, allowing simulators to join or leave the federation during execution. This capability is valuable for scenarios involving adaptive systems or fault injection studies.
+
+\textbf{Strengths and Limitations:} The multi-agent approach provides good modularity and flexibility, avoiding the centralized bottleneck of frameworks like Mosaik. MECSYCO's wrapping mechanisms support diverse simulator types without requiring invasive modifications. However, the framework's Java ecosystem focus limits integration with popular simulation tools that provide C++, Python, or MATLAB interfaces. The multi-agent overhead and complexity can impact performance for large-scale simulations. MECSYCO's research-oriented development means it has a smaller user community and less extensive documentation compared to industry-backed frameworks.
+
+
+\subsection{Comparative Analysis of Co-Simulation Frameworks}
+
+To select an appropriate co-simulation framework for this work, we define key evaluation criteria reflecting the requirements of multi-domain urban infrastructure simulation:
+
 \begin{itemize}
-    \item \textbf{Federates:} Individual simulation tools or components that participate in the co-simulation
-    \item \textbf{Brokers:} Intermediaries that manage communication and time synchronization between federates
-    \item \textbf{Core:} Communication layer that handles message routing and delivery
+    \item \textbf{Scalability:} Ability to handle large numbers of federates (hundreds to thousands) and distribute computation efficiently
+    \item \textbf{Multi-Domain Support:} Suitability for integrating heterogeneous simulators from energy, mobility, and telecommunications domains
+    \item \textbf{Time Synchronization:} Sophistication of algorithms for maintaining causality across simulators with different time scales and temporal characteristics
+    \item \textbf{Language/Tool Integration:} Breadth of API support for common simulation platforms (C++, Python, Java, MATLAB)
+    \item \textbf{Community and Maturity:} Size of user community, availability of documentation, and continued development support
+    \item \textbf{Performance:} Computational efficiency and communication overhead for large-scale distributed scenarios
 \end{itemize}
 
-\textbf{Time Management:} HELICS implements sophisticated time synchronization algorithms that support both time-stepped and event-driven simulators. It provides conservative and optimistic time advancement strategies, ensuring causality is preserved across the co-simulation.
-
-\textbf{Data Exchange:} The framework supports multiple communication paradigms including publish-subscribe, value-based interfaces, and message-based communication. This flexibility allows simulators with different data exchange requirements to be integrated seamlessly.
-
-\textbf{Scalability:} HELICS has been demonstrated to scale to thousands of federates in distributed computing environments, making it suitable for analyzing city-scale or regional infrastructure systems.
-
-\textbf{Language Support:} HELICS provides APIs for multiple programming languages including C++, Python, Java, MATLAB, and Julia, facilitating integration with a wide variety of existing simulation tools.
-
-\textbf{Platform Independence:} The framework runs on Windows, Linux, and macOS, and supports both local and distributed co-simulation deployments.
-
-
-\subsection{Justification for HELICS Selection}
-
-For this work, HELICS was selected as the co-simulation framework based on the following criteria and comparative analysis:
-
-\textbf{Scalability Requirements:} The need to potentially simulate large-scale scenarios involving thousands of interacting components (energy nodes, vehicles, communication devices) necessitates a framework with proven scalability. HELICS has been demonstrated to scale to city-level and regional infrastructure simulations, outperforming alternatives like Mosaik in distributed scenarios.
-
-\textbf{Multi-Domain Support:} Unlike domain-specific frameworks (FMI for continuous systems, Mosaik for smart grids), HELICS is explicitly designed for heterogeneous multi-domain co-simulation, supporting the integration of energy, mobility, and telecommunications simulators required for this work.
-
-\textbf{Time Synchronization:} HELICS provides sophisticated time management algorithms that handle both time-stepped simulators (common in energy and mobility domains) and event-driven simulators (typical in telecommunications). This flexibility is essential for maintaining causality and accuracy across domains with different temporal characteristics.
-
-\textbf{Active Development and Community:} HELICS benefits from ongoing development supported by the U.S. Department of Energy and has an active user community. This ensures continued maintenance, bug fixes, and feature additions, as well as availability of support and documentation.
-
-\textbf{Language and Platform Support:} The availability of APIs for Python, C++, Java, and MATLAB enables integration with the diverse set of simulation tools used in this work without extensive wrapper development. Platform independence ensures deployment flexibility.
-
-\textbf{Performance and Efficiency:} HELICS's hierarchical broker architecture and optimized communication protocols provide better performance for large-scale distributed co-simulations compared to centralized approaches like Mosaik or agent-based frameworks like MECSYCO.
-
-\textbf{Industry and Research Adoption:} HELICS is increasingly adopted in research and industry projects related to infrastructure co-simulation, providing a pathway for practical application and validation of the work presented in this dissertation.
-
-Table~\ref{tab:cosim_comparison} summarizes the comparison of co-simulation frameworks against key requirements for this work.
+Table~\ref{tab:cosim_comparison} compares the reviewed frameworks against these criteria.
 
 \begin{table}[h]
     \centering
     \caption{Comparison of co-simulation frameworks}
     \label{tab:cosim_comparison}
-    \begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+    \begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2.3cm}|p{2.3cm}|p{2.3cm}|}
         \hline
-        \textbf{Framework} & \textbf{Scalability} & \textbf{Multi-Domain} & \textbf{Time Sync} & \textbf{Language Support} & \textbf{Community} \\
+        \textbf{Framework} & \textbf{Scalability} & \textbf{Multi-Domain} & \textbf{Time Sync} & \textbf{Language Support} & \textbf{Community \& Maturity} \\
         \hline
-        HELICS & Excellent & Yes & Advanced & Multiple & Large \\
+        HELICS & Excellent (1000+ federates) & General purpose, infrastructure focus & Advanced (conservative \& optimistic) & C++, Python, Java, MATLAB, Julia & Large, DOE-backed \\
         \hline
-        FMI/FMU & Moderate & Limited & Good & Standard & Very Large \\
+        FMI/FMU & Moderate (master-slave limit) & Continuous systems focus & Basic (fixed-step, variable-step) & Standard C API, broad tool support & Very large, industry standard \\
         \hline
-        Mosaik & Limited & Partial & Basic & Python-focused & Moderate \\
+        Mosaik & Limited (centralized) & Smart grid focus & Basic (time-stepped coordination) & Python-centric, adapters needed & Moderate, research-oriented \\
         \hline
-        MECSYCO & Moderate & Yes & Moderate & Java-focused & Small \\
-        \hline
-        FNCS & Good & Yes & Good & Multiple & Deprecated \\
+        MECSYCO & Moderate (agent overhead) & General purpose & Moderate (agent-based sync) & Java-focused, wrapping required & Small, academic \\
         \hline
     \end{tabular}
 \end{table}
+
+
+\subsection{Framework Selection and Justification}
+
+Based on the comparative analysis presented in Table~\ref{tab:cosim_comparison}, HELICS (Hierarchical Engine for Large-scale Infrastructure Co-Simulation) was selected as the co-simulation framework for this work. This selection is justified by systematic evaluation against the six defined criteria:
+
+\textbf{Scalability Requirements:} The need to potentially simulate large-scale scenarios involving thousands of interacting components (energy nodes, vehicles, communication devices) necessitates a framework with proven scalability. HELICS has been demonstrated to scale to city-level and regional infrastructure simulations with over 1,000 federates in distributed computing environments, significantly outperforming alternatives like Mosaik's centralized architecture or MECSYCO's agent-based overhead.
+
+\textbf{Multi-Domain Infrastructure Focus:} Unlike FMI/FMU (optimized for continuous-time mechanical systems) or Mosaik (smart grid-focused), HELICS is explicitly designed for heterogeneous multi-domain infrastructure co-simulation. It has been successfully applied to scenarios coupling energy systems, transportation networks, telecommunications, and building systems—precisely the domains required for this work. The framework makes no assumptions about simulator types, supporting time-stepped, event-driven, and hybrid models equally.
+
+\textbf{Time Synchronization Sophistication:} HELICS provides advanced time management algorithms including both conservative (guaranteed causality preservation) and optimistic (speculative execution with rollback) strategies. This flexibility is essential for maintaining accuracy across domains with vastly different temporal characteristics: energy systems operating at sub-second timescales, mobility simulations requiring millisecond resolution for safety-critical scenarios, and telecommunications networks with microsecond-level event timing.
+
+\textbf{Platform and Language Agnosticism:} The availability of well-maintained APIs for C++, Python, Java, MATLAB, and Julia enables integration with the diverse set of simulation tools reviewed in previous sections (PyPSA, GridLAB-D, pandapower, OpenDSS for energy; SUMO, MATSim for mobility; ns-3, OMNeT++ for telecommunications). This breadth of language support minimizes the need for complex wrapper development and allows leveraging existing validated simulator implementations directly.
+
+\textbf{Active Development and Community Support:} HELICS benefits from sustained development supported by the U.S. Department of Energy with participation from national laboratories (NREL, PNNL, ANL) and industry partners. The framework maintains comprehensive documentation, tutorial materials, and example implementations. An active user community provides support and contributes use cases, ensuring continued evolution and maintenance. This contrasts with research-oriented frameworks like MECSYCO that have smaller communities and less certain long-term support.
+
+\textbf{Performance and Distributed Execution:} HELICS's hierarchical broker architecture with optimized communication protocols (ZeroMQ, TCP, IPC) provides superior performance for large-scale distributed co-simulations. Benchmarks have shown HELICS outperforming centralized approaches (Mosaik) by orders of magnitude for scenarios exceeding 100 federates, and demonstrating better efficiency than FMI for infrastructure-scale problems involving diverse temporal domains.
+
+
+\subsection{HELICS: Comprehensive Framework Description}
+
+Given its selection as the foundation for this work's co-simulation implementation, a comprehensive understanding of HELICS capabilities, architecture, and operational mechanisms is essential.
+
+\textbf{Development Context and Purpose:} HELICS~\cite{helics} was developed by the U.S. Department of Energy to address the critical need for analyzing interdependencies in large-scale infrastructure systems, particularly in the context of grid modernization and integration of distributed energy resources. The framework emerged from recognition that understanding modern infrastructure behavior requires coupling simulators from multiple domains—a challenge that existing co-simulation tools could not adequately address at the required scale and heterogeneity.
+
+\textbf{Architectural Components:} HELICS employs a hierarchical broker-based architecture that enables efficient communication between simulation components while maintaining scalability. The core architectural elements include:
+
+\begin{itemize}
+    \item \textbf{Federates:} Individual simulation tools or model components that participate in the co-simulation. Each federate represents a domain-specific simulator (e.g., a power system simulator, traffic simulator, or network simulator) wrapped with a HELICS interface layer. Federates maintain their internal state, execute their simulation logic, and communicate with other federates through the HELICS infrastructure.
+    
+    \item \textbf{Cores:} Communication hubs local to each federate that manage message routing, filtering, and buffering. Cores handle the low-level details of message transmission, enabling federates to communicate using simple publish-subscribe or value-exchange paradigms without managing socket connections or serialization directly.
+    
+    \item \textbf{Brokers:} Intermediate coordinators arranged in a hierarchical topology that manage time synchronization, route messages between federates, and coordinate distributed execution. Brokers can be nested to create tree structures that scale to thousands of federates. This hierarchy distributes the coordination workload, avoiding the single-point bottleneck of centralized architectures.
+    
+    \item \textbf{Root Broker:} The top-level coordinator that oversees the entire federation, manages global time advancement, and ensures all federates maintain causal consistency.
+\end{itemize}
+
+\textbf{Time Management and Synchronization:} HELICS implements sophisticated time synchronization algorithms that represent a key differentiator from simpler frameworks. The time management system supports:
+
+\begin{itemize}
+    \item \textbf{Conservative Time Advancement:} Guarantees no simulator proceeds beyond the safe time horizon, ensuring perfect causality preservation. HELICS uses efficient null message algorithms and lookahead mechanisms to minimize blocking while maintaining correctness.
+    
+    \item \textbf{Event-Driven and Time-Stepped Models:} Federates can operate with fixed time steps (common in power system and traffic simulators) or request advancement to specific event times (typical in telecommunications simulators). HELICS coordinates these heterogeneous timing models, allowing a time-stepped power flow solver running at 1-second intervals to correctly interact with an event-driven network simulator processing packets at microsecond granularity.
+    
+    \item \textbf{Asynchronous Execution:} Federates execute independently between synchronization points, enabling parallel computation across multiple cores or machines. This asynchronous model maximizes computational efficiency while the time synchronization algorithms maintain logical consistency.
+\end{itemize}
+
+\textbf{Communication Paradigms:} HELICS provides flexible communication mechanisms to accommodate diverse simulator coupling requirements:
+
+\begin{itemize}
+    \item \textbf{Publications and Subscriptions:} The primary communication mode where federates publish named values (e.g., "bus\_voltage", "traffic\_flow\_rate") that other federates subscribe to receive. This decoupled paradigm simplifies federation configuration and enables dynamic reconfiguration.
+    
+    \item \textbf{Endpoints and Messages:} Direct addressed messaging between federates, suitable for packet-level communication modeling or control signals. Endpoints support targeted communication with optional filters for modeling delays, packet loss, or transformation.
+    
+    \item \textbf{Filters:} Intermediate processing units that can transform, delay, or drop messages, enabling modeling of communication channel characteristics without modifying federate implementations.
+\end{itemize}
+
+\textbf{Platform Independence and Deployment Flexibility:} HELICS is designed for cross-platform deployment, supporting Windows, Linux, and macOS. It can execute in multiple deployment modes including local execution (all federates on one machine), distributed execution (federates spread across networked machines), and containerized deployment (federates in Docker containers orchestrated by Kubernetes). This flexibility supports development on local workstations and scaling to high-performance computing clusters for large-scale studies.
+
+\textbf{Integration Ecosystem and Tools:} Beyond the core co-simulation engine, HELICS provides an ecosystem of integration tools and utilities including a Python-based configuration system (HELICS-CLI), visualization tools for monitoring federation execution, and extensive example implementations demonstrating integration with common simulation platforms. The project maintains actively developed language bindings ensuring compatibility with evolving versions of Python, Java, and MATLAB.
+
+HELICS's combination of sophisticated time management, scalable distributed architecture, flexible communication mechanisms, and broad platform support makes it uniquely suited for the multi-domain urban infrastructure co-simulation scenarios that this dissertation addresses. The framework provides the technical foundation for implementing the proposed modular simulation architecture while enabling validation through realistic large-scale scenarios.
 
 
 \section{Comparative Analysis}
