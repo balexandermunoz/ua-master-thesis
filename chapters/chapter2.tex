@@ -93,6 +93,29 @@ OpenDSS (Open Distribution System Simulator)~\cite{opendss} is a comprehensive, 
 
 \textbf{Industry Adoption and Applications:} OpenDSS enjoys widespread adoption in utility companies and consulting firms for distribution planning studies, interconnection analysis, and hosting capacity assessments. Recent applications~\cite{opendss_application} include distribution system reconfiguration considering EV charging loads, renewable energy impact studies, and resilience analysis. The tool's strength in modeling detailed distribution system phenomena makes it particularly valuable for analyzing modern distribution challenges including high penetration of inverter-based resources, bidirectional power flows, and protection coordination under changing operational conditions. EPRI maintains extensive libraries of validated component models and example systems, supporting rapid model development for practical utility applications.
 
+\subsection{Comparison of Energy System Simulators}
+
+Table~\ref{tab:energy_comparison} summarizes the key characteristics of the reviewed energy system simulation platforms, highlighting their primary strengths, limitations, and typical application domains.
+
+\begin{table}[h]
+    \centering
+    \caption{Comparison of energy system simulators}
+    \label{tab:energy_comparison}
+    \begin{tabular}{|p{2.5cm}|p{3.5cm}|p{3.5cm}|p{3cm}|}
+        \hline
+        \textbf{Tool} & \textbf{Strengths} & \textbf{Limitations} & \textbf{Primary Use} \\
+        \hline
+        PyPSA & Python-based, optimization focus, sector coupling & Limited real-time simulation & Energy system planning \\
+        \hline
+        GridLAB-D & Agent-based, detailed end-use loads, transactive energy & Steep learning curve, complex setup & Smart grid analysis \\
+        \hline
+        Pandapower & Python integration, comprehensive libraries, benchmarks & Primarily steady-state & Distribution network studies \\
+        \hline
+        OpenDSS & Industry standard, harmonic analysis, extensive DER models & Steeper learning curve & Utility planning and DER integration \\
+        \hline
+    \end{tabular}
+\end{table}
+
 
 \section{Mobility and Traffic Simulation}
 
@@ -130,6 +153,24 @@ MATSim (Multi-Agent Transport Simulation) is a large-scale agent-based transport
 
 \textbf{Practical Applications:} MATSim has been applied to numerous real-world planning studies including the Open Berlin Scenario~\cite{matsim_application}, which provides a comprehensive multimodal transport simulation of Berlin based on synthetic demand generation and open data. Applications span evaluation of public transport investments, congestion pricing analysis, electric vehicle infrastructure planning, and assessment of autonomous vehicle impacts on traffic and parking. The framework's ability to model behavioral adaptation makes it particularly valuable for long-term policy analysis where demand responds to infrastructure and pricing changes.
 
+\subsection{Comparison of Mobility and Traffic Simulators}
+
+Table~\ref{tab:mobility_comparison} compares the principal mobility and traffic simulation platforms reviewed, emphasizing their architectural approaches and application contexts.
+
+\begin{table}[h]
+    \centering
+    \caption{Comparison of mobility and traffic simulators}
+    \label{tab:mobility_comparison}
+    \begin{tabular}{|p{2.5cm}|p{4.5cm}|p{4cm}|p{3cm}|}
+        \hline
+        \textbf{Tool} & \textbf{Strengths} & \textbf{Limitations} & \textbf{Primary Use} \\
+        \hline
+        SUMO & Open-source, widely used, TraCI interface for runtime control, extensive network import capabilities, multimodal support & Limited activity-based demand modeling, queue-based models available but microscopic by default & Urban traffic simulation, V2X communication studies, traffic signal optimization \\
+        \hline
+        MATSim & Large-scale agent-based, activity-based demand, co-evolutionary optimization, multimodal transport & High computational requirements, queue-based traffic flow sacrifices microscopic realism & Metropolitan transport planning, policy analysis, long-term behavioral adaptation studies \\
+        \hline
+    \end{tabular}
+\end{table}
 
 
 \section{Telecommunications Network Simulation}
@@ -169,6 +210,27 @@ OMNeT++ is a component-based, modular, and extensible simulation framework prima
 \textbf{Flexibility and Customization:} OMNeT++'s generic discrete-event simulation kernel and modular architecture make it suitable for non-networking applications including queuing systems, hardware architectures, and business process modeling. The Eclipse-based IDE provides integrated development including NED editor, C++ editor with code completion, simulation execution, and result analysis. The framework supports parallel discrete-event simulation for performance scaling.
 
 \textbf{Industry and Research Adoption:} OMNeT++ is widely adopted in telecommunications industry for protocol development and performance evaluation, and extensively used in academic research for networking studies. Applications span IoT system design, industrial wireless networks, software-defined networking (SDN), network function virtualization (NFV), and smart city communication infrastructure. The framework's detailed modeling capabilities and flexible architecture make it valuable for scenarios requiring custom protocol development or integration with domain-specific models, supporting co-simulation applications where telecommunications network behavior couples with energy, mobility, or building systems.
+
+\subsection{Comparison of Telecommunications Network Simulators}
+
+Table~\ref{tab:telecom_comparison} provides a comparative overview of the telecommunications simulation platforms discussed, highlighting their modeling fidelity and target application areas.
+
+\begin{table}[h]
+    \centering
+    \caption{Comparison of telecommunications simulators}
+    \label{tab:telecom_comparison}
+    \begin{tabular}{|p{2.5cm}|p{4.5cm}|p{4cm}|p{3cm}|}
+        \hline
+        \textbf{Tool} & \textbf{Strengths} & \textbf{Limitations} & \textbf{Primary Use} \\
+        \hline
+        ns-3 & High fidelity protocol models, validated implementations, LTE/5G support, extensive physical layer modeling & Steep learning curve, C++ expertise required, computationally intensive for large scenarios & Protocol research, IoT systems, smart grid communications, vehicular networks \\
+        \hline
+        OMNeT++ & Modular architecture, INET Framework, excellent visualization (Qtenv), Eclipse IDE integration & Complex initial setup, framework-specific learning & Network protocol development, industrial wireless, SDN/NFV research \\
+        \hline
+        SiMoNe & System-level mobile network modeling, realistic scenarios, user mobility integration & Limited protocol-level detail compared to ns-3/OMNeT++ & Mobile network planning, coverage and capacity analysis \\
+        \hline
+    \end{tabular}
+\end{table}
 
 
 \section{Co-Simulation Frameworks}
@@ -304,78 +366,6 @@ Given its selection as the foundation for this work's co-simulation implementati
 \textbf{Integration Ecosystem and Tools:} Beyond the core co-simulation engine, HELICS provides an ecosystem of integration tools and utilities including a Python-based configuration system (HELICS-CLI), visualization tools for monitoring federation execution, and extensive example implementations demonstrating integration with common simulation platforms. The project maintains actively developed language bindings ensuring compatibility with evolving versions of Python, Java, and MATLAB.
 
 HELICS's combination of sophisticated time management, scalable distributed architecture, flexible communication mechanisms, and broad platform support makes it uniquely suited for the multi-domain urban infrastructure co-simulation scenarios that this dissertation addresses. The framework provides the technical foundation for implementing the proposed modular simulation architecture while enabling validation through realistic large-scale scenarios.
-
-
-\section{Comparative Analysis}
-
-This section compares the different simulation approaches and tools presented, highlighting their strengths, limitations, and applicability to different use cases.
-
-\subsection{Energy Simulators Comparison}
-
-\begin{table}[h]
-    \centering
-    \caption{Comparison of energy system simulators}
-    \label{tab:energy_comparison}
-    \begin{tabular}{|p{2.5cm}|p{3.5cm}|p{3.5cm}|p{3cm}|}
-        \hline
-        \textbf{Tool} & \textbf{Strengths} & \textbf{Limitations} & \textbf{Primary Use} \\
-        \hline
-        PyPSA & Python-based, optimization focus, sector coupling & Limited real-time simulation & Energy system planning \\
-        \hline
-        GridLAB-D & Agent-based, detailed end-use loads, transactive energy & Steep learning curve, complex setup & Smart grid analysis \\
-        \hline
-        Pandapower & Python integration, comprehensive libraries, benchmarks & Primarily steady-state & Distribution network studies \\
-        \hline
-        OpenDSS & Industry standard, harmonic analysis, extensive DER models & Steeper learning curve & Utility planning and DER integration \\
-        \hline
-    \end{tabular}
-\end{table}
-
-
-\subsection{Mobility Simulators Comparison}
-
-\begin{table}[h]
-    \centering
-    \caption{Comparison of mobility and traffic simulators}
-    \label{tab:mobility_comparison}
-    \begin{tabular}{|p{2.5cm}|p{4.5cm}|p{4cm}|p{3cm}|}
-        \hline
-        \textbf{Tool} & \textbf{Strengths} & \textbf{Limitations} & \textbf{Primary Use} \\
-        \hline
-        SUMO & Open-source, widely used, TraCI interface for runtime control, extensive network import capabilities, multimodal support & Limited activity-based demand modeling, queue-based models available but microscopic by default & Urban traffic simulation, V2X communication studies, traffic signal optimization \\
-        \hline
-        MATSim & Large-scale agent-based, activity-based demand, co-evolutionary optimization, multimodal transport & High computational requirements, queue-based traffic flow sacrifices microscopic realism & Metropolitan transport planning, policy analysis, long-term behavioral adaptation studies \\
-        \hline
-    \end{tabular}
-\end{table}
-
-
-\subsection{Telecommunications Simulators Comparison}
-
-\begin{table}[h]
-    \centering
-    \caption{Comparison of telecommunications simulators}
-    \label{tab:telecom_comparison}
-    \begin{tabular}{|p{2.5cm}|p{4.5cm}|p{4cm}|p{3cm}|}
-        \hline
-        \textbf{Tool} & \textbf{Strengths} & \textbf{Limitations} & \textbf{Primary Use} \\
-        \hline
-        ns-3 & High fidelity protocol models, validated implementations, LTE/5G support, extensive physical layer modeling & Steep learning curve, C++ expertise required, computationally intensive for large scenarios & Protocol research, IoT systems, smart grid communications, vehicular networks \\
-        \hline
-        OMNeT++ & Modular architecture, INET Framework, excellent visualization (Qtenv), Eclipse IDE integration & Complex initial setup, framework-specific learning & Network protocol development, industrial wireless, SDN/NFV research \\
-        \hline
-        SiMoNe & System-level mobile network modeling, realistic scenarios, user mobility integration & Limited protocol-level detail compared to ns-3/OMNeT++ & Mobile network planning, coverage and capacity analysis \\
-        \hline
-    \end{tabular}
-\end{table}
-
-
-\subsection{Integration and Co-Simulation}
-
-% Discuss the need for co-simulation frameworks
-The reviewed simulators excel in their respective domains but lack native support for cross-domain interaction. HELICS addresses this gap by providing a standardized framework for co-simulation, enabling researchers to couple multiple simulators and analyze system-wide interactions.
-
-% Compare single-domain vs. multi-domain simulation approaches
 
 
 \section{Research Gaps and Opportunities}
