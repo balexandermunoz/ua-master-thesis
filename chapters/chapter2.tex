@@ -275,7 +275,16 @@ MECSYCO (Multi-agent Environment for Complex-SYstem CO-simulation) is an open-so
 
 HELICS (Hierarchical Engine for Large-scale Infrastructure Co-Simulation)~\cite{helics} is an open-source co-simulation framework developed by the U.S. Department of Energy to address the critical need for analyzing interdependencies in large-scale infrastructure systems, particularly in the context of grid modernization and integration of distributed energy resources.
 
-\textbf{Hierarchical Broker-Based Architecture:} HELICS employs a scalable hierarchical architecture consisting of four core components: \textit{Federates} (individual simulation tools wrapped with HELICS interfaces), \textit{Cores} (local communication hubs managing message routing and buffering), \textit{Brokers} (intermediate coordinators managing time synchronization and distributed execution), and the \textit{Root Broker} (top-level coordinator ensuring global time advancement and causal consistency). Brokers can be nested in tree structures to scale to thousands of federates, distributing coordination workload and avoiding single-point bottlenecks.
+\textbf{Hierarchical Broker-Based Architecture:} HELICS employs a scalable hierarchical architecture consisting of four core components:
+
+\begin{itemize}
+    \item \textit{Federates}: Individual simulation tools wrapped with HELICS interfaces
+    \item \textit{Cores}: Local communication hubs managing message routing and buffering
+    \item \textit{Brokers}: Intermediate coordinators managing time synchronization and distributed execution
+    \item \textit{Root Broker}: Top-level coordinator ensuring global time advancement and causal consistency
+\end{itemize}
+
+Brokers can be nested in tree structures to scale to thousands of federates, distributing coordination workload and avoiding single-point bottlenecks.
 
 \textbf{Sophisticated Time Management:} HELICS implements advanced time synchronization algorithms supporting both conservative time advancement (guaranteed causality preservation using null message algorithms and lookahead mechanisms) and optimistic strategies (speculative execution with rollback). The framework coordinates heterogeneous temporal models, enabling time-stepped simulators (operating at second intervals) to correctly interact with event-driven simulators (processing microsecond-level events). Federates execute asynchronously between synchronization points, maximizing computational efficiency while maintaining logical consistency.
 
