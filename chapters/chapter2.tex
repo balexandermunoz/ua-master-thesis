@@ -251,7 +251,7 @@ The Functional Mock-up Interface (FMI)~\cite{fmi_standard} is an open standard f
 
 \subsection{Mosaik Framework}
 
-Mosaik is a Python-based co-simulation framework developed specifically for smart grid applications. Created by the research group OFFIS in Germany, Mosaik focuses on ease of use and flexibility for coupling energy system simulators with communication network and control system models.
+Mosaik is an open-source Python-based co-simulation framework developed specifically for smart grid applications. Created by the research group OFFIS in Germany, Mosaik focuses on ease of use and flexibility for coupling energy system simulators with communication network and control system models.
 
 \textbf{Architecture:} Mosaik employs a centralized orchestration architecture where a central scheduler manages time advancement and coordinates data exchange between simulators. Simulators are wrapped as "mosaik components" that communicate with the central coordinator via a simple API. The framework supports both time-stepped and event-based simulators through a unified interface.
 
@@ -262,7 +262,7 @@ Mosaik is a Python-based co-simulation framework developed specifically for smar
 
 \subsection{MECSYCO Framework}
 
-MECSYCO (Multi-agent Environment for Complex-SYstem CO-simulation) is a Java-based framework that applies multi-agent system concepts to co-simulation. Developed by researchers at the University of Corsica, MECSYCO enables coupling heterogeneous simulators through a multi-agent middleware architecture.
+MECSYCO (Multi-agent Environment for Complex-SYstem CO-simulation) is an open-source Java-based framework that applies multi-agent system concepts to co-simulation. Developed by researchers at the University of Corsica, MECSYCO enables coupling heterogeneous simulators through a multi-agent middleware architecture.
 
 \textbf{Agent-Based Architecture:} MECSYCO wraps each simulator in a software agent that manages its lifecycle, time advancement, and communication with other agents. This decentralized approach avoids single points of failure and enables flexible federation topologies. The framework provides wrapping mechanisms for diverse simulator types including discrete-event, continuous-time, and agent-based models. Communication between simulators occurs through agent message passing with support for both synchronous and asynchronous interactions.
 
