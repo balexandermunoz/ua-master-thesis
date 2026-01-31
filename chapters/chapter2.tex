@@ -5,17 +5,8 @@
 This chapter presents a literature review and state of the art related to the theme of this dissertation. The most relevant works and existing technologies in the area are analyzed, focusing on simulation platforms for energy systems, mobility networks, telecommunications, and co-simulation frameworks.
 \end{introduction}
 
-\section{Context and Theoretical Foundations}
 
-Understanding urban infrastructure systems requires appropriate simulation approaches that balance fidelity, complexity, and computational feasibility. Two primary paradigms have emerged in this context: domain-specific simulation and co-simulation.
-
-\textbf{Domain-specific simulation} focuses on high-fidelity modeling within a single domain (e.g., power systems, traffic networks, or telecommunications). These specialized tools provide detailed representations of domain physics, validated models, and extensive libraries of components specific to their field. The primary benefit is deep accuracy within the domain, supported by online communities and extensive validation. However, their main limitation is the inability to natively model interactions with other domains—a critical gap given the increasingly interdependent nature of urban infrastructure systems.
-
-\textbf{Co-simulation} addresses this limitation by orchestrating multiple domain-specific simulators to execute concurrently while exchanging data and maintaining time synchronization. This approach preserves the strengths of specialized tools while enabling cross-domain interaction analysis. The benefits include the ability to model complex interdependencies, reuse existing validated simulators, and distribute computational load. The challenges include managing time synchronization across simulators with different temporal resolutions, ensuring data consistency during exchange, and addressing the computational overhead of coordinating multiple simulation instances.
-
-The following subsections explore how these paradigms apply to urban infrastructure management and the specific requirements for integrated multi-domain analysis.
-
-\subsection{Urban Infrastructure Integration and Management Platforms}
+\section{Urban Infrastructure Integration and Management Platforms}
 
 Modern cities rely on the efficient operation and coordination of critical infrastructure systems across three primary domains: energy distribution, mobility networks, and telecommunications. These domains, often referred to as urban verticals, are increasingly interdependent—electric vehicles link energy and mobility systems, smart traffic management requires robust telecommunications, and renewable energy integration depends on communication networks for grid coordination.
 
@@ -32,17 +23,14 @@ However, while current urban platforms excel at data aggregation and visualizati
 % \end{figure}
 
 
-\subsection{Domain-Specific Simulation}
+\section{Domain-Specific Simulation}
 
-Simulation tools within each urban vertical have evolved independently, driven by domain-specific requirements and communities. Energy system simulators focus on power flow analysis, stability, and optimization; mobility simulators emphasize traffic dynamics, route planning, and congestion management; telecommunications simulators prioritize network performance, protocol behavior, and resource allocation. While these specialized tools provide high fidelity within their respective domains, their isolated development creates challenges when analyzing the interdependent behaviors characteristic of real urban environments.
-
-
-\subsection{Co-Simulation Paradigms}
-
-Co-simulation addresses the challenge of multi-domain analysis by enabling multiple specialized simulators to execute concurrently while exchanging data and maintaining temporal synchronization. This paradigm preserves the strengths of domain-specific tools while enabling cross-domain interaction modeling. Co-simulation frameworks provide the infrastructure for orchestrating heterogeneous simulators, managing time advancement, and facilitating data exchange—capabilities essential for supporting the predictive analytical requirements of integrated urban management platforms.
+Domain-specific simulation focuses on high-fidelity modeling within a single domain (e.g., power systems, traffic networks, or telecommunications). These specialized tools provide detailed representations of domain physics, validated models, and extensive libraries of components specific to their field, supported by active communities and extensive validation efforts. Simulation tools within each urban vertical have evolved independently, driven by domain-specific requirements: energy system simulators focus on power flow analysis, stability, and optimization; mobility simulators emphasize traffic dynamics, route planning, and congestion management; telecommunications simulators prioritize network performance, protocol behavior, and resource allocation. While these specialized tools achieve deep accuracy within their respective domains, their isolated development creates a critical limitation—the inability to natively model interactions with other domains, a significant gap given the increasingly interdependent nature of urban infrastructure systems.
 
 
-\section{Energy Systems Simulation}
+
+\subsection{Energy Systems Simulation}
+
 
 Modern power systems are undergoing a fundamental transformation driven by the integration of renewable energy sources, distributed generation, energy storage systems, and intelligent grid management technologies. This evolution toward smart grids~\cite{smartgrid_challenges} introduces unprecedented complexity in power system operation, requiring sophisticated simulation tools to analyze system behavior, predict performance, and validate control strategies before deployment.
 
@@ -50,7 +38,7 @@ The integration of renewable energy sources such as solar photovoltaic and wind 
 
 Energy system simulation tools address these challenges by enabling detailed modeling of power flow dynamics, voltage stability, frequency regulation, and optimal resource dispatch. These tools range from transmission-level simulators focused on bulk power transfer to distribution-focused platforms that model detailed component interactions including residential loads, DER integration, and grid-edge technologies. The following subsections review the principal simulation platforms used in energy systems research and industry, highlighting their capabilities, architectures, and primary applications.
 
-\subsection{PyPSA: Python for Power System Analysis}
+\subsubsection{PyPSA: Python for Power System Analysis}
 
 PyPSA (Python for Power System Analysis)~\cite{pypsa} is an open-source toolbox specifically designed for simulating and optimizing modern power systems. Written entirely in Python and leveraging mature scientific libraries including NumPy, SciPy, and pandas, PyPSA provides a user-friendly yet powerful framework for power system analysis.
 
@@ -61,7 +49,7 @@ PyPSA (Python for Power System Analysis)~\cite{pypsa} is an open-source toolbox 
 \textbf{Applications and Impact:} PyPSA has been extensively applied in European energy system studies, most notably in the PyPSA-Eur model~\cite{pypsa_application}, which analyzes continental-scale transmission system optimization and renewable integration strategies. The tool is widely adopted in academic research for studying net-zero pathways~\cite{pypsa_netzero}, evaluating policy scenarios including early decarbonization timing strategies, and assessing infrastructure requirements for sector coupling~\cite{pypsa_sector_coupling}, particularly the synergies between transmission expansion and integration of heating, transport, and hydrogen sectors. Its open-source nature and comprehensive documentation have fostered an active community of users and contributors in energy system research.
 
 
-\subsection{GridLAB-D}
+\subsubsection{GridLAB-D}
 
 GridLAB-D~\cite{gridlabd} is an open-source, agent-based simulation platform specifically developed for analyzing distribution systems and smart grid technologies. Developed by the U.S. Department of Energy's Pacific Northwest National Laboratory (PNNL), GridLAB-D pioneered the application of agent-based modeling to power distribution networks.
 
@@ -72,7 +60,7 @@ GridLAB-D~\cite{gridlabd} is an open-source, agent-based simulation platform spe
 \textbf{Research Applications:} GridLAB-D has been extensively used for evaluating smart grid technologies, demand response programs, and transactive energy systems. Research applications~\cite{gridlabd_application} include analyzing residential transactive control, assessing volt-VAR optimization strategies, and evaluating the grid impacts of electric vehicle charging and distributed solar adoption. The tool's strength in modeling consumer behavior and device-level interactions makes it particularly suitable for studying distribution system modernization and customer-side resource integration.
 
 
-\subsection{Pandapower}
+\subsubsection{Pandapower}
 
 Pandapower~\cite{pandapower} is an open-source Python-based tool that combines ease of use with computational performance for electric power system analysis and optimization. Developed collaboratively by the University of Kassel and Fraunhofer IEE, pandapower has become a widely adopted tool in both academic research and industry applications.
 
@@ -83,7 +71,7 @@ Pandapower~\cite{pandapower} is an open-source Python-based tool that combines e
 \textbf{Practical Applications and Ecosystem:} Pandapower's integration with the Python scientific ecosystem enables seamless connection to machine learning libraries (scikit-learn, TensorFlow), visualization tools (matplotlib, plotly), and data processing frameworks. This interoperability has led to extensive use in data-driven power system applications. The SimBench project~\cite{pandapower_application} provides a comprehensive benchmark dataset built on pandapower, offering standardized test cases for comparing innovative power system solutions. Applications span distribution network planning, renewable integration studies, demand response analysis, and development of AI-based grid operation strategies.
 
 
-\subsection{OpenDSS}
+\subsubsection{OpenDSS}
 
 OpenDSS (Open Distribution System Simulator)~\cite{opendss} is a comprehensive, open-source electrical power system simulation tool developed and maintained by the Electric Power Research Institute (EPRI). It has become an industry-standard platform for distribution system analysis, particularly for studies involving distributed energy resources and advanced distribution management.
 
@@ -93,7 +81,7 @@ OpenDSS (Open Distribution System Simulator)~\cite{opendss} is a comprehensive, 
 
 \textbf{Industry Adoption and Applications:} OpenDSS enjoys widespread adoption in utility companies and consulting firms for distribution planning studies, interconnection analysis, and hosting capacity assessments. Recent applications~\cite{opendss_application} include distribution system reconfiguration considering EV charging loads, renewable energy impact studies, and resilience analysis. The tool's strength in modeling detailed distribution system phenomena makes it particularly valuable for analyzing modern distribution challenges including high penetration of inverter-based resources, bidirectional power flows, and protection coordination under changing operational conditions. EPRI maintains extensive libraries of validated component models and example systems, supporting rapid model development for practical utility applications.
 
-\subsection{Comparison of Energy System Simulators}
+\subsubsection{Comparison of Energy System Simulators}
 
 Table~\ref{tab:energy_comparison} summarizes the key characteristics of the reviewed energy system simulation platforms, highlighting their primary strengths, limitations, and typical application domains.
 
@@ -117,7 +105,7 @@ Table~\ref{tab:energy_comparison} summarizes the key characteristics of the revi
 \end{table}
 
 
-\section{Mobility and Traffic Simulation}
+\subsection{Mobility and Traffic Simulation}
 
 Urban mobility and traffic systems are undergoing profound transformation driven by population growth, urbanization, environmental concerns, and technological innovation. Traffic congestion remains a critical challenge in metropolitan areas worldwide, causing significant economic losses, increased emissions, and reduced quality of life~\cite{mobility_challenges}. Simultaneously, emerging mobility paradigms including electric vehicles, autonomous vehicles, shared mobility services, and multimodal transport integration are reshaping transportation networks and their interactions with urban infrastructure.
 
@@ -126,7 +114,7 @@ Modern traffic simulation tools must address diverse analytical requirements: ev
 The following subsections review the principal traffic and mobility simulation platforms, emphasizing their architectural approaches, modeling capabilities, and applications relevant to multi-domain urban infrastructure analysis.
 
 
-\subsection{SUMO: Simulation of Urban Mobility}
+\subsubsection{SUMO: Simulation of Urban Mobility}
 
 SUMO (Simulation of Urban Mobility) is an open-source, highly portable, microscopic and continuous multi-modal traffic simulation platform. Developed since 2001 by the German Aerospace Center (DLR), SUMO has become one of the most widely adopted traffic simulation tools in both research and industry, with an active international community contributing extensions, models, and applications.
 
@@ -139,7 +127,7 @@ SUMO (Simulation of Urban Mobility) is an open-source, highly portable, microsco
 \textbf{Applications and Extensions:} SUMO has been extensively applied to diverse traffic studies including traffic signal optimization, vehicle-to-vehicle communication simulation (via integration with OMNeT++, ns-3), electric vehicle charging analysis, and traffic management strategy evaluation. Recent research~\cite{sumo_federated} has extended SUMO with machine learning capabilities for realistic traffic generation using federated learning, demonstrating the platform's extensibility and relevance to smart city applications. The open-source nature, comprehensive documentation, and active community make SUMO particularly suitable for research requiring reproducibility and customization.
 
 
-\subsection{MATSim: Multi-Agent Transport Simulation}
+\subsubsection{MATSim: Multi-Agent Transport Simulation}
 
 MATSim (Multi-Agent Transport Simulation) is a large-scale agent-based transport simulation framework designed for modeling individual travelers' daily activity patterns and their interactions with transportation networks. Developed collaboratively by ETH Zurich, TU Berlin, and other institutions, MATSim addresses the challenge of analyzing metropolitan-scale transport systems with millions of agents.
 
@@ -153,7 +141,7 @@ MATSim (Multi-Agent Transport Simulation) is a large-scale agent-based transport
 
 \textbf{Practical Applications:} MATSim has been applied to numerous real-world planning studies including the Open Berlin Scenario~\cite{matsim_application}, which provides a comprehensive multimodal transport simulation of Berlin based on synthetic demand generation and open data. Applications span evaluation of public transport investments, congestion pricing analysis, electric vehicle infrastructure planning, and assessment of autonomous vehicle impacts on traffic and parking. The framework's ability to model behavioral adaptation makes it particularly valuable for long-term policy analysis where demand responds to infrastructure and pricing changes.
 
-\subsection{Comparison of Mobility and Traffic Simulators}
+\subsubsection{Comparison of Mobility and Traffic Simulators}
 
 Table~\ref{tab:mobility_comparison} compares the principal mobility and traffic simulation platforms reviewed, emphasizing their architectural approaches and application contexts.
 
@@ -173,7 +161,7 @@ Table~\ref{tab:mobility_comparison} compares the principal mobility and traffic 
 \end{table}
 
 
-\section{Telecommunications Network Simulation}
+\subsection{Telecommunications Network Simulation}
 
 Telecommunications networks constitute critical infrastructure for smart cities, enabling connectivity for IoT (Internet of Things) devices, smart grid communications, intelligent transportation systems, emergency services, and citizen digital services. The evolution toward 5G and beyond introduces unprecedented capabilities including enhanced mobile broadband, ultra-reliable low-latency communications, and massive machine-type communications~\cite{telecom_challenges}. These advanced networking capabilities enable new applications including autonomous vehicle coordination, real-time grid control, remote healthcare, and immersive citizen services, while presenting complex challenges in network design, resource allocation, and performance optimization.
 
@@ -182,7 +170,7 @@ Telecommunications simulation tools enable evaluation of network performance, pr
 The following subsections review principal telecommunications simulation platforms emphasizing their capabilities, architectural approaches, and suitability for infrastructure co-simulation scenarios.
 
 
-\subsection{ns-3 Network Simulator}
+\subsubsection{ns-3 Network Simulator}
 
 ns-3 is an open-source, discrete-event network simulator specifically designed for research and education in computer networking. Developed as a complete rewrite of the widely-used ns-2 simulator, ns-3 provides a modern C++-based architecture with Python bindings, emphasizing simulation realism, protocol fidelity, and integration with real-world systems.
 
@@ -197,7 +185,7 @@ ns-3 is an open-source, discrete-event network simulator specifically designed f
 \textbf{Research Applications:} ns-3 has been extensively applied to wireless network research, IoT system evaluation, smart grid communication analysis~\cite{ns3_smartgrid}, vehicular network simulation~\cite{ns3_vanet} (integration with SUMO), and 5G network slicing studies. Its high-fidelity protocol modeling and validation make it particularly suitable for research requiring detailed network behavior analysis and for co-simulation scenarios where telecommunications network characteristics significantly impact coupled systems (e.g., communication delays affecting grid stability or traffic signal coordination).
 
 
-\subsection{OMNeT++ Simulation Framework}
+\subsubsection{OMNeT++ Simulation Framework}
 
 OMNeT++ is a component-based, modular, and extensible simulation framework primarily used for network simulation but applicable to diverse discrete-event simulation scenarios. Developed since 1997, OMNeT++ combines a powerful simulation kernel with extensive protocol libraries and a sophisticated development environment.
 
@@ -211,7 +199,7 @@ OMNeT++ is a component-based, modular, and extensible simulation framework prima
 
 \textbf{Industry and Research Adoption:} OMNeT++ is widely adopted in telecommunications industry for protocol development and performance evaluation, and extensively used in academic research for networking studies. Applications span IoT system design, industrial wireless networks, software-defined networking (SDN), network function virtualization (NFV), and smart city communication infrastructure. The framework's detailed modeling capabilities and flexible architecture make it valuable for scenarios requiring custom protocol development or integration with domain-specific models, supporting co-simulation applications where telecommunications network behavior couples with energy, mobility, or building systems.
 
-\subsection{Comparison of Telecommunications Network Simulators}
+\subsubsection{Comparison of Telecommunications Network Simulators}
 
 Table~\ref{tab:telecom_comparison} provides a comparative overview of the telecommunications simulation platforms discussed, highlighting their modeling fidelity and target application areas.
 
@@ -233,9 +221,14 @@ Table~\ref{tab:telecom_comparison} provides a comparative overview of the teleco
 \end{table}
 
 
+
+
+
 \section{Co-Simulation Frameworks}
 
-Co-simulation frameworks enable integration of multiple domain-specific simulators, allowing analysis of interdependencies and interactions across different systems. These frameworks differ in their architectural approaches, target application domains, scalability characteristics, and integration mechanisms. This section reviews the principal co-simulation frameworks relevant to multi-domain infrastructure simulation, analyzing their strengths and limitations based on key characteristics essential for this work.
+Co-simulation addresses the challenge of multi-domain analysis by enabling multiple specialized simulators to execute concurrently while exchanging data and maintaining temporal synchronization. This paradigm preserves the strengths of domain-specific tools while enabling cross-domain interaction modeling. The benefits include the ability to model complex interdependencies, reuse existing validated simulators, and distribute computational load. However, challenges remain in managing time synchronization across simulators with different temporal resolutions, ensuring data consistency during exchange, and addressing the computational overhead of coordinating multiple simulation instances.
+
+Co-simulation frameworks provide the infrastructure for orchestrating heterogeneous simulators, managing time advancement, and facilitating data exchange—capabilities essential for supporting the predictive analytical requirements of integrated urban management platforms. These frameworks differ in their architectural approaches, target application domains, scalability characteristics, and integration mechanisms. This section reviews the principal co-simulation frameworks relevant to multi-domain infrastructure simulation, analyzing their strengths and limitations based on key characteristics essential for this work.
 
 
 \subsection{FMI/FMU Standard}
