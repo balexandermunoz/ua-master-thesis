@@ -231,7 +231,9 @@ Co-simulation addresses the challenge of multi-domain analysis by enabling multi
 Co-simulation frameworks provide the infrastructure for orchestrating heterogeneous simulators, managing time advancement, and facilitating data exchange—capabilities essential for supporting the predictive analytical requirements of integrated urban management platforms. These frameworks differ in their architectural approaches, target application domains, scalability characteristics, and integration mechanisms. This section reviews the principal co-simulation frameworks relevant to multi-domain infrastructure simulation, analyzing their strengths and limitations based on key characteristics essential for this work.
 
 
-\subsection{FMI/FMU Standard}
+\subsection{Co-Simulation Standards}
+
+\subsubsection{FMI/FMU Standard}
 
 The Functional Mock-up Interface (FMI)~\cite{fmi_standard} is an open standard for model exchange and co-simulation of dynamic systems. Developed through the MODELISAR project and maintained by the Modelica Association, FMI defines a standardized interface for exchanging models between different simulation tools using Functional Mock-up Units (FMUs).
 
@@ -242,7 +244,9 @@ The Functional Mock-up Interface (FMI)~\cite{fmi_standard} is an open standard f
 \textbf{Strengths and Limitations:} FMI's primary strength is industry standardization—major simulation tools (Simulink, Dymola, AMESim, OpenModelica) support FMI export/import, facilitating model reuse across platforms. The standard is mature, well-documented, and supported by a large community. However, FMI's master-slave architecture creates scalability bottlenecks for large federations, and its emphasis on continuous-time modeling makes integration of discrete-event simulators (common in telecommunications and traffic domains) more complex. Time synchronization in FMI is relatively basic compared to specialized infrastructure co-simulation frameworks.
 
 
-\subsection{Mosaik Framework}
+\subsection{Co-Simulation Framework Solutions}
+
+\subsubsection{Mosaik Framework}
 
 Mosaik is an open-source Python-based co-simulation framework developed specifically for smart grid applications. Created by the research group OFFIS in Germany, Mosaik focuses on ease of use and flexibility for coupling energy system simulators with communication network and control system models.
 
@@ -253,7 +257,7 @@ Mosaik is an open-source Python-based co-simulation framework developed specific
 \textbf{Strengths and Limitations:} Mosaik's centralized architecture simplifies scenario configuration and debugging, making it accessible to researchers without extensive distributed systems expertise. The framework's Python-centric design enables seamless integration with data analysis and machine learning workflows. However, this centralized approach limits scalability—the central coordinator becomes a bottleneck when federating hundreds of simulators or distributing computation across multiple machines. Mosaik's smart grid focus, while providing useful abstractions for that domain, makes it less suited for general-purpose multi-domain infrastructure co-simulation spanning mobility and telecommunications alongside energy systems.
 
 
-\subsection{MECSYCO Framework}
+\subsubsection{MECSYCO Framework}
 
 MECSYCO (Multi-agent Environment for Complex-SYstem CO-simulation) is an open-source Java-based framework that applies multi-agent system concepts to co-simulation. Developed by researchers at the University of Corsica, MECSYCO enables coupling heterogeneous simulators through a multi-agent middleware architecture.
 
@@ -264,7 +268,7 @@ MECSYCO (Multi-agent Environment for Complex-SYstem CO-simulation) is an open-so
 \textbf{Strengths and Limitations:} The multi-agent approach provides good modularity and flexibility, avoiding the centralized bottleneck of frameworks like Mosaik. MECSYCO's wrapping mechanisms support diverse simulator types without requiring invasive modifications. However, the framework's Java ecosystem focus limits integration with popular simulation tools that provide C++, Python, or MATLAB interfaces. The multi-agent overhead and complexity can impact performance for large-scale simulations. MECSYCO's research-oriented development means it has a smaller user community and less extensive documentation compared to industry-backed frameworks.
 
 
-\subsection{HELICS}
+\subsubsection{HELICS}
 
 HELICS (Hierarchical Engine for Large-scale Infrastructure Co-Simulation)~\cite{helics} is an open-source co-simulation framework developed by the U.S. Department of Energy to address the critical need for analyzing interdependencies in large-scale infrastructure systems, particularly in the context of grid modernization and integration of distributed energy resources.
 
