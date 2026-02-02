@@ -379,14 +379,17 @@ Despite the availability of sophisticated simulation tools in each domain, sever
 
 \section{Summary}
 
-% Synthesize the main points discussed
-This chapter reviewed the state of the art in simulation tools across energy, mobility, and telecommunications domains, as well as co-simulation frameworks. Each domain has mature simulation tools with specific strengths, but integration across domains remains an active research area.
+This chapter presented a comprehensive review of the state of the art in simulation tools and co-simulation frameworks relevant to multi-domain urban infrastructure analysis. The review covered three principal infrastructure domains—energy systems, mobility networks, and telecommunications—as well as co-simulation frameworks that enable their integration.
 
-% Justify the relevance and originality of your proposal
-The identified gaps motivate the work presented in this dissertation, which aims to address the challenges of multi-domain simulation integration through [describe your approach here].
+For energy systems simulation, the chapter examined PyPSA, GridLAB-D, pandapower, and OpenDSS, highlighting their respective strengths in transmission optimization, distribution analysis, Python ecosystem integration, and industry-standard distribution modeling. Mobility simulation tools reviewed included SUMO and MATSim, emphasizing microscopic traffic simulation and activity-based transport modeling respectively. Telecommunications network simulation platforms ns-3 and OMNeT++ were analyzed for their protocol fidelity, physical layer modeling capabilities, and suitability for infrastructure co-simulation scenarios.
 
-% Transition to the next chapter
-The following chapter presents the methodology adopted to address these challenges and achieve the objectives of this work.
+The co-simulation frameworks section distinguished between standards (FMI/FMU) and framework solutions (Mosaik, MECSYCO, HELICS), analyzing their architectural approaches, scalability characteristics, and application domains. Practical applications and case studies from the literature demonstrated the real-world deployment of these frameworks across automotive, building energy, smart grid, emergency management, and large-scale infrastructure scenarios.
+
+Comprehensive comparison tables synthesized the key characteristics of domain-specific simulators and co-simulation frameworks against defined evaluation criteria including scalability, multi-domain support, time synchronization sophistication, language integration, community maturity, and computational performance. Based on systematic evaluation, HELICS (Hierarchical Engine for Large-scale Infrastructure Co-Simulation) was selected as the co-simulation framework for this work due to its proven scalability for large-scale scenarios, sophisticated time management for heterogeneous simulators, broad language and tool support, and explicit design for multi-domain infrastructure co-simulation.
+
+The identified research gaps—particularly in multi-domain integration, scalability, standardized data exchange, time synchronization across heterogeneous temporal models, and validation against real-world measurements—motivate the work presented in this dissertation. This work aims to address these challenges by developing a modular co-simulation framework leveraging HELICS to enable predictive multi-domain analysis capabilities for urban management platforms, supporting the integration of energy, mobility, and telecommunications simulations for comprehensive infrastructure scenario evaluation.
+
+The following chapter presents the methodology adopted to design and implement this multi-domain co-simulation framework, detailing the architectural approach, simulator integration strategies, and validation procedures.
 
 
 
