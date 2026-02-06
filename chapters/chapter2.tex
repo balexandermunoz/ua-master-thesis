@@ -135,6 +135,17 @@ MATSim (Multi-Agent Transport Simulation) is a large-scale agent-based transport
 
 \textbf{Applications:} MATSim has been applied to numerous real-world planning studies including the Open Berlin Scenario~\cite{matsim_application}, which provides a comprehensive multimodal transport simulation of Berlin based on synthetic demand generation and open data. Applications span evaluation of public transport investments, congestion pricing analysis, electric vehicle infrastructure planning, and assessment of autonomous vehicle impacts on traffic and parking. The framework's ability to model behavioral adaptation makes it particularly valuable for long-term policy analysis where demand responds to infrastructure and pricing changes.
 
+
+\subsubsection{OpenTrafficSim}
+
+OpenTrafficSim (OTS) is an open-source multi-level traffic simulation suite developed at Delft University of Technology. Written in Java, OTS provides a flexible framework supporting microscopic, mesoscopic, and macroscopic traffic simulation approaches within a unified modeling environment, enabling researchers to select the appropriate level of detail for specific analysis requirements.
+
+\textbf{Architecture and Design:} OpenTrafficSim employs an object-oriented architecture with explicit separation between network representation, demand modeling, behavioral models, and visualization components. The framework implements a lane-based microscopic simulation approach where individual vehicles navigate explicitly defined lanes with realistic geometries including lane changes, merges, and weaving sections. OTS provides sophisticated network modeling capabilities supporting complex road geometries, intersections with detailed priority rules, traffic signals, and road markings. The simulation kernel supports multiple model fidelities: microscopic (individual vehicle dynamics), mesoscopic (platoon-based), and macroscopic (flow-based), enabling multi-resolution simulation where different network sections employ different modeling approaches based on required detail and computational constraints.
+
+\textbf{Modeling Capabilities:} OTS includes comprehensive behavioral models for car-following (IDM, IDM+), lane-changing (LMRS - Lane change Model with Relaxation and Synchronization), gap-acceptance, and route choice. The framework supports heterogeneous vehicle types (cars, trucks, buses, motorcycles) with distinct behavioral parameters and performance characteristics. Traffic control modeling includes fixed-time and actuated traffic signals, variable message signs, and speed limit enforcement. The platform provides detailed visualization capabilities with 2D and 3D rendering of network topology, vehicle movements, and traffic states, facilitating model validation and presentation of results. OTS integrates with GRAL (a tool for generating realistic lane-level road networks) and supports importing networks from OpenStreetMap and other sources. The framework includes built-in statistical analysis tools for traffic flow measurements, travel time analysis, and emissions estimation.
+
+\textbf{Applications:} OpenTrafficSim has been applied to diverse traffic engineering studies including roundabout design optimization, highway merging and weaving section analysis, and evaluation of intelligent speed adaptation systems. The framework's multi-level simulation capability makes it valuable for scenarios requiring computational efficiency without sacrificing accuracy in critical network sections. Research applications include cooperative adaptive cruise control (CACC) impact studies, autonomous vehicle integration analysis, and traffic management strategy evaluation. The explicit lane-based modeling and detailed vehicle dynamics make OTS particularly suitable for studies requiring high geometric fidelity, such as analyzing lane change maneuvers near on-ramps or evaluating traffic flow at complex intersections. The open-source Java implementation and modular architecture facilitate extension with custom behavioral models and integration with external optimization or control algorithms.
+
 \subsubsection{Comparison of Mobility and Traffic Simulators}
 
 Table~\ref{tab:mobility_comparison} compares the principal mobility and traffic simulation platforms reviewed, emphasizing their architectural approaches and application contexts.
@@ -143,13 +154,15 @@ Table~\ref{tab:mobility_comparison} compares the principal mobility and traffic 
     \centering
     \caption{Comparison of mobility and traffic simulators}
     \label{tab:mobility_comparison}
-    \begin{tabular}{|p{2.5cm}|p{4.5cm}|p{4cm}|p{3cm}|}
+    \begin{tabular}{|p{2.5cm}|p{4cm}|p{3.5cm}|p{3.5cm}|}
         \hline
         \textbf{Tool} & \textbf{Strengths} & \textbf{Limitations} & \textbf{Primary Use} \\
         \hline
-        SUMO & Open-source, widely used, TraCI interface for runtime control, extensive network import capabilities, multimodal support & Limited activity-based demand modeling, queue-based models available but microscopic by default & Urban traffic simulation, V2X communication studies, traffic signal optimization \\
+        SUMO & Open-source, widely used, TraCI interface for runtime control, extensive network import, multimodal support & Limited activity-based demand modeling & Urban traffic simulation, V2X communication, traffic signal optimization \\
         \hline
-        MATSim & Large-scale agent-based, activity-based demand, co-evolutionary optimization, multimodal transport & High computational requirements, queue-based traffic flow sacrifices microscopic realism & Metropolitan transport planning, policy analysis, long-term behavioral adaptation studies \\
+        MATSim & Large-scale agent-based, activity-based demand, co-evolutionary optimization, multimodal transport & High computational requirements, queue-based traffic flow & Metropolitan transport planning, policy analysis, behavioral adaptation studies \\
+        \hline
+        OpenTrafficSim & Multi-level simulation (micro/meso/macro), explicit lane-based modeling, Java-based extensibility, detailed geometry & Smaller community compared to SUMO, Java ecosystem focus & Highway design, geometric analysis, CACC/autonomous vehicle studies \\
         \hline
     \end{tabular}
 \end{table}
