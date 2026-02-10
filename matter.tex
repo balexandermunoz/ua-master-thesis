@@ -128,6 +128,11 @@
 % For fixing listoflistings with memoir
 \usepackage{xparse}
 
+% Format subsubsection titles in bold and larger font
+\usepackage{titlesec}
+\titleformat{\subsubsection}
+  {\normalfont\large\bfseries}{\thesubsubsection}{1em}{}
+
 % Uncomment the next lines to enable chart support through pgf and tikz
 % This may require you to install further packages in your Tex system
 %\usepackage[version=0.96]{pgf}
@@ -208,7 +213,7 @@
 \settocdepth{subsection}
 
 % Number only sections (not subsections)
-\setsecnumdepth{section}
+\setsecnumdepth{subsection}
 
 % extra index for first lines
 \makeindex[lines]
