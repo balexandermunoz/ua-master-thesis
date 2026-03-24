@@ -121,3 +121,46 @@ oscrypto-ca-bundle.crt
 sftp-config.json
 tags
 tramp
+
+
+### Code ignores:
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependencies
+node_modules/
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+build/
+out/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Cache
+.cache/
+*.pyc
+__pycache__/
+
+# Misc
+.DS_Store
+*.pem

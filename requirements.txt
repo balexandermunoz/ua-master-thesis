@@ -1,2 +1,6 @@
 pygments
 proselint
+
+## Code requirements:
+helics>=3.4.0
+numpy>=1.24.0
