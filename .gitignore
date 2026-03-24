@@ -23,6 +23,7 @@ build/**/*
 *.mw
 *.out
 *.run.xml
+*.upa
 *.synctex.gz
 *.toc
 *-blx.bib
