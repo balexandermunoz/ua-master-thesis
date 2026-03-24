@@ -2,274 +2,328 @@
 \label{chapter:methodology}
 
 \begin{introduction}
-This chapter describes the methodology adopted to achieve the objectives of this dissertation. It presents the approach, methods, techniques, and tools used throughout the research and development process.
+This chapter presents the methodology adopted to design, implement, and validate the modular co-simulation framework proposed in this dissertation. It describes the research approach, the architectural decisions that guided the system design, the co-simulation infrastructure, and the simulation scenarios developed to demonstrate and evaluate the framework's capabilities across energy, mobility, and telecommunications domains.
 \end{introduction}
-
-\section{Introduction}
-
-% Provide an overview of the chapter
-% Explain the overall approach and rationale behind your methodology
-
 
 \section{Research Approach}
 
-% Describe your research methodology
-% Examples: experimental, case study, design science, action research, etc.
-% Justify why this approach is appropriate for your work
+This work follows a \textbf{Design Science Research} (DSR) methodology, a paradigm suited to applied engineering research where the primary goal is to create and evaluate a purposeful artifact that solves a clearly defined problem. DSR is particularly appropriate for this dissertation because the central objective is not merely to observe or explain phenomena, but to \textit{build} a technically sound simulation framework capable of addressing the cross-domain modeling limitations identified in Chapter~\ref{chapter:introduction}.
+
+The research process is organized into four iterative phases:
+
+\begin{enumerate}
+    \item \textbf{Problem Identification and Motivation}: The limitations of existing domain-specific simulation tools and the absence of modular, reusable cross-domain architectures were identified through the literature review presented in Chapter 2. The motivation is grounded in the needs of urban management platforms such as Ubiwhere's UBP, which requires simulation capabilities spanning energy, mobility, and telecom domains.
+
+    \item \textbf{Architecture Design}: A modular simulation architecture was designed with a clear separation of concerns between a domain-agnostic simulation engine and domain-specific modules. This design followed well-established software engineering principles including separation of concerns, interface segregation, and inversion of control.
+
+    \item \textbf{Framework Development and Scenario Implementation}: The proposed architecture was implemented as a functional prototype in Python. Domain modules for energy systems and urban mobility were developed, and concrete simulation scenarios were built to exercise each domain independently and---through HELICS co-simulation---in combination.
+
+    \item \textbf{Empirical Validation}: The implemented scenarios were executed and their outputs compared against known benchmarks and expected behaviors. Within-domain metrics (voltage stability, charging costs, travel times, emissions) were used to validate correctness, while the co-simulation layer was validated by verifying time synchronization and message exchange across federates.
+\end{enumerate}
 
 
 \section{System Architecture}
 
-% Present the overall architecture of your solution
-% Include high-level diagrams showing the main components and their interactions
+The proposed framework follows a three-layer modular architecture designed to achieve a strict separation between generic simulation infrastructure and domain-specific logic. This structural decision is central to the thesis objective of building a reusable simulation engine that can accommodate multiple urban domains without coupling. Figure~\ref{fig:architecture} illustrates the overall architecture.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.8\textwidth]{figs/architecture.png}
-    \caption{System architecture overview}
+    \caption{Overview of the modular co-simulation framework architecture}
     \label{fig:architecture}
 \end{figure}
 
-% Describe the architecture shown in the figure
+\subsection{Core Simulation Engine}
 
+The lowest layer is a \textbf{domain-independent simulation engine} responsible for all generic simulation concerns: agent lifecycle management, event scheduling, temporal stepping, and state propagation. It makes no assumptions about the nature of the entities being simulated---whether they are power grid components, vehicles, or network nodes---relying instead on well-defined interfaces.
 
-\subsection{Component A}
+The engine supports the following core abstractions:
 
-% Describe a major component of your system
+\begin{itemize}
+    \item \textbf{Agents}: Autonomous entities with an internal state and a \texttt{step()} function invoked at each simulation tick. Agents encapsulate all domain-specific behavior and are entirely managed by the engine.
+    \item \textbf{Time Control}: Discrete-event temporal stepping with configurable resolution. Each scenario defines its own $\Delta t$, ranging from one second (Scenario M1) to fifteen minutes (Scenario E1).
+    \item \textbf{Contracts and Interfaces}: Each domain module must implement a defined interface including initialization, per-step update, and reporting methods. This contract ensures that new domains can be integrated without modifying engine internals.
+    \item \textbf{Collector}: A generic metrics accumulation mechanism decoupled from any domain-specific reporting logic.
+\end{itemize}
 
+\subsection{Domain Modules}
 
-\subsection{Component B}
+The middle layer consists of \textbf{autonomous domain modules}, each encapsulating the logic, models, and agents of one urban infrastructure domain:
 
-% Describe another major component
+\begin{itemize}
+    \item \textbf{Energy Module}: Models electrical distribution networks including generation assets (solar PV, wind turbines), distributed storage (batteries), and responsive loads (Scenarios E1 and E2).
+    \item \textbf{Mobility Module}: Agent-based urban traffic simulation with vehicles, signalized intersections, A*-based routing, and adaptive signal control algorithms (Scenario M1).
+    \item \textbf{Telecommunications Module} (planned): Will simulate 5G network slicing and dense IoT deployments in urban environments (Scenarios T1 and T2).
+\end{itemize}
+
+Each module is independently runnable in standalone mode or as a HELICS federate. Only the \texttt{use\_helics} flag differs between the two modes; domain logic is unchanged.
+
+\subsection{Co-Simulation Layer}
+
+The top layer is the \textbf{co-simulation orchestration layer}, built on HELICS (Hierarchical Engine for Large-scale Infrastructure Co-Simulation)~\cite{helics}. HELICS manages:
+
+\begin{itemize}
+    \item \textbf{Federate Registration}: Publications and subscriptions for each domain module.
+    \item \textbf{Time Synchronization}: A grant-request protocol ensuring all federates advance in step. A federate requests time $t + \Delta t$; HELICS grants it only when no messages at earlier times are pending from other federates.
+    \item \textbf{Data Exchange}: State variables (e.g., EV power demand from the mobility module consumed by the energy module) flow through HELICS value federates, avoiding direct API coupling.
+    \item \textbf{Broker}: A single broker process coordinates up to three federates; the architecture is designed to scale to additional domains without structural changes.
+\end{itemize}
 
 
 \section{Design Decisions}
 
-% Explain the main design decisions made
-% Justify your choices based on requirements, constraints, or trade-offs
-
-
 \subsection{Technology Selection}
 
-% Explain why you chose specific technologies, frameworks, or tools
-% Compare alternatives and justify your selection
+\subsubsection{Co-Simulation Middleware: HELICS}
 
-
-\subsection{Design Patterns and Best Practices}
-
-% Describe any design patterns or best practices applied
-% Explain how they benefit your solution
-
-
-\section{Development Process}
-
-% Describe your development methodology (e.g., Agile, Scrum, iterative)
-% Explain the phases or iterations of development
-
-
-\section{Data Collection and Analysis}
-
-% If applicable, describe how you collected data
-% Explain analysis methods or evaluation criteria
-
-
-\section{Evaluation Methodology}
-
-% Describe how you will evaluate your solution
-% Define metrics, test scenarios, or validation methods
-
-
-\subsection{Performance Metrics}
-
-% List and describe the metrics used to evaluate performance
-
-
-\subsection{Simulation Scenarios}
-
-To validate the proposed co-simulation framework and evaluate its effectiveness in modeling cross-domain interactions, six distinct scenarios were designed covering energy systems, mobility networks, and telecommunications domains. Each scenario is designed to test specific aspects of the framework's capabilities and demonstrate realistic use cases.
-
-\subsubsection{Energy Domain Scenarios}
-
-\textbf{Scenario E1: Smart Grid with Renewable Integration}
-
-This scenario simulates a distribution network with high penetration of renewable energy sources (solar and wind) and distributed energy storage systems. The scenario focuses on:
+HELICS~\cite{helics} was selected over Mosaik~\cite{mosaik_cosim} and FMI/FMU~\cite{fmi_standard} for the following reasons:
 
 \begin{itemize}
-    \item Grid topology: IEEE 33-bus distribution system modified with 40\% renewable penetration
-    \item Time frame: 24-hour simulation with 15-minute time steps
-    \item Key components:
-    \begin{itemize}
-        \item 10 rooftop solar PV installations (2-5 kW each)
-        \item 2 wind turbines (100 kW each)
-        \item 5 battery energy storage systems (50 kWh each)
-        \item 800 residential loads with smart meters
-    \end{itemize}
-    \item Objectives:
-    \begin{itemize}
-        \item Analyze voltage profile stability under variable renewable generation
-        \item Evaluate energy storage dispatch strategies
-        \item Assess demand response effectiveness during peak hours
-        \item Quantify renewable energy curtailment
-    \end{itemize}
-    \item Expected outputs: Voltage profiles, power flows, storage state-of-charge, renewable curtailment metrics
+    \item \textbf{Multi-Domain Design}: HELICS was explicitly designed for large-scale multi-domain infrastructure simulation, whereas Mosaik has stronger roots in smart grid scenarios~\cite{mosaik_smartgrid}.
+    \item \textbf{Time Management Flexibility}: HELICS supports both time-stepped and event-driven federates, accommodating the different time resolutions of the energy (15 min), mobility (1 s), and telecom (event-driven) domains.
+    \item \textbf{Demonstrated Scalability}: HELICS has been validated in scenarios with hundreds of federates~\cite{helics_transactive}, and in energy-transport co-simulation specifically~\cite{helics_ev_transport}.
 \end{itemize}
 
-\textbf{Scenario E2: Electric Vehicle Charging Infrastructure}
+FMI was found less suitable due to its primary focus on mechanical and embedded systems, with limited native support for agent-based or network-level models~\cite{fmi_application}.
 
-This scenario models the impact of electric vehicle (EV) charging on the distribution network, with coordinated and uncoordinated charging strategies. The scenario includes:
+\subsubsection{Implementation Language: Python}
 
-\begin{itemize}
-    \item Grid topology: Modified IEEE 13-node test feeder with residential and commercial areas
-    \item Time frame: 24-hour simulation with 5-minute time steps
-    \item Key components:
-    \begin{itemize}
-        \item 100 electric vehicles with varying arrival times and charging needs
-        \item 20 Level 2 charging stations (7.2 kW) in residential areas
-        \item 5 DC fast charging stations (50 kW) in commercial zones
-        \item Time-of-use tariff structure
-    \end{itemize}
-    \item Objectives:
-    \begin{itemize}
-        \item Compare uncoordinated vs. smart charging impacts on grid load
-        \item Analyze transformer loading and potential overload conditions
-        \item Evaluate vehicle-to-grid (V2G) potential for grid support
-        \item Assess economic benefits of different charging strategies
-    \end{itemize}
-    \item Expected outputs: Load profiles, transformer loading, voltage deviations, charging costs, grid support metrics
-\end{itemize}
+Python was selected because of its first-class HELICS bindings (\texttt{helics} package), the \texttt{numpy} scientific computing ecosystem for numerical models, rapid prototyping capability suited to a research context, and alignment with Ubiwhere's existing data platform stack.
 
-\subsubsection{Mobility Domain Scenarios}
+\subsection{Architectural Patterns}
 
-\textbf{Scenario M1: Urban Traffic Congestion Management}
+\subsubsection{Separation of Concerns}
 
-This scenario simulates traffic flow in an urban area with intelligent traffic management systems and evaluates congestion mitigation strategies. The scenario comprises:
+Domain agents must implement \texttt{step()}, \texttt{initialize()}, and \texttt{generate\_report()} according to the engine contract, but have no access to engine internals. This prevents domain logic from polluting the generic engine and ensures each module can be tested independently.
 
-\begin{itemize}
-    \item Network topology: 5 km × 5 km urban grid with 25 signalized intersections
-    \item Time frame: 3-hour morning peak period with 1-second simulation steps
-    \item Key components:
-    \begin{itemize}
-        \item 2,500 vehicles with varied origin-destination pairs
-        \item Adaptive traffic signal control system
-        \item 3 alternative routes for major corridors
-        \item Real-time traffic information system
-    \end{itemize}
-    \item Objectives:
-    \begin{itemize}
-        \item Evaluate adaptive signal timing effectiveness on travel times
-        \item Analyze traffic flow distribution across alternative routes
-        \item Assess congestion hotspot formation and dissipation
-        \item Quantify emissions reduction from optimized traffic flow
-    \end{itemize}
-    \item Expected outputs: Average travel times, queue lengths, intersection delays, throughput, emissions
-\end{itemize}
+\subsubsection{Federation Pattern}
 
-\textbf{Scenario M2: Autonomous Vehicle Integration}
+In co-simulation mode, each domain module registers its inputs (subscriptions) and outputs (publications) with HELICS at initialization, then participates in a synchronized time loop. Modules communicate exclusively through HELICS topics, providing publish-subscribe decoupling: adding a new domain requires only registering new topics, not modifying existing modules.
 
-This scenario examines the integration of connected autonomous vehicles (CAVs) in mixed traffic conditions, focusing on safety and efficiency improvements. The scenario features:
+\subsubsection{Strategy Pattern for Scenario Variants}
 
-\begin{itemize}
-    \item Network topology: 10 km highway section with on/off ramps and urban arterial
-    \item Time frame: 2-hour simulation with 0.5-second time steps
-    \item Key components:
-    \begin{itemize}
-        \item 1,000 total vehicles with varying CAV penetration rates (0\%, 25\%, 50\%, 75\%)
-        \item Vehicle-to-vehicle (V2V) communication (200m range)
-        \item Cooperative adaptive cruise control (CACC)
-        \item Lane change assistance systems
-    \end{itemize}
-    \item Objectives:
-    \begin{itemize}
-        \item Analyze highway capacity improvements with increasing CAV penetration
-        \item Evaluate safety metrics (time-to-collision, hard braking events)
-        \item Assess platooning effectiveness on fuel consumption
-        \item Compare human driver vs. autonomous vehicle behavior patterns
-    \end{itemize}
-    \item Expected outputs: Capacity metrics, safety indicators, fuel consumption, platoon statistics
-\end{itemize}
+Within Scenarios E2 and M1, multiple behavioral variants are implemented using the strategy pattern. In Scenario E2, the \texttt{ChargingStrategy} enum selects between \texttt{UNCOORDINATED}, \texttt{SMART}, and \texttt{V2G} behaviors at runtime. In Scenario M1, the \texttt{adaptive\_signals} flag switches between fixed-time and queue-adaptive signal control. This enables comparative evaluation without code duplication in the core simulation loop.
 
-\subsubsection{Telecommunications Domain Scenarios}
 
-\textbf{Scenario T1: 5G Network Slicing for Smart City Services}
+\section{Simulation Scenarios}
 
-This scenario simulates a 5G mobile network serving multiple smart city applications with different quality of service requirements through network slicing. The scenario includes:
-
-\begin{itemize}
-    \item Network topology: Urban area (4 km²) with 7 base stations (gNBs)
-    \item Time frame: 1-hour simulation with dynamic user mobility
-    \item Key components:
-    \begin{itemize}
-        \item 500 user devices with varying mobility patterns
-        \item 3 network slices: enhanced Mobile Broadband (eMBB), Ultra-Reliable Low-Latency (URLLC), massive Machine-Type Communications (mMTC)
-        \item Applications: video streaming (eMBB), autonomous vehicles (URLLC), smart meters (mMTC)
-        \item Heterogeneous network with macro and small cells
-    \end{itemize}
-    \item Objectives:
-    \begin{itemize}
-        \item Evaluate slice isolation and resource allocation efficiency
-        \item Analyze quality of service for different application types
-        \item Assess network capacity under varying load conditions
-        \item Measure handover performance for mobile users
-    \end{itemize}
-    \item Expected outputs: Throughput per slice, latency distributions, packet loss rates, resource utilization
-\end{itemize}
-
-\textbf{Scenario T2: IoT Network Performance Under High Density}
-
-This scenario evaluates telecommunications network performance in a dense IoT deployment typical of smart city or industrial environments. The scenario comprises:
-
-\begin{itemize}
-    \item Network topology: Industrial park (2 km²) with 4 LTE/5G base stations
-    \item Time frame: 24-hour simulation with periodic and event-driven traffic
-    \item Key components:
-    \begin{itemize}
-        \item 5,000 IoT devices (sensors, actuators, smart meters)
-        \item NB-IoT and LTE-M connectivity
-        \item Periodic reporting (every 15 minutes) and alarm-based events
-        \item Edge computing nodes for data aggregation
-    \end{itemize}
-    \item Objectives:
-    \begin{itemize}
-        \item Analyze network congestion during synchronized reporting periods
-        \item Evaluate coverage and penetration loss effects on connectivity
-        \item Assess battery life implications of different transmission strategies
-        \item Measure edge computing offloading benefits
-    \end{itemize}
-    \item Expected outputs: Connection success rates, latency statistics, energy consumption, coverage maps
-\end{itemize}
-
-\subsubsection{Cross-Domain Integration Scenarios}
-
-In addition to the domain-specific scenarios, integrated cross-domain scenarios will be developed to validate the co-simulation framework's ability to capture interdependencies:
-
-\begin{itemize}
-    \item \textbf{Integrated Scenario 1:} EV charging (Energy + Mobility) - Couples Scenario E2 with Scenario M1 to model EVs navigating to charging stations based on traffic conditions and station availability
-    \item \textbf{Integrated Scenario 2:} Connected mobility (Mobility + Telecommunications) - Combines Scenario M2 with Scenario T1 to analyze how 5G network performance affects CAV operations
-    \item \textbf{Integrated Scenario 3:} Smart grid with IoT monitoring (Energy + Telecommunications) - Integrates Scenario E1 with Scenario T2 to evaluate how network reliability affects smart grid monitoring and control
-\end{itemize}
-
-Table~\ref{tab:scenario_summary} provides a summary of all simulation scenarios with their key characteristics.
+Six scenarios were designed covering energy, mobility, and telecommunications domains. Three are implemented; three define the scope for future integration work. Each implemented scenario supports both standalone execution and HELICS co-simulation mode. Table~\ref{tab:scenario_summary} provides an overview.
 
 \begin{table}[h]
     \centering
     \caption{Summary of simulation scenarios}
     \label{tab:scenario_summary}
     \small
-    \begin{tabular}{|p{1.8cm}|p{3.5cm}|p{2.5cm}|p{2cm}|p{2.5cm}|}
+    \begin{tabular}{|p{1.5cm}|p{3.0cm}|p{2.2cm}|p{1.6cm}|p{3.0cm}|p{1.2cm}|}
         \hline
-        \textbf{Scenario} & \textbf{Description} & \textbf{Duration} & \textbf{Time Step} & \textbf{Key Metrics} \\
+        \textbf{Scenario} & \textbf{Description} & \textbf{Duration} & \textbf{Time Step} & \textbf{Key Metrics} & \textbf{Status} \\
         \hline
-        E1 & Smart grid with renewables & 24 hours & 15 min & Voltage, power flow, curtailment \\
+        E1 & Smart grid with renewables & 24 hours & 15 min & Voltage, power flow, curtailment & \checkmark \\
         \hline
-        E2 & EV charging impact & 24 hours & 5 min & Load profile, voltage, charging cost \\
+        E2 & EV charging infrastructure & 24 hours & 5 min & Load profile, charging cost, V2G & \checkmark \\
         \hline
-        M1 & Urban traffic management & 3 hours & 1 sec & Travel time, delays, emissions \\
+        M1 & Urban traffic management & 3 hours & 1 sec & Travel time, delay, emissions & \checkmark \\
         \hline
-        M2 & Autonomous vehicles & 2 hours & 0.5 sec & Capacity, safety, fuel consumption \\
+        M2 & Autonomous vehicle integration & 2 hours & 0.5 sec & Capacity, safety, fuel & Planned \\
         \hline
-        T1 & 5G network slicing & 1 hour & Dynamic & Throughput, latency, QoS \\
+        T1 & 5G network slicing & 1 hour & Dynamic & Throughput, latency, QoS & Planned \\
         \hline
-        T2 & Dense IoT network & 24 hours & Event & Connection rate, coverage, energy \\
+        T2 & Dense IoT network & 24 hours & Event & Connectivity, energy, coverage & Planned \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Energy Domain Scenarios}
+
+\subsubsection{Scenario E1: Smart Grid with Renewable Integration}
+
+Scenario E1 simulates an IEEE 33-bus radial distribution network under high renewable penetration, combining solar PV, wind generation, battery storage, and demand-responsive loads~\cite{smartgrid_challenges, renewable_integration}. The scenario covers a 24-hour period at 15-minute resolution (96 time steps).
+
+\paragraph{Component Models}
+
+\textbf{Solar PV}: Ten installations (2--5 kW each) follow a sine-based irradiance model during daylight hours (06:00--18:00):
+\begin{equation}
+P_{solar}(t) = P_{rated} \cdot \sin\!\left(\frac{(h-6)\,\pi}{12}\right) \cdot C_{cloud} \cdot \eta_{sys}
+\label{eq:solar_power}
+\end{equation}
+where $h$ is the hour of the day, $C_{cloud} \sim U(0.8, 1.0)$ is a stochastic cloud factor, and $\eta_{sys} = 0.85$.
+
+\textbf{Wind Turbines}: Two 100 kW turbines follow a three-region power curve:
+\begin{equation}
+P_{wind}(v) =
+\begin{cases}
+0 & v < v_{ci} \\[4pt]
+P_{rated} \cdot \!\left(\dfrac{v - v_{ci}}{v_{r} - v_{ci}}\right)^{\!3} & v_{ci} \leq v < v_{r} \\[4pt]
+P_{rated} & v_{r} \leq v < v_{co} \\[4pt]
+0 & v \geq v_{co}
+\end{cases}
+\label{eq:wind_power}
+\end{equation}
+with cut-in $v_{ci} = 3.0\,\text{m/s}$, rated $v_{r} = 12.0\,\text{m/s}$, and cut-out $v_{co} = 25.0\,\text{m/s}$.
+
+\textbf{Battery Energy Storage (BESS)}: Five 50 kWh systems (25 kW max, 0.5C) operate within $SOC \in [0.20,\,0.95]$. The SOC update during charging is:
+\begin{equation}
+SOC_{new} = SOC_{current} + \frac{P_{charge} \cdot \Delta t \cdot \eta_{charge}}{E_{capacity}}
+\label{eq:soc_charge}
+\end{equation}
+with $\eta_{charge} = 0.92$, giving a round-trip efficiency of $\approx 84.6\%$.
+
+\textbf{Residential Loads}: 800 households with time-varying load factors (0.5 off-peak to 1.0 during evening peak 17:00--22:00) and $\pm 10\%$ stochastic variation. Demand Response (DR) activates for 70\% of loads during peak hours, reducing consumption by 15\%~\cite{der_challenges}.
+
+\paragraph{Power Balance and Curtailment}
+
+Net system power at each time step:
+\begin{equation}
+P_{net}(t) = P_{load}^{total}(t) - P_{renewable}(t)
+\end{equation}
+Batteries charge when $P_{net} < 0$ (surplus) and discharge when $P_{net} > 0$ (deficit). Curtailment occurs when batteries are full and surplus remains:
+\begin{equation}
+P_{curtail}(t) = \max\!\left(0,\; -P_{net}^{final}(t)\right)
+\end{equation}
+
+\paragraph{Voltage Model}
+
+Bus voltages are estimated via a simplified linear drop model:
+\begin{equation}
+V_{bus}(i) = V_{base} - k_{drop} \cdot P_{bus}(i) \cdot i
+\end{equation}
+Violations are counted against ANSI C84.1 limits ($V \notin [0.95,\, 1.05]$ p.u.).
+
+% -------------------------------------------------------
+
+\subsubsection{Scenario E2: Electric Vehicle Charging Infrastructure}
+
+Scenario E2 models the impact of 100 EVs on a modified IEEE 13-node distribution feeder with three charging strategies~\cite{der_challenges}. Nodes 1--8 host 20 Level 2 chargers (7.2 kW residential); nodes 9--13 host 5 DC fast chargers (50 kW commercial). Time resolution is 5 minutes (288 steps).
+
+\paragraph{Arrival Patterns}
+
+Residential EVs (80\% of fleet): $t_{arrival} \sim \mathcal{N}(18.5, 1.0)\,\text{h}$; depart next morning at $t_{dep} \sim \mathcal{N}(8.0, 0.5)\,\text{h}$. Commercial EVs (20\%): $t_{arrival} \sim U(8,18)\,\text{h}$ with 30--60 min dwell time.
+
+\paragraph{Time-of-Use Tariff}
+
+\begin{equation}
+c(h) = \begin{cases}
+0.08\;\text{USD/kWh} & 0 \leq h < 7 \;\text{or}\; 23 \leq h < 24 \\
+0.20\;\text{USD/kWh} & 17 \leq h < 21 \\
+0.12\;\text{USD/kWh} & \text{otherwise}
+\end{cases}
+\label{eq:tou}
+\end{equation}
+
+\paragraph{Charging Strategies}
+
+\textbf{Uncoordinated}: Each vehicle charges at full rated power immediately upon connection, with no grid awareness. This baseline typically produces a sharp demand peak coinciding with the residential evening peak.
+
+\textbf{Smart}: A priority-based algorithm allocates available grid capacity to vehicles sorted by an urgency score:
+\begin{equation}
+U_i(t) = \frac{E_{need,i}(t)}{T_{available,i}(t)}
+\label{eq:urgency}
+\end{equation}
+combined with a price factor ($F_{price} = 0.5$ during on-peak, 1.0 otherwise), ensuring vehicles with less time and more remaining energy need are served first.
+
+\textbf{V2G}: Extends smart charging with bidirectional power flow. V2G-capable vehicles (50\% of fleet, $P_{discharge}^{max} = 10\,\text{kW}$) export energy to the grid during on-peak hours at a 20\% premium.
+
+% -------------------------------------------------------
+
+\subsection{Mobility Domain Scenarios}
+
+\subsubsection{Scenario M1: Urban Traffic Congestion Management}
+
+Scenario M1 simulates a $5 \times 5\,\text{km}$ urban road grid with 2,500 agent-based vehicles and 25 signalized intersections, comparing fixed-time and adaptive signal control strategies on travel time, congestion, and CO$_2$ emissions~\cite{mobility_challenges, agent_traffic_overview}. The simulation runs for 3 hours at 1-second resolution (10,800 steps).
+
+\paragraph{Routing: A* Algorithm}
+
+Vehicle routes are computed using A* with a Manhattan distance heuristic:
+\begin{equation}
+f(n) = g(n) + h(n), \quad h(n) = |x_n - x_{goal}| + |y_n - y_{goal}|
+\label{eq:astar}
+\end{equation}
+Alternative routes are generated stochastically using neighbor weights $w_n = 1/(d_n + 1) + \xi$, $\xi \sim U(0, 0.3)$, to distribute traffic across the network.
+
+\paragraph{Adaptive Traffic Signal Control}
+
+Green time is allocated proportionally to measured queue lengths:
+\begin{equation}
+T_{green} = T_{min} + (T_{max} - T_{min}) \cdot \frac{Q_{phase}}{Q_{NS} + Q_{EW}}
+\label{eq:adaptive_signal}
+\end{equation}
+with $T_{min} = 15\,\text{s}$, $T_{max} = 90\,\text{s}$, and yellow time fixed at 3 seconds. Fixed-time control uses equal green time for both phases and serves as the comparison baseline.
+
+\paragraph{Emissions Model}
+
+CO$_2$ emissions are computed using a two-state model:
+\begin{equation}
+\Delta E_{CO_2} =
+\begin{cases}
+\alpha_{idle} \cdot \Delta t & v < 1.0\,\text{m/s} \\
+\alpha_{move} \cdot v \cdot \Delta t & v \geq 1.0\,\text{m/s}
+\end{cases}
+\label{eq:emissions}
+\end{equation}
+with $\alpha_{idle} = 2.31\,\text{g/s}$ and $\alpha_{move} = 0.15\,\text{g/m}$.
+
+% -------------------------------------------------------
+
+\subsection{Planned Scenarios}
+
+\textbf{Scenario M2: Autonomous Vehicle Integration} will simulate a 10 km highway/arterial with 1,000 vehicles at CAV penetration rates of 0\%, 25\%, 50\%, and 75\%, evaluating cooperative adaptive cruise control (CACC), platooning efficiency, and time-to-collision safety metrics.
+
+\textbf{Scenario T1: 5G Network Slicing} will simulate 7 gNBs serving 500 mobile users across three slices (eMBB, URLLC, mMTC), evaluating slice isolation, handover performance, and QoS for heterogeneous smart city applications~\cite{telecom_challenges}.
+
+\textbf{Scenario T2: Dense IoT Network} will evaluate NB-IoT and LTE-M performance under 5,000 IoT devices in a 2 km$^2$ industrial park, focusing on congestion during synchronized reporting periods and the impact of edge computing offloading.
+
+\subsection{Cross-Domain Integration}
+
+The HELICS-based architecture enables coupled cross-domain simulations. Three integration scenarios are defined as future work:
+
+\begin{itemize}
+    \item \textbf{E2 + M1 (Energy--Mobility)}: EVs navigate through traffic to available charging stations; charging demand feeds back into the grid model~\cite{helics_ev_transport}.
+    \item \textbf{M2 + T1 (Mobility--Telecommunications)}: Evaluates how 5G network latency and handover events affect autonomous vehicle control loops.
+    \item \textbf{E1 + T2 (Energy--Telecommunications)}: Evaluates how IoT communication reliability affects smart grid monitoring and demand response activation.
+\end{itemize}
+
+
+\section{Evaluation Methodology}
+
+The framework is evaluated along two dimensions: the correctness of domain models and the effectiveness of the modular architecture.
+
+\subsection{Domain Model Validation}
+
+Each implemented scenario is validated against expected physical behaviors:
+
+\begin{itemize}
+    \item \textbf{E1}: Voltage profiles must vary within realistic bounds for the IEEE 33-bus system; curtailment must occur only when batteries are full; DR must produce a measurable load reduction between 17:00 and 22:00.
+    \item \textbf{E2}: Smart charging must reduce peak demand compared to uncoordinated; V2G must decrease net charging costs; all vehicles must meet their departure SOC target.
+    \item \textbf{M1}: Adaptive control must reduce average travel time and total delay; emissions must decrease in proportion to reduced idling; queue lengths must be lower than under fixed-time control.
+\end{itemize}
+
+\subsection{Architectural Validation}
+
+\begin{itemize}
+    \item \textbf{Domain Independence}: Each module executes identically in standalone and co-simulation modes; only \texttt{use\_helics} differs.
+    \item \textbf{Interface Compliance}: Verified by confirming all domain agents implement the engine contract without modifying engine internals.
+    \item \textbf{Strategy Substitutability}: Strategy variants (E2, M1) produce statistically distinct outcomes under identical inputs, confirming correct behavioral switching.
+    \item \textbf{Time Synchronization}: In co-simulation mode, HELICS time grants are verified to ensure all federates advance in step and cross-domain data arrives before use.
+\end{itemize}
+
+\subsection{Performance Metrics Summary}
+
+Table~\ref{tab:metrics_summary} summarizes the key performance indicators used per implemented scenario.
+
+\begin{table}[h]
+    \centering
+    \caption{Evaluation metrics per scenario}
+    \label{tab:metrics_summary}
+    \small
+    \begin{tabular}{|p{1.5cm}|p{5.0cm}|p{6.0cm}|}
+        \hline
+        \textbf{Scenario} & \textbf{Primary Metrics} & \textbf{Comparison Baseline} \\
+        \hline
+        E1 & Voltage profiles, curtailment \%, peak load reduction, avg battery SOC & No DR vs.\ DR active; no storage vs.\ storage dispatch \\
+        \hline
+        E2 & Peak demand (kW), avg charging cost (USD/vehicle), load factor, V2G revenue & Uncoordinated vs.\ Smart vs.\ V2G \\
+        \hline
+        M1 & Avg travel time (s), total delay (s), completion rate (\%), CO$_2$ emissions (g) & Fixed signals vs.\ adaptive signals \\
         \hline
     \end{tabular}
 \end{table}
@@ -277,6 +331,7 @@ Table~\ref{tab:scenario_summary} provides a summary of all simulation scenarios 
 
 \section{Summary}
 
-% Summarize the key aspects of your methodology
-% Provide a transition to the next chapter (Implementation/Results)
+This chapter described the Design Science Research methodology underpinning the dissertation, the three-layer modular architecture of the proposed co-simulation framework, and the rationale for key design and technology decisions. Three simulation scenarios---E1 (smart grid with renewables), E2 (EV charging infrastructure), and M1 (urban traffic management)---were presented with their mathematical models, component descriptions, and evaluation criteria. Three additional scenarios and cross-domain integration cases were defined as the planned scope for completing the framework.
+
+The next chapter presents the implementation details of the framework prototype and the results obtained from executing the implemented scenarios.
 

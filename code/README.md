@@ -5,7 +5,9 @@ This project implements a co-simulation framework using HELICS to validate cross
 
 ## Simulation Scenarios
 
-To validate the proposed co-simulation framework and evaluate its effectiveness in modeling cross-domain interactions, six distinct scenarios were designed:
+Three scenarios have been implemented to validate the proposed co-simulation framework across energy and mobility domains. Each scenario supports both standalone execution and HELICS co-simulation mode.
+
+---
 
 ### Scenario E1: Smart Grid with Renewable Integration ✅ **Implemented**
 
@@ -44,13 +46,76 @@ Simulates an IEEE 33-bus distribution network with high penetration of renewable
 
 ---
 
-### Scenarios E2-E6: Coming Soon
+### Scenario E2: Electric Vehicle Charging Infrastructure ✅ **Implemented**
 
-2. **Mobility Network Simulation** - Modeling transportation and vehicle networks
-3. **Telecommunications Domain Simulation** - Simulating network communication and data flows
-4. **Energy-Mobility Integration** - Cross-domain interactions between energy and mobility
-5. **Mobility-Telecommunications Integration** - Cross-domain interactions between mobility and telecom
-6. **Full Cross-Domain Integration** - Complete integration across all three domains
+Simulates an IEEE 13-node test feeder with EV charging impact analysis, including coordinated and uncoordinated charging strategies and Vehicle-to-Grid (V2G) capabilities.
+
+**Grid Configuration:**
+- Modified IEEE 13-node test feeder
+- 24-hour simulation with time-of-use tariff structure
+- Three charging control strategies: Uncoordinated, Smart, and V2G
+
+**Components:**
+- 100 electric vehicles with varied arrival/departure times and battery sizes
+- 20 Level 2 charging stations (7.2 kW) in residential areas
+- 5 DC fast charging stations (50 kW) in commercial zones
+- 50% of EVs are V2G-capable
+
+**Simulation Objectives:**
+- Evaluate grid impact under different EV charging strategies
+- Compare peak load profiles across uncoordinated, smart, and V2G modes
+- Assess cost savings from coordinated and V2G charging
+- Analyze energy flows from V2G discharge
+
+**Key Outputs:**
+- Total energy charged/discharged per strategy
+- Peak grid demand and average charging power
+- Charging cost per vehicle and total cost
+- Grid stress metrics (peak demand, load factor)
+
+**Strategy Comparison:**
+Run `python main.py` and select `compare` → `E2` to compare all three strategies side by side.
+
+---
+
+### Scenario M1: Urban Traffic Congestion Management ✅ **Implemented**
+
+Simulates a 5×5 km urban road grid with agent-based vehicles and adaptive traffic signal control, comparing fixed-cycle vs. demand-responsive signal strategies.
+
+**Network Configuration:**
+- 5×5 km urban grid with 500 m block spacing
+- 25 signalized intersections (5×5 layout)
+- 2-hour peak-hour simulation with 1-second time steps
+
+**Components:**
+- 2,500 vehicles with randomized origin-destination pairs
+- 25 adaptive traffic signal controllers (15–90 s green time range)
+- Real-time queue-sensing and demand-responsive phase switching
+- Simplified CO₂ emissions model per vehicle
+
+**Simulation Objectives:**
+- Evaluate adaptive vs. fixed-cycle signal control performance
+- Measure average travel time and total vehicle delay
+- Quantify emissions reduction from adaptive signals
+- Analyze intersection throughput and congestion hotspots
+
+**Key Outputs:**
+- Average travel time and total vehicle delay (seconds)
+- Vehicle throughput and completion rate
+- CO₂ emissions per strategy (grams)
+- Average queue length per intersection
+
+**Strategy Comparison:**
+Run `python main.py` and select `compare` → `M1` to compare fixed vs. adaptive signal schemes.
+
+---
+
+### Scenarios E3–E6: Planned
+
+- **E3**: Telecommunications Domain Simulation
+- **E4**: Energy–Mobility Integration (EV charging + grid co-simulation)
+- **E5**: Mobility–Telecommunications Integration
+- **E6**: Full Cross-Domain Integration (all three domains via HELICS)
 
 ## Setup
 
@@ -77,53 +142,57 @@ Simulates an IEEE 33-bus distribution network with high penetration of renewable
 
 ## Usage
 
-### Running Scenario E1 (Standalone Mode)
+Run `python main.py` from the project root. You will be prompted to select a scenario:
 
-The simulation runs in standalone mode by default, which doesn't require HELICS broker infrastructure:
+```
+Select scenario (E1/E2/M1) or 'compare' (E2/M1):
+```
+
+### Scenario E1 – Smart Grid (Standalone)
 
 ```bash
 python main.py
+# Select: E1
+```
+
+### Scenario E2 – EV Charging (with strategy selection)
+
+```bash
+python main.py
+# Select: E2
+# Then choose: uncoordinated / smart / v2g  (default: smart)
+```
+
+### Scenario M1 – Urban Traffic (with signal mode selection)
+
+```bash
+python main.py
+# Select: M1
+# Then choose: y/n for adaptive signals (default: y)
+```
+
+### Strategy Comparison Mode
+
+```bash
+python main.py
+# Select: compare
+# Then choose: E2 (charging strategies) or M1 (signal control)
 ```
 
 ### Running with HELICS Co-Simulation
 
-To enable HELICS for multi-federate co-simulation:
+All scenarios support HELICS. To enable it:
 
 1. Start a HELICS broker in a separate terminal:
    ```bash
    helics_broker --federates=1
    ```
 
-2. Run the simulation (modify main.py to pass `use_helics=True`):
+2. Pass `use_helics=True` when calling the scenario directly:
    ```python
+   from scenarios.scenario_e1 import run_scenario_e1
    report = run_scenario_e1(use_helics=True)
    ```
-
-### Simulation Output
-
-The simulation provides comprehensive metrics including:
-
-```
-Components:
-  solar_pv_count: 10
-  solar_capacity_kw: 35.2
-  wind_turbine_count: 2
-  wind_capacity_kw: 200.0
-  battery_count: 5
-  battery_capacity_kwh: 250.0
-  load_count: 800
-
-Metrics:
-  total_renewable_generation_kwh: 1523.45
-  total_load_kwh: 1847.23
-  total_curtailment_kwh: 12.34
-  curtailment_percentage: 0.81
-  avg_voltage_pu: 0.998
-  min_voltage_pu: 0.995
-  max_voltage_pu: 1.002
-  voltage_violations: 0
-  avg_battery_soc: 0.52
-```
 
 ## Dependencies
 
@@ -137,59 +206,67 @@ See [requirements.txt](requirements.txt) for complete dependency list.
 
 ```
 ua-master-code/
-├── main.py                 # Main simulation entry point
-├── README.md              # Project documentation
-├── requirements.txt       # Python dependencies
+├── main.py                     # Main entry point — interactive scenario selector
+├── README.md                   # Project documentation
+├── requirements.txt            # Python dependencies
+├── Examples_Helics.py          # HELICS usage examples
+├── Examples_Mosaik.py          # Mosaik usage examples
 └── scenarios/
-    ├── __init__.py       # Package initializer
-    └── scenario_e1.py    # Smart Grid with Renewable Integration
+    ├── __init__.py             # Package initializer
+    ├── scenario_e1.py          # E1: Smart Grid with Renewable Integration
+    ├── scenario_e2.py          # E2: Electric Vehicle Charging Infrastructure
+    └── scenario_m1.py          # M1: Urban Traffic Congestion Management
 ```
 
 ## Architecture
 
 ### Component Models
 
-**SolarPV**: Simulates rooftop solar installations with:
-- Time-of-day irradiance modeling (sine curve 6:00-18:00)
-- Cloud factor variability
-- 85% system efficiency
+#### Scenario E1 – Energy Domain
 
-**WindTurbine**: Models wind power generation with:
-- Realistic power curve (cubic region below rated speed)
-- Cut-in, rated, and cut-out wind speeds
-- Stochastic wind speed variations
+**SolarPV**: Simulates rooftop solar with time-of-day irradiance (sine curve 6:00–18:00) and 85% system efficiency.
 
-**BatteryStorage**: Energy storage system featuring:
-- State-of-charge (SOC) management (20%-95%)
-- Charge/discharge power limits (0.5C rate)
-- 92% round-trip efficiency
-- Smart dispatch based on grid conditions
+**WindTurbine**: Models wind power with a realistic cubic power curve, cut-in/rated/cut-out speeds, and stochastic wind variations.
 
-**ResidentialLoad**: Smart meter-enabled loads with:
-- Time-varying consumption profiles
-- Demand response participation (70% of loads)
-- 15% peak reduction capability (17:00-22:00)
-- Stochastic load variations
+**BatteryStorage**: Energy storage with SOC management (20%–95%), 0.5C charge/discharge limits, 92% round-trip efficiency, and smart dispatch.
 
-### Simulation Flow
+**ResidentialLoad**: Smart meter-enabled loads with time-varying profiles, 70% demand response participation, and 15% peak reduction (17:00–22:00).
 
-1. **Initialization**: Create grid components and distribute across 33-bus network
-2. **Time Loop**: Iterate through 96 time steps (15-min intervals)
-3. **Generation Calculation**: Compute solar and wind output
-4. **Load Calculation**: Determine residential consumption with DR
-5. **Battery Dispatch**: Balance grid using energy storage
-6. **Voltage Analysis**: Calculate bus voltages
-7. **Metrics Collection**: Store all simulation data
-8. **Reporting**: Generate comprehensive performance report
+#### Scenario E2 – EV Charging Domain
+
+**ElectricVehicle**: EV agent with configurable battery, SOC tracking, charging efficiency (90%), and optional V2G discharge capability.
+
+**ChargingStation**: Level 2 (7.2 kW residential) and DC fast (50 kW commercial) chargers with queue management.
+
+**EVChargingFederate**: Orchestrates the full charging session lifecycle using one of three strategies: `Uncoordinated`, `Smart` (grid-aware scheduling), or `V2G` (bidirectional energy flow).
+
+#### Scenario M1 – Mobility Domain
+
+**Vehicle**: Agent-based vehicle with origin-destination routing, speed modeling, delay tracking, and CO₂ emissions estimation.
+
+**TrafficSignal**: Adaptive controller with demand-responsive green time (15–90 s), phase-switching based on queue ratios, and yellow phase enforcement.
+
+**TrafficSimulation**: Manages the full 5×5 grid, dispatches vehicles across intersections, and records throughput and delay metrics.
+
+---
+
+### Simulation Flow (All Scenarios)
+
+1. **Initialization** — Create federate, configure HELICS or standalone mode
+2. **Component Setup** — Instantiate domain-specific agents and infrastructure
+3. **Time Loop** — Step through simulation time with configurable `dt`
+4. **State Update** — Each agent updates based on current inputs and internal state
+5. **Grid/Network Interaction** — Aggregate effects computed (voltage, congestion, load)
+6. **Metrics Collection** — Per-step data recorded for all agents
+7. **Report Generation** — Summary metrics and component statistics exported
 
 ## Future Work
 
-- Implementation of scenarios E2-E6
+- Implementation of scenarios E3–E6 (telecom, cross-domain integrations)
 - Enhanced power flow analysis (replacing simplified voltage model)
-- Integration with real-world grid data
+- Multi-federate HELICS co-simulation connecting E1, E2, and M1 federates
 - Advanced forecasting and optimization algorithms
-- Multi-federate HELICS co-simulation across domains
-- Visualization and plotting capabilities
+- Visualization and plotting capabilities for simulation outputs
 - Database storage for simulation results
 
 ## License
