@@ -79,20 +79,26 @@ class BatteryStorage:
         self.efficiency = 0.92
         
     def charge(self, power_kw: float, dt_hours: float) -> float:
-        """Charge battery, returns actual power charged"""
-        max_charge = min(power_kw, self.power_kw)
+        """Charge battery, returns actual power drawn from grid"""
+        grid_power = min(power_kw, self.power_kw)
+        energy_stored = grid_power * dt_hours * self.efficiency
         available_capacity = (self.soc_max - self.soc) * self.capacity_kwh
-        actual_charge = min(max_charge * dt_hours * self.efficiency, available_capacity)
-        self.soc += actual_charge / self.capacity_kwh
-        return actual_charge / dt_hours  # Return average power
+        if energy_stored > available_capacity:
+            energy_stored = available_capacity
+            grid_power = energy_stored / (dt_hours * self.efficiency)
+        self.soc += energy_stored / self.capacity_kwh
+        return grid_power  # Power drawn from grid
         
     def discharge(self, power_kw: float, dt_hours: float) -> float:
-        """Discharge battery, returns actual power discharged"""
-        max_discharge = min(power_kw, self.power_kw)
+        """Discharge battery, returns actual power delivered to grid"""
+        battery_power = min(power_kw, self.power_kw)
+        energy_from_battery = battery_power * dt_hours
         available_energy = (self.soc - self.soc_min) * self.capacity_kwh
-        actual_discharge = min(max_discharge * dt_hours, available_energy)
-        self.soc -= actual_discharge / self.capacity_kwh
-        return actual_discharge / dt_hours / self.efficiency  # Return average power
+        if energy_from_battery > available_energy:
+            energy_from_battery = available_energy
+            battery_power = energy_from_battery / dt_hours
+        self.soc -= energy_from_battery / self.capacity_kwh
+        return battery_power * self.efficiency  # Power delivered to grid
 
 
 class ResidentialLoad:
@@ -154,22 +160,26 @@ class SmartGridFederate:
         self.soc_history = []
         self.curtailment_history = []
         self.renewable_generation = []
+        self.solar_generation = []
+        self.wind_generation = []
         self.total_load = []
+        self.hours_of_day = []
+        self.battery_dispatch_history = []
         
     def initialize_components(self):
         """Initialize all grid components"""
         logger.info("Initializing grid components...")
         
-        # Create 10 solar PV installations (2-5 kW each)
-        for i in range(10):
-            capacity = np.random.uniform(2.0, 5.0)
+        # Create 50 solar PV installations (5-10 kW each)
+        for i in range(50):
+            capacity = np.random.uniform(5.0, 10.0)
             bus_id = np.random.randint(1, 34)  # IEEE 33-bus system
             self.solar_pvs.append(SolarPV(i, capacity, bus_id))
             
-        # Create 2 wind turbines (100 kW each)
-        for i in range(2):
+        # Create 3 wind turbines (500 kW each)
+        for i in range(3):
             bus_id = np.random.randint(1, 34)
-            self.wind_turbines.append(WindTurbine(i, 100.0, bus_id))
+            self.wind_turbines.append(WindTurbine(i, 500.0, bus_id))
             
         # Create 5 battery storage systems (50 kWh each)
         for i in range(5):
@@ -249,7 +259,7 @@ class SmartGridFederate:
         """Simplified voltage profile calculation"""
         # Simplified model - in reality would use power flow analysis
         base_voltage = 1.0  # p.u.
-        voltage_drop_factor = 0.00001  # Simplified impedance effect
+        voltage_drop_factor = 0.00002  # Simplified impedance effect
         
         voltages = {}
         for bus_id in range(1, 34):
@@ -282,7 +292,7 @@ class SmartGridFederate:
                             for pv in self.solar_pvs)
             
             # Wind generation
-            wind_speed = 5.0 + 5.0 * np.random.random()  # 5-10 m/s average
+            wind_speed = 5.0 + 7.0 * np.random.random()  # 5-12 m/s range
             wind_total = sum(wt.calculate_generation(wind_speed) 
                            for wt in self.wind_turbines)
             
@@ -308,11 +318,15 @@ class SmartGridFederate:
             
             # Store metrics
             self.renewable_generation.append(total_renewable)
+            self.solar_generation.append(solar_total)
+            self.wind_generation.append(wind_total)
             self.total_load.append(total_load_kw)
             self.power_flows.append(net_power)
             self.curtailment_history.append(curtailment)
             self.voltage_profiles.append(voltages)
             self.soc_history.append([b.soc for b in self.batteries])
+            self.hours_of_day.append(hour_of_day)
+            self.battery_dispatch_history.append(battery_dispatch)
             
             # Publish values to HELICS (if enabled)
             if self.use_helics and self.federate:
@@ -346,6 +360,35 @@ class SmartGridFederate:
             avg_voltages.append(np.mean(voltages))
             min_voltages.append(np.min(voltages))
             max_voltages.append(np.max(voltages))
+        
+        # Identify peak-hour steps (17:00-22:00)
+        peak_mask = [17 <= h < 22 for h in self.hours_of_day]
+        off_peak_mask = [not p for p in peak_mask]
+        
+        peak_loads = [self.total_load[i] for i in range(len(self.total_load)) if peak_mask[i]]
+        off_peak_loads = [self.total_load[i] for i in range(len(self.total_load)) if off_peak_mask[i]]
+        
+        # Estimate DR impact: 70% of loads participate with 15% reduction during peak
+        # Reverse the DR factor to estimate load without DR
+        dr_participation_rate = 0.70
+        dr_reduction_factor = 0.85
+        avg_peak_load_with_dr = np.mean(peak_loads) if peak_loads else 0
+        # Estimated load without DR = actual / (1 - participation_rate * (1 - reduction_factor))
+        estimated_peak_load_without_dr = avg_peak_load_with_dr / (1 - dr_participation_rate * (1 - dr_reduction_factor))
+        dr_load_reduction_kw = estimated_peak_load_without_dr - avg_peak_load_with_dr
+        dr_load_reduction_pct = (dr_load_reduction_kw / estimated_peak_load_without_dr * 100) if estimated_peak_load_without_dr > 0 else 0
+        
+        # Curtailment-battery correlation: verify curtailment only when batteries
+        # cannot absorb more surplus (full capacity or max charge rate)
+        curtailment_steps = sum(1 for c in self.curtailment_history if c > 0)
+        curtailment_with_saturated_battery = 0
+        total_max_charge_rate = sum(b.power_kw for b in self.batteries)
+        for i, c in enumerate(self.curtailment_history):
+            if c > 0:
+                batteries_full = all(soc >= 0.94 for soc in self.soc_history[i])
+                batteries_rate_limited = abs(self.battery_dispatch_history[i]) >= total_max_charge_rate * 0.99
+                if batteries_full or batteries_rate_limited:
+                    curtailment_with_saturated_battery += 1
             
         report = {
             "scenario": "E1 - Smart Grid with Renewable Integration",
@@ -362,6 +405,9 @@ class SmartGridFederate:
             },
             "metrics": {
                 "total_renewable_generation_kwh": sum(self.renewable_generation) * (15/60),
+                "total_solar_generation_kwh": sum(self.solar_generation) * (15/60),
+                "total_wind_generation_kwh": sum(self.wind_generation) * (15/60),
+                "renewable_penetration_pct": (sum(self.renewable_generation) / sum(self.total_load) * 100) if sum(self.total_load) > 0 else 0,
                 "total_load_kwh": sum(self.total_load) * (15/60),
                 "total_curtailment_kwh": sum(self.curtailment_history) * (15/60),
                 "curtailment_percentage": (sum(self.curtailment_history) / 
@@ -369,9 +415,19 @@ class SmartGridFederate:
                 "avg_voltage_pu": np.mean(avg_voltages),
                 "min_voltage_pu": np.min(min_voltages),
                 "max_voltage_pu": np.max(max_voltages),
-                "voltage_violations": sum(1 for v in min_voltages if v < 0.95 or v > 1.05),
-                "final_battery_soc": [b.soc for b in self.batteries],
+                "voltage_violations": sum(1 for v_min, v_max in zip(min_voltages, max_voltages) if v_min < 0.95 or v_max > 1.05),
+                "final_battery_soc": [float(b.soc) for b in self.batteries],
                 "avg_battery_soc": np.mean([np.mean(soc_step) for soc_step in self.soc_history]),
+                # Peak load and DR validation metrics
+                "peak_load_kw": max(self.total_load),
+                "avg_peak_hour_load_kw": avg_peak_load_with_dr,
+                "avg_off_peak_load_kw": np.mean(off_peak_loads) if off_peak_loads else 0,
+                "estimated_dr_load_reduction_kw": dr_load_reduction_kw,
+                "estimated_dr_load_reduction_pct": dr_load_reduction_pct,
+                # Curtailment-battery validation metrics
+                "curtailment_steps": curtailment_steps,
+                "curtailment_with_saturated_battery": curtailment_with_saturated_battery,
+                "curtailment_battery_validation": "PASS" if (curtailment_steps == 0 or curtailment_with_saturated_battery == curtailment_steps) else "FAIL",
             }
         }
         

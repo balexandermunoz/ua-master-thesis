@@ -141,14 +141,14 @@ Scenario E1 simulates an IEEE 33-bus radial distribution network under high rene
 
 \paragraph{Component Models}
 
-\textbf{Solar PV}: Ten installations (2--5 kW each) follow a sine-based irradiance model during daylight hours (06:00--18:00):
+\textbf{Solar PV}: Fifty installations (5--10 kW each) follow a sine-based irradiance model during daylight hours (06:00--18:00):
 \begin{equation}
 P_{solar}(t) = P_{rated} \cdot \sin\!\left(\frac{(h-6)\,\pi}{12}\right) \cdot C_{cloud} \cdot \eta_{sys}
 \label{eq:solar_power}
 \end{equation}
 where $h$ is the hour of the day, $C_{cloud} \sim U(0.8, 1.0)$ is a stochastic cloud factor, and $\eta_{sys} = 0.85$.
 
-\textbf{Wind Turbines}: Two 100 kW turbines follow a three-region power curve:
+\textbf{Wind Turbines}: Three 500 kW turbines follow a three-region power curve:
 \begin{equation}
 P_{wind}(v) =
 \begin{cases}
@@ -292,7 +292,7 @@ The framework is evaluated along two dimensions: the correctness of domain model
 Each implemented scenario is validated against expected physical behaviors:
 
 \begin{itemize}
-    \item \textbf{E1}: Voltage profiles must vary within realistic bounds for the IEEE 33-bus system; curtailment must occur only when batteries are full; DR must produce a measurable load reduction between 17:00 and 22:00.
+    \item \textbf{E1}: Voltage profiles must vary within realistic bounds for the IEEE 33-bus system; curtailment must occur only when battery storage is saturated (capacity or charge-rate limited); DR must produce a measurable load reduction between 17:00 and 22:00.
     \item \textbf{E2}: Smart charging must reduce peak demand compared to uncoordinated; V2G must decrease net charging costs; all vehicles must meet their departure SOC target.
     \item \textbf{M1}: Adaptive control must reduce average travel time and total delay; emissions must decrease in proportion to reduced idling; queue lengths must be lower than under fixed-time control.
 \end{itemize}
@@ -319,7 +319,7 @@ Table~\ref{tab:metrics_summary} summarizes the key performance indicators used p
         \hline
         \textbf{Scenario} & \textbf{Primary Metrics} & \textbf{Comparison Baseline} \\
         \hline
-        E1 & Voltage profiles, curtailment \%, peak load reduction, avg battery SOC & No DR vs.\ DR active; no storage vs.\ storage dispatch \\
+        E1 & Voltage profiles (min/max/avg p.u.), curtailment \%, renewable penetration \%, peak load reduction, avg battery SOC, DR load reduction \% & No DR vs.\ DR active; no storage vs.\ storage dispatch \\
         \hline
         E2 & Peak demand (kW), avg charging cost (USD/vehicle), load factor, V2G revenue & Uncoordinated vs.\ Smart vs.\ V2G \\
         \hline
