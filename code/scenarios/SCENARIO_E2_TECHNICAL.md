@@ -5,8 +5,8 @@
 This document provides comprehensive technical documentation for Scenario E2, including all mathematical formulas, optimization algorithms, and core concepts used in the EV charging infrastructure simulation.
 
 **Simulation Type**: IEEE 13-node distribution test feeder with EV charging impact  
-**Time Horizon**: 24 hours  
-**Time Resolution**: 5-minute intervals (288 timesteps)  
+**Time Horizon**: 36 hours  
+**Time Resolution**: 5-minute intervals (432 timesteps)  
 **Number of EVs**: 100 vehicles  
 **Charging Infrastructure**: 20 Level 2 + 5 DC Fast stations
 
@@ -25,7 +25,7 @@ This document provides comprehensive technical documentation for Scenario E2, in
 
 ### Grid Parameters
 
-- **Total Grid Capacity**: 5000 kW
+- **Total Grid Capacity**: 2500 kW
 - **Base Load** (without EV): 2000 kW average
 - **Number of Nodes**: 13
 
@@ -53,9 +53,9 @@ Represents vehicles arriving after a trip with depleted battery.
 ### 2.2 Charging Parameters
 
 **Onboard Charger Limit**:
-$$P_{charger}^{max} = 11.0 \text{ kW}$$
+$$P_{charger}^{max} = 50.0 \text{ kW}$$
 
-This is the vehicle's onboard AC charger limitation.
+This is the vehicle's maximum DC fast charge acceptance rate. Level 2 charging is limited by the station rate (7.2 kW).
 
 **Charging Efficiency**:
 $$\eta_{charge} = 0.90 \quad (90\%)$$
@@ -175,7 +175,7 @@ $$T_{connected} = t_{departure} - t_{arrival} \approx 12-14 \text{ hours}$$
 $$t_{arrival} \sim U(8, 18) \text{ hours}$$
 
 **Connection Duration** (short stop):
-$$T_{connected} \sim U(0.5, 1.0) \text{ hours (30-60 minutes)}$$
+$$T_{connected} \sim U(1.0, 2.0) \text{ hours}$$
 
 **Departure Time**:
 $$t_{departure} = t_{arrival} + T_{connected}$$

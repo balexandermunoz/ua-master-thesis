@@ -120,7 +120,7 @@ Six scenarios were designed covering energy, mobility, and telecommunications do
         \hline
         E1 & Smart grid with renewables & 24 hours & 15 min & Voltage, power flow, curtailment & \checkmark \\
         \hline
-        E2 & EV charging infrastructure & 24 hours & 5 min & Load profile, charging cost, V2G & \checkmark \\
+        E2 & EV charging infrastructure & 36 hours & 5 min & Load profile, charging cost, V2G & \checkmark \\
         \hline
         M1 & Urban traffic management & 3 hours & 1 sec & Travel time, delay, emissions & \checkmark \\
         \hline
@@ -193,11 +193,11 @@ Violations are counted against ANSI C84.1 limits ($V \notin [0.95,\, 1.05]$ p.u.
 
 \subsubsection{Scenario E2: Electric Vehicle Charging Infrastructure}
 
-Scenario E2 models the impact of 100 EVs on a modified IEEE 13-node distribution feeder with three charging strategies~\cite{der_challenges}. Nodes 1--8 host 20 Level 2 chargers (7.2 kW residential); nodes 9--13 host 5 DC fast chargers (50 kW commercial). Time resolution is 5 minutes (288 steps).
+Scenario E2 models the impact of 100 EVs on a modified IEEE 13-node distribution feeder with three charging strategies~\cite{der_challenges}. Nodes 1--8 host 20 Level 2 charging stations (four 7.2\,kW ports each, 80 residential chargers total); nodes 9--13 host 5 DC fast stations (two 50\,kW ports each). The grid feeder capacity is 2500\,kW with a 2000\,kW base load at peak (load factor 1.0 during 17:00--22:00). Time resolution is 5 minutes; the simulation runs for 36 hours (432 steps) to cover overnight residential charging through next-morning departure.
 
 \paragraph{Arrival Patterns}
 
-Residential EVs (80\% of fleet): $t_{arrival} \sim \mathcal{N}(18.5, 1.0)\,\text{h}$; depart next morning at $t_{dep} \sim \mathcal{N}(8.0, 0.5)\,\text{h}$. Commercial EVs (20\%): $t_{arrival} \sim U(8,18)\,\text{h}$ with 30--60 min dwell time.
+Residential EVs (80\% of fleet): $t_{arrival} \sim \mathcal{N}(18.5, 1.0)\,\text{h}$; depart next morning at $t_{dep} \sim \mathcal{N}(8.0, 0.5)\,\text{h}$. Commercial EVs (20\%): $t_{arrival} \sim U(8,18)\,\text{h}$ with 1--2 hour dwell time at DC fast stations.
 
 \paragraph{Time-of-Use Tariff}
 
@@ -221,7 +221,7 @@ U_i(t) = \frac{E_{need,i}(t)}{T_{available,i}(t)}
 \end{equation}
 combined with a price factor ($F_{price} = 0.5$ during on-peak, 1.0 otherwise), ensuring vehicles with less time and more remaining energy need are served first.
 
-\textbf{V2G}: Extends smart charging with bidirectional power flow. V2G-capable vehicles (50\% of fleet, $P_{discharge}^{max} = 10\,\text{kW}$) export energy to the grid during on-peak hours at a 20\% premium.
+\textbf{V2G}: Extends smart charging with bidirectional power flow. V2G-capable vehicles (50\% of fleet, $P_{discharge}^{max} = 10\,\text{kW}$) export energy to the grid during on-peak hours (17:00--21:00) whenever their SOC exceeds the minimum threshold, and recharge during off-peak hours. V2G revenue is compensated at a 20\% premium over the current TOU rate.
 
 % -------------------------------------------------------
 
@@ -293,7 +293,7 @@ Each implemented scenario is validated against expected physical behaviors:
 
 \begin{itemize}
     \item \textbf{E1}: Voltage profiles must vary within realistic bounds for the IEEE 33-bus system; curtailment must occur only when battery storage is saturated (capacity or charge-rate limited); DR must produce a measurable load reduction between 17:00 and 22:00.
-    \item \textbf{E2}: Smart charging must reduce peak demand compared to uncoordinated; V2G must decrease net charging costs; all vehicles must meet their departure SOC target.
+    \item \textbf{E2}: Smart charging must reduce peak demand compared to uncoordinated; V2G must decrease net charging costs; all vehicles in non-V2G strategies must meet their departure SOC target ($\geq$\,0.8). V2G vehicles may trade departure SOC for grid revenue, with $\geq$\,95\% meeting the target.
     \item \textbf{M1}: Adaptive control must reduce average travel time and total delay; emissions must decrease in proportion to reduced idling; queue lengths must be lower than under fixed-time control.
 \end{itemize}
 
@@ -321,7 +321,7 @@ Table~\ref{tab:metrics_summary} summarizes the key performance indicators used p
         \hline
         E1 & Voltage profiles (min/max/avg p.u.), curtailment \%, renewable penetration \%, peak load reduction, avg battery SOC, DR load reduction \% & No DR vs.\ DR active; no storage vs.\ storage dispatch \\
         \hline
-        E2 & Peak demand (kW), avg charging cost (USD/vehicle), load factor, V2G revenue & Uncoordinated vs.\ Smart vs.\ V2G \\
+        E2 & Peak demand (kW), avg charging cost (USD/vehicle), load factor, V2G revenue (USD), V2G energy (kWh), transformer overloads, vehicles meeting SOC target & Uncoordinated vs.\ Smart vs.\ V2G \\
         \hline
         M1 & Avg travel time (s), total delay (s), completion rate (\%), CO$_2$ emissions (g) & Fixed signals vs.\ adaptive signals \\
         \hline

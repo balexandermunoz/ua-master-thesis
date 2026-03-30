@@ -43,7 +43,7 @@ class ElectricVehicle:
         self.soc_target = 0.8  # Target SOC before departure
         
         # Charging parameters
-        self.max_charge_rate_kw = 11.0  # Vehicle onboard charger limit
+        self.max_charge_rate_kw = 50.0  # Max DC fast charge acceptance rate
         self.charging_efficiency = 0.90  # 90% efficiency
         
         # V2G parameters
@@ -60,6 +60,8 @@ class ElectricVehicle:
         self.energy_charged_kwh = 0.0
         self.energy_discharged_kwh = 0.0
         self.charging_cost = 0.0
+        self.v2g_revenue = 0.0
+        self.departed = False
         
     def connect(self, arrival_time: float, departure_time: float, station_id: int):
         """Connect vehicle to charging station"""
@@ -72,6 +74,7 @@ class ElectricVehicle:
         """Disconnect vehicle from charging station"""
         self.is_connected = False
         self.charging_station_id = None
+        self.departed = True
         
     def charge(self, power_kw: float, dt_hours: float, price_per_kwh: float) -> float:
         """Charge the vehicle battery"""
@@ -105,7 +108,9 @@ class ElectricVehicle:
         self.soc -= energy_discharged / self.battery_capacity_kwh
         self.energy_discharged_kwh += energy_discharged
         # V2G compensation (sell back to grid)
-        self.charging_cost -= energy_discharged * price_per_kwh * 1.2  # 20% premium
+        v2g_compensation = energy_discharged * price_per_kwh * 1.2  # 20% premium
+        self.charging_cost -= v2g_compensation
+        self.v2g_revenue += v2g_compensation
         
         return energy_discharged / self.charging_efficiency  # Account for losses
         
@@ -291,15 +296,15 @@ class EVChargingFederate:
         
         # Simulation parameters
         self.time_step = 5 * 60  # 5 minutes in seconds
-        self.sim_duration = 24 * 3600  # 24 hours in seconds
+        self.sim_duration = 36 * 3600  # 36 hours to cover overnight charging
         
         # Grid parameters (IEEE 13-node)
         self.num_nodes = 13
-        self.grid_capacity_kw = 5000  # Total grid capacity
+        self.grid_capacity_kw = 2500  # Total grid capacity
         self.base_load_kw = 2000  # Base residential/commercial load
         
         # Metrics
-        self.load_profiles = {"uncoordinated": [], "smart": [], "base": []}
+        self.load_profiles = {"uncoordinated": [], "smart": [], "v2g": [], "base": []}
         self.transformer_loading = []
         self.voltage_deviations = []
         self.total_charging_cost = 0.0
@@ -321,7 +326,7 @@ class EVChargingFederate:
         # Create 20 Level 2 charging stations (residential, nodes 1-8)
         for i in range(20):
             node_id = np.random.randint(1, 9)
-            station = ChargingStation(i, ChargerType.LEVEL_2, node_id, num_ports=1)
+            station = ChargingStation(i, ChargerType.LEVEL_2, node_id, num_ports=4)
             self.charging_stations.append(station)
             
         # Create 5 DC fast charging stations (commercial, nodes 9-13)
@@ -348,7 +353,7 @@ class EVChargingFederate:
                    f"{len(self.transformers)} transformers")
                    
     def generate_arrival_patterns(self):
-        """Generate realistic EV arrival and departure times"""
+        """Generate realistic EV arrival and departure times (deferred connection)"""
         for i, vehicle in enumerate(self.vehicles):
             # Residential charging (evening arrival)
             if i < 80:  # 80% charge at home
@@ -362,32 +367,20 @@ class EVChargingFederate:
                 if departure_hour < arrival_hour:
                     departure_hour += 24
                     
-                # Find available Level 2 station
-                for station in self.charging_stations:
-                    if (station.charger_type == ChargerType.LEVEL_2 and 
-                        station.can_accept_vehicle()):
-                        arrival_time = arrival_hour * 3600
-                        departure_time = departure_hour * 3600
-                        vehicle.connect(arrival_time, departure_time, station.id)
-                        station.add_vehicle(vehicle)
-                        break
+                vehicle.arrival_time = arrival_hour * 3600
+                vehicle.departure_time = departure_hour * 3600
+                vehicle._preferred_charger_type = ChargerType.LEVEL_2
                         
             # Commercial/DC fast charging (daytime)
             else:  # 20% use fast charging
                 # Arrival: random during day
                 arrival_hour = np.random.uniform(8, 18)
-                # Stay for 30-60 minutes only
-                departure_hour = arrival_hour + np.random.uniform(0.5, 1.0)
+                # Stay for 1-2 hours
+                departure_hour = arrival_hour + np.random.uniform(1.0, 2.0)
                 
-                # Find available DC fast station
-                for station in self.charging_stations:
-                    if (station.charger_type == ChargerType.DC_FAST and 
-                        station.can_accept_vehicle()):
-                        arrival_time = arrival_hour * 3600
-                        departure_time = departure_hour * 3600
-                        vehicle.connect(arrival_time, departure_time, station.id)
-                        station.add_vehicle(vehicle)
-                        break
+                vehicle.arrival_time = arrival_hour * 3600
+                vehicle.departure_time = departure_hour * 3600
+                vehicle._preferred_charger_type = ChargerType.DC_FAST
                         
     def calculate_base_load(self, hour: float) -> float:
         """Calculate base load without EV charging"""
@@ -442,9 +435,17 @@ class EVChargingFederate:
             
             # Handle vehicle arrivals and departures
             for vehicle in self.vehicles:
-                if not vehicle.is_connected and abs(current_time - vehicle.arrival_time) < self.time_step:
-                    # Vehicle arriving - already connected in generate_arrival_patterns
-                    pass
+                if (not vehicle.is_connected and not vehicle.departed and
+                    current_time >= vehicle.arrival_time and
+                    current_time < vehicle.departure_time):
+                    # Vehicle arriving - find available station
+                    for station in self.charging_stations:
+                        if (station.charger_type == vehicle._preferred_charger_type and
+                            station.can_accept_vehicle()):
+                            vehicle.connect(vehicle.arrival_time, vehicle.departure_time,
+                                          station.id)
+                            station.add_vehicle(vehicle)
+                            break
                 elif vehicle.is_connected and current_time >= vehicle.departure_time:
                     # Vehicle departing
                     for station in self.charging_stations:
@@ -464,21 +465,24 @@ class EVChargingFederate:
                     current_time, base_load, self.grid_capacity_kw
                 )
                 
-            # Apply charging
+            # Apply charging and V2G discharge
             total_ev_load = 0.0
             for vehicle in self.vehicles:
-                if vehicle.id in power_allocation:
+                # V2G discharge during peak: vehicles discharge above soc_min,
+                # relying on off-peak recharging to reach soc_target by departure
+                if (self.strategy == ChargingStrategy.V2G and
+                    vehicle.is_connected and vehicle.v2g_enabled and
+                    17 <= hour_of_day < 21 and
+                    vehicle.soc > vehicle.soc_min + 0.05):
+                    discharged = vehicle.discharge(
+                        vehicle.max_discharge_rate_kw, dt_hours, price)
+                    total_ev_load -= discharged
+                    self.v2g_energy_kwh += discharged * dt_hours
+                elif vehicle.id in power_allocation:
                     power = power_allocation[vehicle.id]
                     if power > 0:
                         actual_power = vehicle.charge(power, dt_hours, price)
                         total_ev_load += actual_power
-                    # V2G discharge (only in V2G strategy)
-                    elif self.strategy == ChargingStrategy.V2G and power < 0:
-                        # Discharge during peak hours if beneficial
-                        if hour_of_day >= 17 and hour_of_day < 21:
-                            discharged = vehicle.discharge(abs(power), dt_hours, price)
-                            total_ev_load -= discharged
-                            self.v2g_energy_kwh += discharged * dt_hours
                             
             # Total load
             total_load = base_load + total_ev_load
@@ -532,6 +536,19 @@ class EVChargingFederate:
         avg_final_soc = np.mean([v.soc for v in self.vehicles])
         v2g_capable_count = sum(1 for v in self.vehicles if v.v2g_enabled)
         
+        # Load factor
+        load_data = self.load_profiles[self.strategy.value]
+        load_factor = float(np.mean(load_data) / max(load_data)) if load_data and max(load_data) > 0 else 0.0
+        
+        # V2G revenue
+        total_v2g_revenue = sum(v.v2g_revenue for v in self.vehicles)
+        
+        # Vehicles meeting SOC target (only those that connected)
+        connected_vehicles = [v for v in self.vehicles
+                             if v.is_connected or v.departed]
+        vehicles_meeting_target = sum(1 for v in connected_vehicles
+                                     if v.soc >= v.soc_target)
+        
         report = {
             "scenario": "E2 - Electric Vehicle Charging Infrastructure",
             "simulation_duration_hours": 24,
@@ -555,8 +572,12 @@ class EVChargingFederate:
                 "max_transformer_loading_pct": max_loading,
                 "avg_transformer_loading_pct": avg_loading,
                 "transformer_overload_count": total_overloads,
-                "max_voltage_deviation_pu": max(self.voltage_deviations),
-                "v2g_energy_provided_kwh": self.v2g_energy_kwh,
+                "max_voltage_deviation_pu": float(max(self.voltage_deviations)),
+                "v2g_energy_provided_kwh": float(self.v2g_energy_kwh),
+                "load_factor": load_factor,
+                "v2g_revenue_usd": float(total_v2g_revenue),
+                "vehicles_connected": len(connected_vehicles),
+                "vehicles_meeting_soc_target": vehicles_meeting_target,
             }
         }
         
@@ -638,6 +659,7 @@ def compare_strategies(use_helics: bool = False):
     
     results = {}
     for strategy in strategies:
+        np.random.seed(42)
         logger.info(f"\nRunning {strategy.value} strategy...")
         report = run_scenario_e2(use_helics, strategy)
         results[strategy.value] = report
@@ -651,7 +673,13 @@ def compare_strategies(use_helics: bool = False):
         logger.info(f"\n{strategy_name.upper()}:")
         logger.info(f"  Peak Load: {report['metrics']['peak_load_kw']:.2f} kW")
         logger.info(f"  Total Cost: ${report['metrics']['total_charging_cost_usd']:.2f}")
+        logger.info(f"  Avg Cost/Vehicle: ${report['metrics']['avg_cost_per_vehicle_usd']:.2f}")
+        logger.info(f"  Load Factor: {report['metrics']['load_factor']:.3f}")
+        logger.info(f"  V2G Revenue: ${report['metrics']['v2g_revenue_usd']:.2f}")
+        logger.info(f"  V2G Energy: {report['metrics']['v2g_energy_provided_kwh']:.2f} kWh")
         logger.info(f"  Max Transformer Loading: {report['metrics']['max_transformer_loading_pct']:.1f}%")
         logger.info(f"  Overloads: {report['metrics']['transformer_overload_count']}")
+        logger.info(f"  Vehicles Connected: {report['metrics']['vehicles_connected']}")
+        logger.info(f"  Vehicles Meeting SOC Target: {report['metrics']['vehicles_meeting_soc_target']}/{report['metrics']['vehicles_connected']}")
         
     return results
