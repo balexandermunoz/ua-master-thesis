@@ -43,6 +43,11 @@ class Vehicle:
         self.total_delay = 0.0
         self.distance_traveled = 0.0
         
+        # Movement state
+        self.departure_time = 0.0
+        self.departed = False
+        self.travel_countdown = 0.0
+        
         # Emissions (simplified CO2 model)
         self.emissions_g = 0.0
         self.fuel_consumption_factor = 2.31  # g CO2/s at idle
@@ -223,7 +228,13 @@ class TrafficNetwork:
                     break
                     
             alt_route.append(end)
-            if len(alt_route) > 2:  # Valid route
+            # Validate: consecutive positions must be adjacent
+            valid = len(alt_route) > 2 and all(
+                abs(alt_route[k][0] - alt_route[k+1][0]) +
+                abs(alt_route[k][1] - alt_route[k+1][1]) == 1
+                for k in range(len(alt_route) - 1)
+            )
+            if valid:
                 routes.append(alt_route)
                 
         return routes
@@ -240,7 +251,7 @@ class TrafficSimulation:
         self.adaptive_signals = adaptive_signals
         
         # Network
-        self.network = TrafficNetwork(grid_size=5, spacing_m=1000.0)
+        self.network = TrafficNetwork(grid_size=5, spacing_m=1250.0)
         self.vehicles: List[Vehicle] = []
         
         # Simulation parameters
@@ -272,60 +283,104 @@ class TrafficSimulation:
             routes = self.network.get_alternative_routes(origin, destination)
             vehicle.route = routes[np.random.randint(0, min(len(routes), 3))]
             
+            # Staggered departure over first hour
+            vehicle.departure_time = np.random.uniform(0, 3600)
+            
             self.vehicles.append(vehicle)
             
         logger.info(f"Created {len(self.vehicles)} vehicles")
         
     def update_traffic_signals(self, dt: float):
         """Update all traffic signals"""
+        # Build position map for efficient lookup
+        position_vehicles = {}
+        for v in self.vehicles:
+            if v.completed or not v.departed or v.travel_countdown > 0:
+                continue
+            position_vehicles.setdefault(v.current_position, []).append(v)
+
         for pos, signal in self.network.signals.items():
-            # Count vehicles waiting at intersection
-            ns_demand = sum(1 for v in self.vehicles 
-                           if not v.completed and v.current_position == pos and 
-                           len(v.route) > v.current_route_index + 1)
-            ew_demand = sum(1 for v in self.vehicles 
-                           if not v.completed and v.current_position == pos)
-            
+            # Count vehicles waiting by direction (NS vs EW)
+            ns_demand = 0
+            ew_demand = 0
+            for v in position_vehicles.get(pos, []):
+                if v.current_route_index >= len(v.route) - 1:
+                    continue
+                next_pos = v.route[v.current_route_index + 1]
+                dx = next_pos[0] - pos[0]
+                dy = next_pos[1] - pos[1]
+                if dx != 0:  # Row changes → NS movement
+                    ns_demand += 1
+                elif dy != 0:  # Column changes → EW movement
+                    ew_demand += 1
+
             if self.adaptive_signals:
                 signal.update(dt, ns_demand, ew_demand)
             else:
-                # Fixed timing
-                signal.update(dt, 1, 1)  # Equal weights
+                # Fixed timing: equal weights
+                signal.update(dt, 1, 1)
                 
-    def move_vehicles(self, dt: float):
-        """Move all vehicles"""
+    def move_vehicles(self, dt: float, current_time: float):
+        """Move all vehicles with realistic inter-intersection travel time"""
+        link_travel_time = self.network.spacing / 13.9  # seconds per link
+
         for vehicle in self.vehicles:
             if vehicle.completed:
                 continue
-                
-            # Check if reached destination
+
+            # Check departure time
+            if not vehicle.departed:
+                if current_time >= vehicle.departure_time:
+                    vehicle.departed = True
+                else:
+                    continue
+
+            # In transit between intersections
+            if vehicle.travel_countdown > 0:
+                vehicle.travel_countdown -= dt
+                vehicle.travel_time += dt
+                vehicle.speed_mps = vehicle.max_speed_mps
+                vehicle.calculate_emissions(dt)
+                if vehicle.travel_countdown <= 0:
+                    vehicle.current_route_index += 1
+                    vehicle.current_position = vehicle.route[vehicle.current_route_index]
+                    vehicle.distance_traveled += self.network.spacing
+                continue
+
+            # At intersection - check if destination reached
             if vehicle.current_position == vehicle.destination:
                 vehicle.completed = True
                 self.completed_vehicles.append(vehicle)
                 continue
-                
-            # Get next position in route
+
+            # Try to cross intersection
             if vehicle.current_route_index < len(vehicle.route) - 1:
                 next_pos = vehicle.route[vehicle.current_route_index + 1]
-                
-                # Check traffic signal
                 signal = self.network.signals[vehicle.current_position]
                 if signal.can_pass(vehicle.current_position, next_pos):
-                    # Move to next position
-                    vehicle.update_position(next_pos, dt)
-                    vehicle.current_route_index += 1
+                    # Enter transit to next intersection
+                    vehicle.travel_countdown = link_travel_time
+                    vehicle.travel_time += dt
+                    vehicle.speed_mps = vehicle.max_speed_mps
+                    vehicle.calculate_emissions(dt)
                 else:
-                    # Stopped at signal
-                    vehicle.update_position(vehicle.current_position, dt)
+                    # Stopped at red light
+                    vehicle.speed_mps = 0.0
+                    vehicle.total_delay += dt
+                    vehicle.travel_time += dt
+                    vehicle.calculate_emissions(dt)
             else:
                 vehicle.completed = True
+                self.completed_vehicles.append(vehicle)
                 
     def collect_metrics(self):
         """Collect simulation metrics"""
-        # Queue lengths at each intersection
+        # Queue lengths at each intersection (exclude in-transit)
         for pos in self.network.intersections.keys():
             queue = sum(1 for v in self.vehicles 
-                       if not v.completed and v.current_position == pos)
+                       if not v.completed and v.departed
+                       and v.travel_countdown <= 0
+                       and v.current_position == pos)
             self.queue_lengths[pos].append(queue)
             
         # Average emissions
@@ -351,7 +406,7 @@ class TrafficSimulation:
             self.update_traffic_signals(self.time_step)
             
             # Move vehicles
-            self.move_vehicles(self.time_step)
+            self.move_vehicles(self.time_step, current_time)
             
             # Collect metrics
             self.collect_metrics()
@@ -399,14 +454,17 @@ class TrafficSimulation:
             },
             "metrics": {
                 "completed_vehicles": len(completed),
-                "completion_rate_pct": (len(completed) / len(self.vehicles)) * 100,
-                "avg_travel_time_min": avg_travel_time / 60.0,
-                "avg_delay_min": avg_delay / 60.0,
-                "total_emissions_kg_co2": total_emissions_kg,
-                "emissions_per_vehicle_g": total_emissions_kg * 1000 / len(self.vehicles),
-                "max_queue_length": max_queue,
-                "avg_queue_length": avg_queue,
-                "throughput_veh_per_hour": throughput,
+                "completion_rate_pct": float((len(completed) / len(self.vehicles)) * 100),
+                "avg_travel_time_s": float(avg_travel_time),
+                "avg_travel_time_min": float(avg_travel_time / 60.0),
+                "avg_delay_s": float(avg_delay),
+                "avg_delay_min": float(avg_delay / 60.0),
+                "total_delay_s": float(sum(v.total_delay for v in self.vehicles)),
+                "total_emissions_kg_co2": float(total_emissions_kg),
+                "emissions_per_vehicle_g": float(total_emissions_kg * 1000 / len(self.vehicles)),
+                "max_queue_length": int(max_queue),
+                "avg_queue_length": float(avg_queue),
+                "throughput_veh_per_hour": float(throughput),
             }
         }
         
@@ -480,6 +538,7 @@ def compare_signal_strategies(use_helics: bool = False):
     results = {}
     
     for adaptive in [False, True]:
+        np.random.seed(42)
         strategy = "adaptive" if adaptive else "fixed"
         logger.info(f"\nRunning {strategy} signal control...")
         report = run_scenario_m1(use_helics, adaptive)
@@ -491,10 +550,16 @@ def compare_signal_strategies(use_helics: bool = False):
     logger.info("="*70)
     
     for strategy, report in results.items():
+        m = report['metrics']
         logger.info(f"\n{strategy.upper()}:")
-        logger.info(f"  Avg Travel Time: {report['metrics']['avg_travel_time_min']:.2f} min")
-        logger.info(f"  Avg Delay: {report['metrics']['avg_delay_min']:.2f} min")
-        logger.info(f"  Total Emissions: {report['metrics']['total_emissions_kg_co2']:.2f} kg CO2")
-        logger.info(f"  Throughput: {report['metrics']['throughput_veh_per_hour']:.0f} veh/h")
+        logger.info(f"  Completion Rate: {m['completion_rate_pct']:.1f}%")
+        logger.info(f"  Avg Travel Time: {m['avg_travel_time_s']:.1f} s ({m['avg_travel_time_min']:.2f} min)")
+        logger.info(f"  Avg Delay: {m['avg_delay_s']:.1f} s")
+        logger.info(f"  Total Delay: {m['total_delay_s']:.0f} s")
+        logger.info(f"  Total Emissions: {m['total_emissions_kg_co2']:.2f} kg CO2")
+        logger.info(f"  Emissions/Vehicle: {m['emissions_per_vehicle_g']:.1f} g")
+        logger.info(f"  Max Queue: {m['max_queue_length']}")
+        logger.info(f"  Avg Queue: {m['avg_queue_length']:.2f}")
+        logger.info(f"  Throughput: {m['throughput_veh_per_hour']:.0f} veh/h")
         
     return results

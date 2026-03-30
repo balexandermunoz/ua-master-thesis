@@ -229,7 +229,7 @@ combined with a price factor ($F_{price} = 0.5$ during on-peak, 1.0 otherwise), 
 
 \subsubsection{Scenario M1: Urban Traffic Congestion Management}
 
-Scenario M1 simulates a $5 \times 5\,\text{km}$ urban road grid with 2,500 agent-based vehicles and 25 signalized intersections, comparing fixed-time and adaptive signal control strategies on travel time, congestion, and CO$_2$ emissions~\cite{mobility_challenges, agent_traffic_overview}. The simulation runs for 3 hours at 1-second resolution (10,800 steps).
+Scenario M1 simulates a $5 \times 5\,\text{km}$ urban road grid with 2,500 agent-based vehicles and 25 signalized intersections (1250\,m spacing), comparing fixed-time and adaptive signal control strategies on travel time, congestion, and CO$_2$ emissions~\cite{mobility_challenges, agent_traffic_overview}. Vehicles depart stochastically over the first hour ($t_{dep} \sim U(0, 3600)\,\text{s}$) and traverse each link at 50\,km/h ($\approx$\,90\,s per link). The simulation runs for 3 hours at 1-second resolution (10,800 steps).
 
 \paragraph{Routing: A* Algorithm}
 
@@ -242,12 +242,16 @@ Alternative routes are generated stochastically using neighbor weights $w_n = 1/
 
 \paragraph{Adaptive Traffic Signal Control}
 
-Green time is allocated proportionally to measured queue lengths:
+Each intersection cycles between two phases—North–South~(NS) and East–West~(EW)—separated by a fixed 3-second yellow interval. At every phase transition the controller counts the vehicles waiting at the intersection, classifying each one as NS or EW demand according to the direction of its next route segment. This directional queue measurement is the key input to the adaptive algorithm.
+
+In adaptive mode, green time is allocated proportionally to the measured demand:
 \begin{equation}
 T_{green} = T_{min} + (T_{max} - T_{min}) \cdot \frac{Q_{phase}}{Q_{NS} + Q_{EW}}
 \label{eq:adaptive_signal}
 \end{equation}
-with $T_{min} = 15\,\text{s}$, $T_{max} = 90\,\text{s}$, and yellow time fixed at 3 seconds. Fixed-time control uses equal green time for both phases and serves as the comparison baseline.
+with $T_{min} = 15\,\text{s}$ and $T_{max} = 90\,\text{s}$. When one direction is heavily loaded (e.g.\ $Q_{NS} \gg Q_{EW}$), that phase receives a green time close to $T_{max}$, while the lightly loaded phase receives only $T_{min}$. Under equal demand the two phases share the available green time equally, replicating fixed-time behaviour as a special case.
+
+In fixed-time mode, the controller ignores the measured queues and assigns equal weight to both phases ($Q_{NS} = Q_{EW} = 1$), yielding a constant cycle length regardless of traffic conditions. This provides a baseline against which the adaptive strategy is compared.
 
 \paragraph{Emissions Model}
 
@@ -323,7 +327,7 @@ Table~\ref{tab:metrics_summary} summarizes the key performance indicators used p
         \hline
         E2 & Peak demand (kW), avg charging cost (USD/vehicle), load factor, V2G revenue (USD), V2G energy (kWh), transformer overloads, vehicles meeting SOC target & Uncoordinated vs.\ Smart vs.\ V2G \\
         \hline
-        M1 & Avg travel time (s), total delay (s), completion rate (\%), CO$_2$ emissions (g) & Fixed signals vs.\ adaptive signals \\
+        M1 & Avg travel time (s), total delay (s), completion rate (\%), CO$_2$ emissions (g), avg queue length & Fixed signals vs.\ adaptive signals \\
         \hline
     \end{tabular}
 \end{table}

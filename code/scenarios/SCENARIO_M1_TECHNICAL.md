@@ -7,8 +7,8 @@ This scenario simulates a 5km × 5km urban traffic network with intelligent traf
 ### System Configuration
 
 - **Network**: 5×5 grid with 25 signalized intersections
-- **Intersections**: 1 km spacing (500m link length)
-- **Vehicles**: 2,500 vehicles with random origin-destination pairs
+- **Intersections**: 1250 m spacing
+- **Vehicles**: 2,500 vehicles with staggered departures over the first hour
 - **Simulation Duration**: 3 hours (10,800 seconds)
 - **Time Step**: 1 second
 - **Speed Limit**: 50 km/h (13.9 m/s)
