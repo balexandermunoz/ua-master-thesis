@@ -126,9 +126,9 @@ Six scenarios were designed covering energy, mobility, and telecommunications do
         \hline
         M2 & Autonomous vehicle integration & 2 hours & 0.5 sec & Capacity, safety, fuel & Planned \\
         \hline
-        T1 & 5G network slicing & 1 hour & Dynamic & Throughput, latency, QoS & Planned \\
+        T1 & 5G slice resource allocation & 1 hour & 100 ms & Slice utilization, QoS rate, RB waste & Planned \\
         \hline
-        T2 & Dense IoT network & 24 hours & Event & Connectivity, energy, coverage & Planned \\
+        T2 & IoT access congestion & 24 hours & 1 min & Delivery rate, access delay, battery & Planned \\
         \hline
     \end{tabular}
 \end{table}
@@ -272,9 +272,14 @@ with $\alpha_{idle} = 2.31\,\text{g/s}$ and $\alpha_{move} = 0.15\,\text{g/m}$.
 
 \textbf{Scenario M2: Autonomous Vehicle Integration} will simulate a 10 km highway/arterial with 1,000 vehicles at CAV penetration rates of 0\%, 25\%, 50\%, and 75\%, evaluating cooperative adaptive cruise control (CACC), platooning efficiency, and time-to-collision safety metrics.
 
-\textbf{Scenario T1: 5G Network Slicing} will simulate 7 gNBs serving 500 mobile users across three slices (eMBB, URLLC, mMTC), evaluating slice isolation, handover performance, and QoS for heterogeneous smart city applications~\cite{telecom_challenges}.
+\textbf{Scenario T1: 5G Slice Resource Allocation} will simulate 3 gNBs serving 200 mobile users across three network slices (eMBB, URLLC, mMTC), modeled as a resource-block scheduling problem~\cite{telecom_challenges}. Each gNB manages a fixed pool of $N_{RB}$ resource blocks. Two strategies are compared: \textit{static slicing}, which assigns fixed resource fractions to each slice, and \textit{dynamic slicing}, which allocates resource blocks proportionally to instantaneous demand---analogous to the adaptive signal allocation in Scenario~M1. Radio propagation is modeled using the 3GPP urban macro path loss formula ($P_{rx} = P_{tx} - 128.1 - 37.6\,\log_{10}(d)$), and user mobility follows a random waypoint model with handovers triggered by signal-strength thresholds. QoS satisfaction is evaluated per user per step as a binary metric: whether the assigned slice received sufficient resource blocks to meet its latency or throughput target. The simulation runs for 1 hour at 100\,ms resolution (36,000 steps).
 
-\textbf{Scenario T2: Dense IoT Network} will evaluate NB-IoT and LTE-M performance under 5,000 IoT devices in a 2 km$^2$ industrial park, focusing on congestion during synchronized reporting periods and the impact of edge computing offloading.
+\textbf{Scenario T2: IoT Access Congestion with Smart Metering} will model 1,000 NB-IoT smart grid sensors deployed across the distribution network of Scenario~E1, focusing on random-access congestion during synchronized reporting periods. In each reporting window, $k$ devices contend for $M$ preamble slots; collision probability follows
+\begin{equation}
+P_{collision} = 1 - \left(1 - \frac{1}{M}\right)^{k-1}
+\label{eq:iot_collision}
+\end{equation}
+with binary exponential backoff for failed attempts ($t_{backoff} \sim U(0, W)$, $W$ doubling per failure). Device battery drain is modeled as a linear energy cost per transmission attempt, analogous to the SOC model in Scenario~E1. Two strategies are compared: \textit{uncoordinated reporting}, where all devices transmit at the same periodic interval, and \textit{staggered scheduling}, where reporting windows are offset to distribute access load. The simulation covers 24 hours at 1-minute resolution (1,440 steps). Key metrics include successful delivery rate, average access delay, peak collision rate, and estimated device battery lifetime.
 
 \subsection{Cross-Domain Integration}
 
@@ -282,8 +287,8 @@ The HELICS-based architecture enables coupled cross-domain simulations. Three in
 
 \begin{itemize}
     \item \textbf{E2 + M1 (Energy--Mobility)}: EVs navigate through traffic to available charging stations; charging demand feeds back into the grid model~\cite{helics_ev_transport}.
-    \item \textbf{M2 + T1 (Mobility--Telecommunications)}: Evaluates how 5G network latency and handover events affect autonomous vehicle control loops.
-    \item \textbf{E1 + T2 (Energy--Telecommunications)}: Evaluates how IoT communication reliability affects smart grid monitoring and demand response activation.
+    \item \textbf{M1 + T1 (Mobility--Telecommunications)}: Vehicle positions from M1 drive user locations in T1, determining serving gNB and slice demand; conversely, network QoS degradation in T1 introduces latency in adaptive signal control commands in M1.
+    \item \textbf{E1 + T2 (Energy--Telecommunications)}: IoT devices in T2 serve as the smart meters and grid sensors of E1. Communication failures (collisions, excessive backoff) cause delayed or missing grid measurements, degrading demand response activation timing and accuracy.
 \end{itemize}
 
 
