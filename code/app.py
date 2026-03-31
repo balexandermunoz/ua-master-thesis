@@ -56,13 +56,35 @@ strategy_e2 = None
 adaptive_m1 = True
 strategy_t1 = None
 compare_mode = False
+scenario_kwargs = {}
 
-if scenario_key == "E2":
+if scenario_key == "E1":
+    with st.sidebar.expander("Scenario Parameters", expanded=False):
+        st.caption("Article defaults shown. Adjust to explore.")
+        scenario_kwargs["num_solar_pvs"] = st.number_input("Solar PV count", 1, 500, 50)
+        col1, col2 = st.columns(2)
+        scenario_kwargs["solar_capacity_min_kw"] = col1.number_input("Solar min (kW)", 0.5, 50.0, 5.0, step=0.5)
+        scenario_kwargs["solar_capacity_max_kw"] = col2.number_input("Solar max (kW)", 1.0, 100.0, 10.0, step=0.5)
+        scenario_kwargs["num_wind_turbines"] = st.number_input("Wind turbine count", 0, 50, 3)
+        scenario_kwargs["wind_capacity_kw"] = st.number_input("Wind capacity (kW each)", 10.0, 5000.0, 500.0, step=50.0)
+        scenario_kwargs["num_batteries"] = st.number_input("Battery count", 0, 100, 5)
+        scenario_kwargs["battery_capacity_kwh"] = st.number_input("Battery capacity (kWh each)", 5.0, 500.0, 50.0, step=5.0)
+        scenario_kwargs["num_loads"] = st.number_input("Residential loads", 10, 5000, 800, step=10)
+        scenario_kwargs["sim_duration_hours"] = st.number_input("Simulation duration (h)", 1, 72, 24)
+
+elif scenario_key == "E2":
     strategy_e2 = st.sidebar.selectbox(
         "Charging Strategy",
         ["Smart", "Uncoordinated", "V2G"],
     )
     compare_mode = st.sidebar.checkbox("Compare all strategies")
+    with st.sidebar.expander("Scenario Parameters", expanded=False):
+        st.caption("Article defaults shown. Adjust to explore.")
+        scenario_kwargs["num_vehicles"] = st.number_input("Number of EVs", 10, 1000, 100, step=10)
+        scenario_kwargs["num_l2_stations"] = st.number_input("Level-2 stations", 1, 200, 20)
+        scenario_kwargs["num_dc_stations"] = st.number_input("DC-fast stations", 1, 50, 5)
+        scenario_kwargs["grid_capacity_kw"] = st.number_input("Grid capacity (kW)", 500.0, 20000.0, 2500.0, step=100.0)
+        scenario_kwargs["base_load_kw"] = st.number_input("Base load (kW)", 500.0, 15000.0, 2000.0, step=100.0)
 
 elif scenario_key == "M1":
     adaptive_m1 = st.sidebar.selectbox(
@@ -70,6 +92,11 @@ elif scenario_key == "M1":
         ["Adaptive", "Fixed"],
     ) == "Adaptive"
     compare_mode = st.sidebar.checkbox("Compare both strategies")
+    with st.sidebar.expander("Scenario Parameters", expanded=False):
+        st.caption("Article defaults shown. Adjust to explore.")
+        scenario_kwargs["num_vehicles"] = st.number_input("Number of vehicles", 100, 10000, 2500, step=100)
+        scenario_kwargs["grid_size"] = st.number_input("Grid size (NxN)", 2, 10, 5)
+        scenario_kwargs["sim_duration_hours"] = st.number_input("Simulation duration (h)", 1, 12, 3)
 
 elif scenario_key == "T1":
     strategy_t1 = st.sidebar.selectbox(
@@ -77,6 +104,13 @@ elif scenario_key == "T1":
         ["Dynamic", "Static"],
     )
     compare_mode = st.sidebar.checkbox("Compare both strategies")
+    with st.sidebar.expander("Scenario Parameters", expanded=False):
+        st.caption("Article defaults shown. Adjust to explore.")
+        scenario_kwargs["num_gnbs"] = st.number_input("Number of gNBs", 1, 20, 3)
+        scenario_kwargs["embb_users"] = st.number_input("eMBB users", 10, 500, 100, step=10)
+        scenario_kwargs["urllc_users"] = st.number_input("URLLC users", 5, 200, 40, step=5)
+        scenario_kwargs["mmtc_users"] = st.number_input("mMTC users", 5, 500, 60, step=5)
+        scenario_kwargs["rbs_per_gnb"] = st.number_input("RBs per gNB", 10, 500, 100, step=10)
 
 st.sidebar.markdown("---")
 run_button = st.sidebar.button("Run Simulation", type="primary", use_container_width=True)
@@ -229,11 +263,11 @@ if run_button:
         if compare_mode:
             with st.spinner("Running comparison – this may take a while…"):
                 if scenario_key == "E2":
-                    results = compare_strategies()
+                    results = compare_strategies(**scenario_kwargs)
                 elif scenario_key == "M1":
-                    results = compare_signal_strategies()
+                    results = compare_signal_strategies(**scenario_kwargs)
                 elif scenario_key == "T1":
-                    results = compare_slicing_strategies()
+                    results = compare_slicing_strategies(**scenario_kwargs)
                 else:
                     st.warning("Comparison not available for this scenario.")
                     results = None
@@ -243,22 +277,22 @@ if run_button:
         else:
             with st.spinner("Running simulation…"):
                 if scenario_key == "E1":
-                    report = run_scenario_e1()
+                    report = run_scenario_e1(**scenario_kwargs)
                 elif scenario_key == "E2":
                     strat_map = {
                         "Smart": ChargingStrategy.SMART,
                         "Uncoordinated": ChargingStrategy.UNCOORDINATED,
                         "V2G": ChargingStrategy.V2G,
                     }
-                    report = run_scenario_e2(strategy=strat_map[strategy_e2])
+                    report = run_scenario_e2(strategy=strat_map[strategy_e2], **scenario_kwargs)
                 elif scenario_key == "M1":
-                    report = run_scenario_m1(adaptive_signals=adaptive_m1)
+                    report = run_scenario_m1(adaptive_signals=adaptive_m1, **scenario_kwargs)
                 elif scenario_key == "T1":
                     strat_map = {
                         "Dynamic": SlicingStrategy.DYNAMIC,
                         "Static": SlicingStrategy.STATIC,
                     }
-                    report = run_scenario_t1(strategy=strat_map[strategy_t1])
+                    report = run_scenario_t1(strategy=strat_map[strategy_t1], **scenario_kwargs)
 
             _display_report(report)
 

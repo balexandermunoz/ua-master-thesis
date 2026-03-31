@@ -161,11 +161,22 @@ class NetworkSlicingSimulation(BaseFederate):
     """Main 5G slice resource allocation simulation with HELICS support"""
 
     def __init__(self, name: str = "SliceSim", use_helics: bool = False,
-                 strategy: SlicingStrategy = SlicingStrategy.DYNAMIC):
+                 strategy: SlicingStrategy = SlicingStrategy.DYNAMIC,
+                 num_gnbs: int = 3,
+                 embb_users: int = 100,
+                 urllc_users: int = 40,
+                 mmtc_users: int = 60,
+                 rbs_per_gnb: int = 100):
         super().__init__(name, use_helics,
                          time_step=0.1,            # 100 ms
                          sim_duration=3600.0)       # 1 hour
         self.strategy = strategy
+
+        # Configurable parameters
+        self.num_gnbs = num_gnbs
+        self.embb_users = embb_users
+        self.urllc_users = urllc_users
+        self.mmtc_users = mmtc_users
 
         # Network elements
         self.gnbs: List[GNodeB] = []
@@ -173,7 +184,7 @@ class NetworkSlicingSimulation(BaseFederate):
 
         # Simulation parameters
         self.area_size = 2000.0  # 2 km × 2 km
-        self.total_rbs = 100
+        self.total_rbs = rbs_per_gnb
         self.handover_hysteresis_db = 3.0
         self.handover_success_prob = 0.95
         self.shadow_std_db = 4.0
@@ -203,25 +214,29 @@ class NetworkSlicingSimulation(BaseFederate):
         """Create gNBs and users"""
         logger.info("Initializing network components...")
 
-        # 3 gNBs in triangular layout
-        gnb_positions = [
+        # gNBs in triangular layout (scale positions to area)
+        default_positions = [
             (500.0, 500.0),
             (1500.0, 500.0),
             (1000.0, 1500.0),
         ]
-        for i, pos in enumerate(gnb_positions):
+        for i in range(self.num_gnbs):
+            pos = default_positions[i] if i < len(default_positions) else (
+                np.random.uniform(0, self.area_size),
+                np.random.uniform(0, self.area_size),
+            )
             self.gnbs.append(GNodeB(i, pos, self.total_rbs))
             self.allocators.append(SliceResourceAllocator(self.total_rbs, self.strategy))
 
-        # 200 users: 100 eMBB, 40 URLLC, 60 mMTC
+        # Users per slice
         user_id = 0
-        for _ in range(100):
+        for _ in range(self.embb_users):
             self.users.append(MobileUser(user_id, SliceType.EMBB, self.area_size))
             user_id += 1
-        for _ in range(40):
+        for _ in range(self.urllc_users):
             self.users.append(MobileUser(user_id, SliceType.URLLC, self.area_size))
             user_id += 1
-        for _ in range(60):
+        for _ in range(self.mmtc_users):
             self.users.append(MobileUser(user_id, SliceType.MMTC, self.area_size))
             user_id += 1
 
@@ -230,7 +245,7 @@ class NetworkSlicingSimulation(BaseFederate):
             self._assign_serving_gnb(user)
 
         logger.info(f"Created {len(self.gnbs)} gNBs and {len(self.users)} users "
-                    f"(100 eMBB, 40 URLLC, 60 mMTC)")
+                    f"({self.embb_users} eMBB, {self.urllc_users} URLLC, {self.mmtc_users} mMTC)")
 
     def _register_publications(self):
         """Register telecom-domain HELICS publications."""
@@ -473,12 +488,15 @@ class NetworkSlicingSimulation(BaseFederate):
 
 
 def run_scenario_t1(use_helics: bool = False,
-                    strategy: SlicingStrategy = SlicingStrategy.DYNAMIC):
+                    strategy: SlicingStrategy = SlicingStrategy.DYNAMIC,
+                    **kwargs):
     """Run Scenario T1
 
     Args:
         use_helics: If True, use HELICS for co-simulation
         strategy: SlicingStrategy.STATIC or SlicingStrategy.DYNAMIC
+        **kwargs: Optional parameters forwarded to NetworkSlicingSimulation
+            (num_gnbs, embb_users, urllc_users, mmtc_users, rbs_per_gnb).
     """
     logging.basicConfig(
         level=logging.INFO,
@@ -490,7 +508,7 @@ def run_scenario_t1(use_helics: bool = False,
     logger.info("=" * 70)
 
     sim = NetworkSlicingSimulation(
-        "SliceSim_T1", use_helics=use_helics, strategy=strategy
+        "SliceSim_T1", use_helics=use_helics, strategy=strategy, **kwargs
     )
     sim.setup_federate()
     sim.run_simulation()
@@ -505,7 +523,7 @@ def run_scenario_t1(use_helics: bool = False,
     return report
 
 
-def compare_slicing_strategies(use_helics: bool = False):
+def compare_slicing_strategies(use_helics: bool = False, **kwargs):
     """Compare static vs dynamic slicing strategies"""
     logger.info("=" * 70)
     logger.info("COMPARING SLICING STRATEGIES")
@@ -516,7 +534,7 @@ def compare_slicing_strategies(use_helics: bool = False):
     for strat in [SlicingStrategy.STATIC, SlicingStrategy.DYNAMIC]:
         np.random.seed(42)
         logger.info(f"\nRunning {strat.value} slicing...")
-        report = run_scenario_t1(use_helics, strat)
+        report = run_scenario_t1(use_helics, strat, **kwargs)
         results[strat.value] = report
 
     # Print comparison

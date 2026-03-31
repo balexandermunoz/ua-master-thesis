@@ -283,11 +283,21 @@ class EVChargingFederate(BaseFederate):
     """HELICS federate for EV charging simulation"""
     
     def __init__(self, name: str = "EVCharging", use_helics: bool = False,
-                 strategy: ChargingStrategy = ChargingStrategy.SMART):
+                 strategy: ChargingStrategy = ChargingStrategy.SMART,
+                 num_vehicles: int = 100,
+                 num_l2_stations: int = 20,
+                 num_dc_stations: int = 5,
+                 grid_capacity_kw: float = 2500.0,
+                 base_load_kw: float = 2000.0):
         super().__init__(name, use_helics,
                          time_step=5 * 60,         # 5 minutes in seconds
                          sim_duration=36 * 3600)    # 36 hours
         self.strategy = strategy
+        
+        # Configurable parameters
+        self.num_vehicles = num_vehicles
+        self.num_l2_stations = num_l2_stations
+        self.num_dc_stations = num_dc_stations
         
         # Grid components
         self.vehicles: List[ElectricVehicle] = []
@@ -298,8 +308,8 @@ class EVChargingFederate(BaseFederate):
         
         # Grid parameters (IEEE 13-node)
         self.num_nodes = 13
-        self.grid_capacity_kw = 2500  # Total grid capacity
-        self.base_load_kw = 2000  # Base residential/commercial load
+        self.grid_capacity_kw = grid_capacity_kw
+        self.base_load_kw = base_load_kw
         
         # Metrics
         self.load_profiles = {"uncoordinated": [], "smart": [], "v2g": [], "base": []}
@@ -313,24 +323,24 @@ class EVChargingFederate(BaseFederate):
         """Initialize all EV charging components"""
         logger.info("Initializing EV charging infrastructure...")
         
-        # Create 100 electric vehicles
-        for i in range(100):
+        # Create electric vehicles
+        for i in range(self.num_vehicles):
             # Battery capacities: 40-100 kWh (various EV models)
             capacity = np.random.uniform(40.0, 100.0)
             # Initial SOC: 20-50% (arrived from trip)
             initial_soc = np.random.uniform(0.2, 0.5)
             self.vehicles.append(ElectricVehicle(i, capacity, initial_soc))
             
-        # Create 20 Level 2 charging stations (residential, nodes 1-8)
-        for i in range(20):
+        # Create Level 2 charging stations (residential, nodes 1-8)
+        for i in range(self.num_l2_stations):
             node_id = np.random.randint(1, 9)
             station = ChargingStation(i, ChargerType.LEVEL_2, node_id, num_ports=4)
             self.charging_stations.append(station)
             
-        # Create 5 DC fast charging stations (commercial, nodes 9-13)
-        for i in range(5):
+        # Create DC fast charging stations (commercial, nodes 9-13)
+        for i in range(self.num_dc_stations):
             node_id = np.random.randint(9, 14)
-            station = ChargingStation(20 + i, ChargerType.DC_FAST, node_id, num_ports=2)
+            station = ChargingStation(self.num_l2_stations + i, ChargerType.DC_FAST, node_id, num_ports=2)
             self.charging_stations.append(station)
             
         # Create transformers for each node
@@ -578,12 +588,16 @@ class EVChargingFederate(BaseFederate):
         return report
         
 def run_scenario_e2(use_helics: bool = False, 
-                   strategy: ChargingStrategy = ChargingStrategy.SMART):
+                   strategy: ChargingStrategy = ChargingStrategy.SMART,
+                   **kwargs):
     """Main function to run Scenario E2
     
     Args:
         use_helics: If True, use HELICS for co-simulation
         strategy: Charging control strategy to use
+        **kwargs: Optional parameters forwarded to EVChargingFederate
+            (num_vehicles, num_l2_stations, num_dc_stations,
+             grid_capacity_kw, base_load_kw).
     """
     logging.basicConfig(
         level=logging.INFO,
@@ -595,7 +609,7 @@ def run_scenario_e2(use_helics: bool = False,
     logger.info("="*70)
     
     # Create and initialize federate
-    ev_sim = EVChargingFederate("EVCharging_E2", use_helics=use_helics, strategy=strategy)
+    ev_sim = EVChargingFederate("EVCharging_E2", use_helics=use_helics, strategy=strategy, **kwargs)
     ev_sim.initialize_components()
     
     # Run simulation
@@ -613,7 +627,7 @@ def run_scenario_e2(use_helics: bool = False,
     return report
 
 
-def compare_strategies(use_helics: bool = False):
+def compare_strategies(use_helics: bool = False, **kwargs):
     """Compare different charging strategies"""
     logger.info("="*70)
     logger.info("COMPARING CHARGING STRATEGIES")
@@ -629,7 +643,7 @@ def compare_strategies(use_helics: bool = False):
     for strategy in strategies:
         np.random.seed(42)
         logger.info(f"\nRunning {strategy.value} strategy...")
-        report = run_scenario_e2(use_helics, strategy)
+        report = run_scenario_e2(use_helics, strategy, **kwargs)
         results[strategy.value] = report
         
     # Print comparison

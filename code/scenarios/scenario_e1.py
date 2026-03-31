@@ -141,10 +141,29 @@ class ResidentialLoad:
 class SmartGridFederate(BaseFederate):
     """HELICS federate for smart grid simulation"""
     
-    def __init__(self, name: str = "SmartGrid", use_helics: bool = False):
+    def __init__(self, name: str = "SmartGrid", use_helics: bool = False,
+                 num_solar_pvs: int = 50,
+                 solar_capacity_min_kw: float = 5.0,
+                 solar_capacity_max_kw: float = 10.0,
+                 num_wind_turbines: int = 3,
+                 wind_capacity_kw: float = 500.0,
+                 num_batteries: int = 5,
+                 battery_capacity_kwh: float = 50.0,
+                 num_loads: int = 800,
+                 sim_duration_hours: int = 24):
         super().__init__(name, use_helics,
                          time_step=15 * 60,       # 15 minutes in seconds
-                         sim_duration=24 * 3600)   # 24 hours in seconds
+                         sim_duration=sim_duration_hours * 3600)
+        
+        # Configurable parameters
+        self.num_solar_pvs = num_solar_pvs
+        self.solar_capacity_min_kw = solar_capacity_min_kw
+        self.solar_capacity_max_kw = solar_capacity_max_kw
+        self.num_wind_turbines = num_wind_turbines
+        self.wind_capacity_kw = wind_capacity_kw
+        self.num_batteries = num_batteries
+        self.battery_capacity_kwh = battery_capacity_kwh
+        self.num_loads = num_loads
         
         # Grid components
         self.solar_pvs: List[SolarPV] = []
@@ -168,25 +187,26 @@ class SmartGridFederate(BaseFederate):
         """Initialize all grid components"""
         logger.info("Initializing grid components...")
         
-        # Create 50 solar PV installations (5-10 kW each)
-        for i in range(50):
-            capacity = np.random.uniform(5.0, 10.0)
+        # Create solar PV installations
+        for i in range(self.num_solar_pvs):
+            capacity = np.random.uniform(self.solar_capacity_min_kw, self.solar_capacity_max_kw)
             bus_id = np.random.randint(1, 34)  # IEEE 33-bus system
             self.solar_pvs.append(SolarPV(i, capacity, bus_id))
             
-        # Create 3 wind turbines (500 kW each)
-        for i in range(3):
+        # Create wind turbines
+        for i in range(self.num_wind_turbines):
             bus_id = np.random.randint(1, 34)
-            self.wind_turbines.append(WindTurbine(i, 500.0, bus_id))
+            self.wind_turbines.append(WindTurbine(i, self.wind_capacity_kw, bus_id))
             
-        # Create 5 battery storage systems (50 kWh each)
-        for i in range(5):
+        # Create battery storage systems
+        for i in range(self.num_batteries):
             bus_id = np.random.randint(1, 34)
             # Max power = 0.5C rate
-            self.batteries.append(BatteryStorage(i, 50.0, 25.0, bus_id))
+            max_power = self.battery_capacity_kwh * 0.5
+            self.batteries.append(BatteryStorage(i, self.battery_capacity_kwh, max_power, bus_id))
             
-        # Create 800 residential loads
-        for i in range(800):
+        # Create residential loads
+        for i in range(self.num_loads):
             base_load = np.random.uniform(0.5, 3.0)  # 0.5-3 kW base
             bus_id = np.random.randint(1, 34)
             self.loads.append(ResidentialLoad(i, base_load, bus_id))
@@ -400,11 +420,15 @@ class SmartGridFederate(BaseFederate):
         
         return report
         
-def run_scenario_e1(use_helics: bool = False):
+def run_scenario_e1(use_helics: bool = False, **kwargs):
     """Main function to run Scenario E1
     
     Args:
         use_helics: If True, use HELICS for co-simulation. If False, run standalone.
+        **kwargs: Optional parameters forwarded to SmartGridFederate
+            (num_solar_pvs, solar_capacity_min_kw, solar_capacity_max_kw,
+             num_wind_turbines, wind_capacity_kw, num_batteries,
+             battery_capacity_kwh, num_loads, sim_duration_hours).
     """
     # Setup logging
     logging.basicConfig(
@@ -417,7 +441,7 @@ def run_scenario_e1(use_helics: bool = False):
     logger.info("="*70)
     
     # Create and initialize federate
-    grid = SmartGridFederate("SmartGrid_E1", use_helics=use_helics)
+    grid = SmartGridFederate("SmartGrid_E1", use_helics=use_helics, **kwargs)
     grid.initialize_components()
     grid.setup_federate()
     

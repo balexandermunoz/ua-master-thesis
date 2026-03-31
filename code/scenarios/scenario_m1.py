@@ -246,14 +246,19 @@ class TrafficSimulation(BaseFederate):
     """Main traffic simulation with HELICS support"""
     
     def __init__(self, name: str = "TrafficSim", use_helics: bool = False, 
-                 adaptive_signals: bool = True):
+                 adaptive_signals: bool = True,
+                 num_vehicles: int = 2500,
+                 grid_size: int = 5,
+                 sim_duration_hours: int = 3):
         super().__init__(name, use_helics,
                          time_step=1.0,            # 1 second
-                         sim_duration=3 * 3600)     # 3 hours in seconds
+                         sim_duration=sim_duration_hours * 3600)
         self.adaptive_signals = adaptive_signals
+        self.num_vehicles = num_vehicles
+        self.grid_size = grid_size
         
         # Network
-        self.network = TrafficNetwork(grid_size=5, spacing_m=1250.0)
+        self.network = TrafficNetwork(grid_size=grid_size, spacing_m=1250.0)
         self.vehicles: List[Vehicle] = []
         
         # Metrics
@@ -265,7 +270,7 @@ class TrafficSimulation(BaseFederate):
 
     def initialize_components(self):
         """Initialize traffic simulation components."""
-        self.initialize_vehicles()
+        self.initialize_vehicles(self.num_vehicles)
 
     def initialize_vehicles(self, num_vehicles: int = 2500):
         """Initialize vehicles with random OD pairs"""
@@ -273,11 +278,11 @@ class TrafficSimulation(BaseFederate):
         
         for i in range(num_vehicles):
             # Random origin and destination
-            origin = (np.random.randint(0, 5), np.random.randint(0, 5))
-            destination = (np.random.randint(0, 5), np.random.randint(0, 5))
+            origin = (np.random.randint(0, self.grid_size), np.random.randint(0, self.grid_size))
+            destination = (np.random.randint(0, self.grid_size), np.random.randint(0, self.grid_size))
             
             while origin == destination:
-                destination = (np.random.randint(0, 5), np.random.randint(0, 5))
+                destination = (np.random.randint(0, self.grid_size), np.random.randint(0, self.grid_size))
                 
             vehicle = Vehicle(i, origin, destination)
             
@@ -469,12 +474,14 @@ class TrafficSimulation(BaseFederate):
         return report
         
 
-def run_scenario_m1(use_helics: bool = False, adaptive_signals: bool = True):
+def run_scenario_m1(use_helics: bool = False, adaptive_signals: bool = True, **kwargs):
     """Run Scenario M1
     
     Args:
         use_helics: If True, use HELICS for co-simulation
         adaptive_signals: If True, use adaptive signal control
+        **kwargs: Optional parameters forwarded to TrafficSimulation
+            (num_vehicles, grid_size, sim_duration_hours).
     """
     logging.basicConfig(
         level=logging.INFO,
@@ -487,7 +494,7 @@ def run_scenario_m1(use_helics: bool = False, adaptive_signals: bool = True):
     
     # Create and run simulation
     sim = TrafficSimulation("TrafficSim_M1", use_helics=use_helics, 
-                           adaptive_signals=adaptive_signals)
+                           adaptive_signals=adaptive_signals, **kwargs)
     sim.run_simulation()
     
     # Generate report
@@ -502,7 +509,7 @@ def run_scenario_m1(use_helics: bool = False, adaptive_signals: bool = True):
     return report
 
 
-def compare_signal_strategies(use_helics: bool = False):
+def compare_signal_strategies(use_helics: bool = False, **kwargs):
     """Compare fixed vs adaptive signal control"""
     logger.info("="*70)
     logger.info("COMPARING SIGNAL CONTROL STRATEGIES")
@@ -514,7 +521,7 @@ def compare_signal_strategies(use_helics: bool = False):
         np.random.seed(42)
         strategy = "adaptive" if adaptive else "fixed"
         logger.info(f"\nRunning {strategy} signal control...")
-        report = run_scenario_m1(use_helics, adaptive)
+        report = run_scenario_m1(use_helics, adaptive, **kwargs)
         results[strategy] = report
         
     # Print comparison
