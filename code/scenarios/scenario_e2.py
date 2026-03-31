@@ -15,6 +15,8 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional
 from enum import Enum
 
+from engine.base import BaseFederate, print_report
+
 logger = logging.getLogger(__name__)
 
 
@@ -277,14 +279,14 @@ class SmartChargingController:
         return power_allocation
 
 
-class EVChargingFederate:
+class EVChargingFederate(BaseFederate):
     """HELICS federate for EV charging simulation"""
     
     def __init__(self, name: str = "EVCharging", use_helics: bool = False,
                  strategy: ChargingStrategy = ChargingStrategy.SMART):
-        self.name = name
-        self.federate = None
-        self.use_helics = use_helics
+        super().__init__(name, use_helics,
+                         time_step=5 * 60,         # 5 minutes in seconds
+                         sim_duration=36 * 3600)    # 36 hours
         self.strategy = strategy
         
         # Grid components
@@ -293,10 +295,6 @@ class EVChargingFederate:
         self.transformers: List[TransformerModel] = []
         self.tariff = TimeOfUseTariff()
         self.smart_controller = None
-        
-        # Simulation parameters
-        self.time_step = 5 * 60  # 5 minutes in seconds
-        self.sim_duration = 36 * 3600  # 36 hours to cover overnight charging
         
         # Grid parameters (IEEE 13-node)
         self.num_nodes = 13
@@ -506,11 +504,7 @@ class EVChargingFederate:
                 )
                 
             # Time advancement
-            if self.use_helics and self.federate:
-                current_time = h.helicsFederateRequestTime(self.federate, 
-                                                           current_time + self.time_step)
-            else:
-                current_time += self.time_step
+            current_time = self.advance_time(current_time)
                 
             step += 1
             if step % 72 == 0:  # Log every 6 hours
@@ -583,18 +577,6 @@ class EVChargingFederate:
         
         return report
         
-    def cleanup(self):
-        """Cleanup HELICS federate"""
-        if self.use_helics and self.federate:
-            try:
-                h.helicsFederateFinalize(self.federate)
-                h.helicsFederateFree(self.federate)
-                h.helicsCloseLibrary()
-                logger.info("Federate cleaned up")
-            except Exception as e:
-                logger.warning(f"Error during cleanup: {e}")
-
-
 def run_scenario_e2(use_helics: bool = False, 
                    strategy: ChargingStrategy = ChargingStrategy.SMART):
     """Main function to run Scenario E2
@@ -623,21 +605,7 @@ def run_scenario_e2(use_helics: bool = False,
     report = ev_sim.generate_report()
     
     # Print report
-    logger.info("\n" + "="*70)
-    logger.info("SIMULATION REPORT")
-    logger.info("="*70)
-    logger.info(f"Scenario: {report['scenario']}")
-    logger.info(f"Strategy: {report['charging_strategy'].upper()}")
-    logger.info(f"\nComponents:")
-    for key, value in report['components'].items():
-        logger.info(f"  {key}: {value}")
-    logger.info(f"\nMetrics:")
-    for key, value in report['metrics'].items():
-        if isinstance(value, float):
-            logger.info(f"  {key}: {value:.2f}")
-        else:
-            logger.info(f"  {key}: {value}")
-    logger.info("="*70)
+    print_report(report, logger, extra_headers={"Strategy": "charging_strategy"})
     
     # Cleanup
     ev_sim.cleanup()
