@@ -15,6 +15,8 @@ from typing import Dict, List, Tuple, Optional
 from enum import Enum
 from collections import deque
 
+from engine.base import BaseFederate, print_report
+
 logger = logging.getLogger(__name__)
 
 
@@ -240,23 +242,19 @@ class TrafficNetwork:
         return routes
 
 
-class TrafficSimulation:
+class TrafficSimulation(BaseFederate):
     """Main traffic simulation with HELICS support"""
     
     def __init__(self, name: str = "TrafficSim", use_helics: bool = False, 
                  adaptive_signals: bool = True):
-        self.name = name
-        self.federate = None
-        self.use_helics = use_helics
+        super().__init__(name, use_helics,
+                         time_step=1.0,            # 1 second
+                         sim_duration=3 * 3600)     # 3 hours in seconds
         self.adaptive_signals = adaptive_signals
         
         # Network
         self.network = TrafficNetwork(grid_size=5, spacing_m=1250.0)
         self.vehicles: List[Vehicle] = []
-        
-        # Simulation parameters
-        self.time_step = 1.0  # 1 second
-        self.sim_duration = 3 * 3600  # 3 hours in seconds
         
         # Metrics
         self.completed_vehicles = []
@@ -264,7 +262,11 @@ class TrafficSimulation:
         self.total_emissions = []
         self.queue_lengths = {pos: [] for pos in self.network.intersections.keys()}
         self.intersection_delays = {pos: [] for pos in self.network.intersections.keys()}
-        
+
+    def initialize_components(self):
+        """Initialize traffic simulation components."""
+        self.initialize_vehicles()
+
     def initialize_vehicles(self, num_vehicles: int = 2500):
         """Initialize vehicles with random OD pairs"""
         logger.info(f"Initializing {num_vehicles} vehicles...")
@@ -396,7 +398,7 @@ class TrafficSimulation:
         """Run 3-hour traffic simulation"""
         logger.info(f"Starting 3-hour simulation with {'adaptive' if self.adaptive_signals else 'fixed'} signals")
         
-        self.initialize_vehicles()
+        self.initialize_components()
         
         current_time = 0.0
         step = 0
@@ -412,11 +414,7 @@ class TrafficSimulation:
             self.collect_metrics()
             
             # Time advancement
-            if self.use_helics and self.federate:
-                current_time = h.helicsFederateRequestTime(self.federate, 
-                                                           current_time + self.time_step)
-            else:
-                current_time += self.time_step
+            current_time = self.advance_time(current_time)
                 
             step += 1
             if step % 900 == 0:  # Log every 15 minutes
@@ -470,17 +468,6 @@ class TrafficSimulation:
         
         return report
         
-    def cleanup(self):
-        """Cleanup HELICS federate"""
-        if self.use_helics and self.federate:
-            try:
-                h.helicsFederateFinalize(self.federate)
-                h.helicsFederateFree(self.federate)
-                h.helicsCloseLibrary()
-                logger.info("Federate cleaned up")
-            except Exception as e:
-                logger.warning(f"Error during cleanup: {e}")
-
 
 def run_scenario_m1(use_helics: bool = False, adaptive_signals: bool = True):
     """Run Scenario M1
@@ -507,21 +494,7 @@ def run_scenario_m1(use_helics: bool = False, adaptive_signals: bool = True):
     report = sim.generate_report()
     
     # Print report
-    logger.info("\n" + "="*70)
-    logger.info("SIMULATION REPORT")
-    logger.info("="*70)
-    logger.info(f"Scenario: {report['scenario']}")
-    logger.info(f"Signal Control: {report['signal_control'].upper()}")
-    logger.info(f"\nComponents:")
-    for key, value in report['components'].items():
-        logger.info(f"  {key}: {value}")
-    logger.info(f"\nMetrics:")
-    for key, value in report['metrics'].items():
-        if isinstance(value, float):
-            logger.info(f"  {key}: {value:.2f}")
-        else:
-            logger.info(f"  {key}: {value}")
-    logger.info("="*70)
+    print_report(report, logger, extra_headers={"Signal Control": "signal_control"})
     
     # Cleanup
     sim.cleanup()
