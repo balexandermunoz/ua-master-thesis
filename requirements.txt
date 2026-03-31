@@ -4,3 +4,5 @@ proselint
 ## Code requirements:
 helics>=3.4.0
 numpy>=1.24.0
+streamlit>=1.30.0
+pandas>=2.0.0
