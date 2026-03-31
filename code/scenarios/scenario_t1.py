@@ -13,6 +13,8 @@ import logging
 from typing import Dict, List, Tuple, Optional
 from enum import Enum
 
+from engine.base import BaseFederate, print_report
+
 logger = logging.getLogger(__name__)
 
 
@@ -155,14 +157,14 @@ class SliceResourceAllocator:
         return allocation
 
 
-class NetworkSlicingSimulation:
+class NetworkSlicingSimulation(BaseFederate):
     """Main 5G slice resource allocation simulation with HELICS support"""
 
     def __init__(self, name: str = "SliceSim", use_helics: bool = False,
                  strategy: SlicingStrategy = SlicingStrategy.DYNAMIC):
-        self.name = name
-        self.federate = None
-        self.use_helics = use_helics
+        super().__init__(name, use_helics,
+                         time_step=0.1,            # 100 ms
+                         sim_duration=3600.0)       # 1 hour
         self.strategy = strategy
 
         # Network elements
@@ -170,8 +172,6 @@ class NetworkSlicingSimulation:
         self.users: List[MobileUser] = []
 
         # Simulation parameters
-        self.time_step = 0.1  # 100 ms
-        self.sim_duration = 3600.0  # 1 hour
         self.area_size = 2000.0  # 2 km × 2 km
         self.total_rbs = 100
         self.handover_hysteresis_db = 3.0
@@ -232,37 +232,14 @@ class NetworkSlicingSimulation:
         logger.info(f"Created {len(self.gnbs)} gNBs and {len(self.users)} users "
                     f"(100 eMBB, 40 URLLC, 60 mMTC)")
 
-    def setup_federate(self):
-        """Setup HELICS federate (optional for standalone simulation)"""
-        if not self.use_helics:
-            logger.info("Running in standalone mode (HELICS disabled)")
-            return
-
-        logger.info("Setting up HELICS federate...")
-        try:
-            fedinfo = h.helicsCreateFederateInfo()
-            h.helicsFederateInfoSetCoreName(fedinfo, self.name)
-            h.helicsFederateInfoSetCoreTypeFromString(fedinfo, "zmq")
-            h.helicsFederateInfoSetCoreInitString(fedinfo, "--federates=1 --autobroker")
-            h.helicsFederateInfoSetTimeProperty(fedinfo, h.helics_property_time_delta, self.time_step)
-
-            self.federate = h.helicsCreateValueFederate(self.name, fedinfo)
-            logger.info(f"Federate '{self.name}' created")
-
-            # Register publications
-            self.pub_urllc_qos = h.helicsFederateRegisterGlobalPublication(
-                self.federate, "urllc_qos_status", h.helics_data_type_double, ""
-            )
-            self.pub_network_load = h.helicsFederateRegisterGlobalPublication(
-                self.federate, "total_network_load", h.helics_data_type_double, "W"
-            )
-
-            h.helicsFederateEnterExecutingMode(self.federate)
-            logger.info("Federate entering execution mode")
-        except Exception as e:
-            logger.warning(f"HELICS setup failed: {e}. Running in standalone mode.")
-            self.federate = None
-            self.use_helics = False
+    def _register_publications(self):
+        """Register telecom-domain HELICS publications."""
+        self.pub_urllc_qos = h.helicsFederateRegisterGlobalPublication(
+            self.federate, "urllc_qos_status", h.helics_data_type_double, ""
+        )
+        self.pub_network_load = h.helicsFederateRegisterGlobalPublication(
+            self.federate, "total_network_load", h.helics_data_type_double, "W"
+        )
 
     def _assign_serving_gnb(self, user: MobileUser):
         """Assign user to strongest gNB"""
@@ -419,7 +396,7 @@ class NetworkSlicingSimulation:
                              if urllc_total > 0 else 1.0)
                 h.helicsPublicationPublishDouble(self.pub_urllc_qos, urllc_sat)
                 h.helicsPublicationPublishDouble(self.pub_network_load, float(step_rbs_used))
-                current_time = h.helicsFederateRequestTime(self.federate, current_time + self.time_step)
+                current_time = self.advance_time(current_time)
             else:
                 current_time += self.time_step
 
@@ -494,17 +471,6 @@ class NetworkSlicingSimulation:
 
         return report
 
-    def cleanup(self):
-        """Cleanup HELICS federate"""
-        if self.use_helics and self.federate:
-            try:
-                h.helicsFederateFinalize(self.federate)
-                h.helicsFederateFree(self.federate)
-                h.helicsCloseLibrary()
-                logger.info("Federate cleaned up")
-            except Exception as e:
-                logger.warning(f"Error during cleanup: {e}")
-
 
 def run_scenario_t1(use_helics: bool = False,
                     strategy: SlicingStrategy = SlicingStrategy.DYNAMIC):
@@ -532,21 +498,8 @@ def run_scenario_t1(use_helics: bool = False,
     report = sim.generate_report()
 
     # Print report
-    logger.info("\n" + "=" * 70)
-    logger.info("SIMULATION REPORT")
-    logger.info("=" * 70)
-    logger.info(f"Scenario: {report['scenario']}")
-    logger.info(f"Slicing Strategy: {report['slicing_strategy'].upper()}")
-    logger.info(f"\nComponents:")
-    for key, value in report['components'].items():
-        logger.info(f"  {key}: {value}")
-    logger.info(f"\nMetrics:")
-    for key, value in report['metrics'].items():
-        if isinstance(value, float):
-            logger.info(f"  {key}: {value:.2f}")
-        else:
-            logger.info(f"  {key}: {value}")
-    logger.info("=" * 70)
+    print_report(report, logger,
+                 extra_headers={"Slicing Strategy": "slicing_strategy"})
 
     sim.cleanup()
     return report
