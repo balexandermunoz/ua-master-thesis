@@ -14,6 +14,8 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
 
+from engine.base import BaseFederate, print_report
+
 logger = logging.getLogger(__name__)
 
 
@@ -136,23 +138,19 @@ class ResidentialLoad:
         return self.current_load_kw
 
 
-class SmartGridFederate:
+class SmartGridFederate(BaseFederate):
     """HELICS federate for smart grid simulation"""
     
     def __init__(self, name: str = "SmartGrid", use_helics: bool = False):
-        self.name = name
-        self.federate = None
-        self.use_helics = use_helics
+        super().__init__(name, use_helics,
+                         time_step=15 * 60,       # 15 minutes in seconds
+                         sim_duration=24 * 3600)   # 24 hours in seconds
         
         # Grid components
         self.solar_pvs: List[SolarPV] = []
         self.wind_turbines: List[WindTurbine] = []
         self.batteries: List[BatteryStorage] = []
         self.loads: List[ResidentialLoad] = []
-        
-        # Simulation parameters
-        self.time_step = 15 * 60  # 15 minutes in seconds
-        self.sim_duration = 24 * 3600  # 24 hours in seconds
         
         # Metrics
         self.voltage_profiles = []
@@ -198,44 +196,17 @@ class SmartGridFederate:
                    f"{len(self.batteries)} batteries, "
                    f"{len(self.loads)} loads")
         
-    def setup_federate(self):
-        """Setup HELICS federate (optional for standalone simulation)"""
-        if not self.use_helics:
-            logger.info("Running in standalone mode (HELICS disabled)")
-            return
-            
-        logger.info("Setting up HELICS federate...")
-        
-        try:
-            # Create federate info
-            fedinfo = h.helicsCreateFederateInfo()
-            h.helicsFederateInfoSetCoreName(fedinfo, self.name)
-            h.helicsFederateInfoSetCoreTypeFromString(fedinfo, "zmq")
-            h.helicsFederateInfoSetCoreInitString(fedinfo, "--federates=1 --autobroker")
-            h.helicsFederateInfoSetTimeProperty(fedinfo, h.helics_property_time_delta, self.time_step)
-            
-            # Create value federate
-            self.federate = h.helicsCreateValueFederate(self.name, fedinfo)
-            logger.info(f"Federate '{self.name}' created")
-            
-            # Register publications (outputs from this federate)
-            self.pub_total_generation = h.helicsFederateRegisterGlobalPublication(
-                self.federate, "total_renewable_generation", h.helics_data_type_double, "kW"
-            )
-            self.pub_total_load = h.helicsFederateRegisterGlobalPublication(
-                self.federate, "total_load", h.helics_data_type_double, "kW"
-            )
-            self.pub_net_power = h.helicsFederateRegisterGlobalPublication(
-                self.federate, "net_power", h.helics_data_type_double, "kW"
-            )
-            
-            # Enter initialization mode
-            h.helicsFederateEnterExecutingMode(self.federate)
-            logger.info("Federate entering execution mode")
-        except Exception as e:
-            logger.warning(f"HELICS setup failed: {e}. Running in standalone mode.")
-            self.federate = None
-            self.use_helics = False
+    def _register_publications(self):
+        """Register energy-domain HELICS publications."""
+        self.pub_total_generation = h.helicsFederateRegisterGlobalPublication(
+            self.federate, "total_renewable_generation", h.helics_data_type_double, "kW"
+        )
+        self.pub_total_load = h.helicsFederateRegisterGlobalPublication(
+            self.federate, "total_load", h.helics_data_type_double, "kW"
+        )
+        self.pub_net_power = h.helicsFederateRegisterGlobalPublication(
+            self.federate, "net_power", h.helics_data_type_double, "kW"
+        )
         
     def calculate_storage_dispatch(self, net_power: float) -> float:
         """Calculate battery dispatch strategy"""
@@ -333,12 +304,8 @@ class SmartGridFederate:
                 h.helicsPublicationPublishDouble(self.pub_total_generation, total_renewable)
                 h.helicsPublicationPublishDouble(self.pub_total_load, total_load_kw)
                 h.helicsPublicationPublishDouble(self.pub_net_power, net_power)
-                
-                # Request time advancement
-                current_time = h.helicsFederateRequestTime(self.federate, current_time + self.time_step)
-            else:
-                # Standalone mode - just advance time
-                current_time += self.time_step
+            
+            current_time = self.advance_time(current_time)
             
             step += 1
             if step % 16 == 0:  # Log every 4 hours
@@ -433,18 +400,6 @@ class SmartGridFederate:
         
         return report
         
-    def cleanup(self):
-        """Cleanup HELICS federate"""
-        if self.use_helics and self.federate:
-            try:
-                h.helicsFederateFinalize(self.federate)
-                h.helicsFederateFree(self.federate)
-                h.helicsCloseLibrary()
-                logger.info("Federate cleaned up")
-            except Exception as e:
-                logger.warning(f"Error during cleanup: {e}")
-
-
 def run_scenario_e1(use_helics: bool = False):
     """Main function to run Scenario E1
     
@@ -473,20 +428,7 @@ def run_scenario_e1(use_helics: bool = False):
     report = grid.generate_report()
     
     # Print report
-    logger.info("\n" + "="*70)
-    logger.info("SIMULATION REPORT")
-    logger.info("="*70)
-    logger.info(f"Scenario: {report['scenario']}")
-    logger.info(f"\nComponents:")
-    for key, value in report['components'].items():
-        logger.info(f"  {key}: {value}")
-    logger.info(f"\nMetrics:")
-    for key, value in report['metrics'].items():
-        if isinstance(value, float):
-            logger.info(f"  {key}: {value:.2f}")
-        else:
-            logger.info(f"  {key}: {value}")
-    logger.info("="*70)
+    print_report(report, logger)
     
     # Cleanup
     grid.cleanup()
