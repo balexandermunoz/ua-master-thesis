@@ -11,6 +11,7 @@ import logging
 import sys
 import os
 import io
+import time
 
 # Ensure the code/ directory is on the import path
 sys.path.insert(0, os.path.dirname(__file__))
@@ -51,6 +52,35 @@ SCENARIOS = {
 scenario_label = st.sidebar.selectbox("Select Scenario", list(SCENARIOS.keys()))
 scenario_key = SCENARIOS[scenario_label]
 
+# ---------------------------------------------------------------------------
+# Article-default parameter values
+# ---------------------------------------------------------------------------
+E1_DEFAULTS = {
+    "e1_num_solar_pvs": 50, "e1_solar_capacity_min_kw": 5.0,
+    "e1_solar_capacity_max_kw": 10.0, "e1_num_wind_turbines": 3,
+    "e1_wind_capacity_kw": 500.0, "e1_num_batteries": 5,
+    "e1_battery_capacity_kwh": 50.0, "e1_num_loads": 800,
+    "e1_sim_duration_hours": 24,
+}
+E2_DEFAULTS = {
+    "e2_num_vehicles": 100, "e2_num_l2_stations": 20,
+    "e2_num_dc_stations": 5, "e2_grid_capacity_kw": 2500.0,
+    "e2_base_load_kw": 2000.0,
+}
+M1_DEFAULTS = {
+    "m1_num_vehicles": 2500, "m1_grid_size": 5,
+    "m1_sim_duration_hours": 3,
+}
+T1_DEFAULTS = {
+    "t1_num_gnbs": 3, "t1_embb_users": 100, "t1_urllc_users": 40,
+    "t1_mmtc_users": 60, "t1_rbs_per_gnb": 100,
+}
+
+def _reset_params(defaults: dict):
+    """Reset session_state keys to article defaults."""
+    for k, v in defaults.items():
+        st.session_state[k] = v
+
 # Per-scenario options
 strategy_e2 = None
 adaptive_m1 = True
@@ -61,16 +91,34 @@ scenario_kwargs = {}
 if scenario_key == "E1":
     with st.sidebar.expander("Scenario Parameters", expanded=False):
         st.caption("Article defaults shown. Adjust to explore.")
-        scenario_kwargs["num_solar_pvs"] = st.number_input("Solar PV count", 1, 500, 50)
+        d = E1_DEFAULTS
+        scenario_kwargs["num_solar_pvs"] = st.number_input(
+            "Solar PV count", 1, 500, d["e1_num_solar_pvs"], key="e1_num_solar_pvs")
         col1, col2 = st.columns(2)
-        scenario_kwargs["solar_capacity_min_kw"] = col1.number_input("Solar min (kW)", 0.5, 50.0, 5.0, step=0.5)
-        scenario_kwargs["solar_capacity_max_kw"] = col2.number_input("Solar max (kW)", 1.0, 100.0, 10.0, step=0.5)
-        scenario_kwargs["num_wind_turbines"] = st.number_input("Wind turbine count", 0, 50, 3)
-        scenario_kwargs["wind_capacity_kw"] = st.number_input("Wind capacity (kW each)", 10.0, 5000.0, 500.0, step=50.0)
-        scenario_kwargs["num_batteries"] = st.number_input("Battery count", 0, 100, 5)
-        scenario_kwargs["battery_capacity_kwh"] = st.number_input("Battery capacity (kWh each)", 5.0, 500.0, 50.0, step=5.0)
-        scenario_kwargs["num_loads"] = st.number_input("Residential loads", 10, 5000, 800, step=10)
-        scenario_kwargs["sim_duration_hours"] = st.number_input("Simulation duration (h)", 1, 72, 24)
+        scenario_kwargs["solar_capacity_min_kw"] = col1.number_input(
+            "Solar min (kW)", 0.5, 50.0, d["e1_solar_capacity_min_kw"],
+            step=0.5, key="e1_solar_capacity_min_kw")
+        scenario_kwargs["solar_capacity_max_kw"] = col2.number_input(
+            "Solar max (kW)", 1.0, 100.0, d["e1_solar_capacity_max_kw"],
+            step=0.5, key="e1_solar_capacity_max_kw")
+        scenario_kwargs["num_wind_turbines"] = st.number_input(
+            "Wind turbine count", 0, 50, d["e1_num_wind_turbines"], key="e1_num_wind_turbines")
+        scenario_kwargs["wind_capacity_kw"] = st.number_input(
+            "Wind capacity (kW each)", 10.0, 5000.0, d["e1_wind_capacity_kw"],
+            step=50.0, key="e1_wind_capacity_kw")
+        scenario_kwargs["num_batteries"] = st.number_input(
+            "Battery count", 0, 100, d["e1_num_batteries"], key="e1_num_batteries")
+        scenario_kwargs["battery_capacity_kwh"] = st.number_input(
+            "Battery capacity (kWh each)", 5.0, 500.0, d["e1_battery_capacity_kwh"],
+            step=5.0, key="e1_battery_capacity_kwh")
+        scenario_kwargs["num_loads"] = st.number_input(
+            "Residential loads", 10, 5000, d["e1_num_loads"],
+            step=10, key="e1_num_loads")
+        scenario_kwargs["sim_duration_hours"] = st.number_input(
+            "Simulation duration (h)", 1, 72, d["e1_sim_duration_hours"],
+            key="e1_sim_duration_hours")
+        st.button("Reset to Defaults", on_click=_reset_params,
+                  args=(d,), key="e1_reset")
 
 elif scenario_key == "E2":
     strategy_e2 = st.sidebar.selectbox(
@@ -80,11 +128,24 @@ elif scenario_key == "E2":
     compare_mode = st.sidebar.checkbox("Compare all strategies")
     with st.sidebar.expander("Scenario Parameters", expanded=False):
         st.caption("Article defaults shown. Adjust to explore.")
-        scenario_kwargs["num_vehicles"] = st.number_input("Number of EVs", 10, 1000, 100, step=10)
-        scenario_kwargs["num_l2_stations"] = st.number_input("Level-2 stations", 1, 200, 20)
-        scenario_kwargs["num_dc_stations"] = st.number_input("DC-fast stations", 1, 50, 5)
-        scenario_kwargs["grid_capacity_kw"] = st.number_input("Grid capacity (kW)", 500.0, 20000.0, 2500.0, step=100.0)
-        scenario_kwargs["base_load_kw"] = st.number_input("Base load (kW)", 500.0, 15000.0, 2000.0, step=100.0)
+        d = E2_DEFAULTS
+        scenario_kwargs["num_vehicles"] = st.number_input(
+            "Number of EVs", 10, 1000, d["e2_num_vehicles"],
+            step=10, key="e2_num_vehicles")
+        scenario_kwargs["num_l2_stations"] = st.number_input(
+            "Level-2 stations", 1, 200, d["e2_num_l2_stations"],
+            key="e2_num_l2_stations")
+        scenario_kwargs["num_dc_stations"] = st.number_input(
+            "DC-fast stations", 1, 50, d["e2_num_dc_stations"],
+            key="e2_num_dc_stations")
+        scenario_kwargs["grid_capacity_kw"] = st.number_input(
+            "Grid capacity (kW)", 500.0, 20000.0, d["e2_grid_capacity_kw"],
+            step=100.0, key="e2_grid_capacity_kw")
+        scenario_kwargs["base_load_kw"] = st.number_input(
+            "Base load (kW)", 500.0, 15000.0, d["e2_base_load_kw"],
+            step=100.0, key="e2_base_load_kw")
+        st.button("Reset to Defaults", on_click=_reset_params,
+                  args=(d,), key="e2_reset")
 
 elif scenario_key == "M1":
     adaptive_m1 = st.sidebar.selectbox(
@@ -94,9 +155,17 @@ elif scenario_key == "M1":
     compare_mode = st.sidebar.checkbox("Compare both strategies")
     with st.sidebar.expander("Scenario Parameters", expanded=False):
         st.caption("Article defaults shown. Adjust to explore.")
-        scenario_kwargs["num_vehicles"] = st.number_input("Number of vehicles", 100, 10000, 2500, step=100)
-        scenario_kwargs["grid_size"] = st.number_input("Grid size (NxN)", 2, 10, 5)
-        scenario_kwargs["sim_duration_hours"] = st.number_input("Simulation duration (h)", 1, 12, 3)
+        d = M1_DEFAULTS
+        scenario_kwargs["num_vehicles"] = st.number_input(
+            "Number of vehicles", 100, 10000, d["m1_num_vehicles"],
+            step=100, key="m1_num_vehicles")
+        scenario_kwargs["grid_size"] = st.number_input(
+            "Grid size (NxN)", 2, 10, d["m1_grid_size"], key="m1_grid_size")
+        scenario_kwargs["sim_duration_hours"] = st.number_input(
+            "Simulation duration (h)", 1, 12, d["m1_sim_duration_hours"],
+            key="m1_sim_duration_hours")
+        st.button("Reset to Defaults", on_click=_reset_params,
+                  args=(d,), key="m1_reset")
 
 elif scenario_key == "T1":
     strategy_t1 = st.sidebar.selectbox(
@@ -106,11 +175,23 @@ elif scenario_key == "T1":
     compare_mode = st.sidebar.checkbox("Compare both strategies")
     with st.sidebar.expander("Scenario Parameters", expanded=False):
         st.caption("Article defaults shown. Adjust to explore.")
-        scenario_kwargs["num_gnbs"] = st.number_input("Number of gNBs", 1, 20, 3)
-        scenario_kwargs["embb_users"] = st.number_input("eMBB users", 10, 500, 100, step=10)
-        scenario_kwargs["urllc_users"] = st.number_input("URLLC users", 5, 200, 40, step=5)
-        scenario_kwargs["mmtc_users"] = st.number_input("mMTC users", 5, 500, 60, step=5)
-        scenario_kwargs["rbs_per_gnb"] = st.number_input("RBs per gNB", 10, 500, 100, step=10)
+        d = T1_DEFAULTS
+        scenario_kwargs["num_gnbs"] = st.number_input(
+            "Number of gNBs", 1, 20, d["t1_num_gnbs"], key="t1_num_gnbs")
+        scenario_kwargs["embb_users"] = st.number_input(
+            "eMBB users", 10, 500, d["t1_embb_users"],
+            step=10, key="t1_embb_users")
+        scenario_kwargs["urllc_users"] = st.number_input(
+            "URLLC users", 5, 200, d["t1_urllc_users"],
+            step=5, key="t1_urllc_users")
+        scenario_kwargs["mmtc_users"] = st.number_input(
+            "mMTC users", 5, 500, d["t1_mmtc_users"],
+            step=5, key="t1_mmtc_users")
+        scenario_kwargs["rbs_per_gnb"] = st.number_input(
+            "RBs per gNB", 10, 500, d["t1_rbs_per_gnb"],
+            step=10, key="t1_rbs_per_gnb")
+        st.button("Reset to Defaults", on_click=_reset_params,
+                  args=(d,), key="t1_reset")
 
 st.sidebar.markdown("---")
 run_button = st.sidebar.button("Run Simulation", type="primary", use_container_width=True)
@@ -251,7 +332,9 @@ def _highlight_keys(scenario_key: str) -> list:
 # Run simulation
 # ---------------------------------------------------------------------------
 if run_button:
-    # Capture log output to display in the UI
+    # Clear previous results
+    st.session_state.pop("last_result", None)
+
     log_stream = io.StringIO()
     handler = logging.StreamHandler(log_stream)
     handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
@@ -260,49 +343,71 @@ if run_button:
     root_logger.setLevel(logging.INFO)
 
     try:
-        if compare_mode:
-            with st.spinner("Running comparison – this may take a while…"):
+        t0 = time.time()
+        run_label = "Running comparison…" if compare_mode else "Running simulation…"
+        with st.status(run_label, expanded=True) as status:
+            result = None
+            if compare_mode:
                 if scenario_key == "E2":
-                    results = compare_strategies(**scenario_kwargs)
+                    result = compare_strategies(**scenario_kwargs)
                 elif scenario_key == "M1":
-                    results = compare_signal_strategies(**scenario_kwargs)
+                    result = compare_signal_strategies(**scenario_kwargs)
                 elif scenario_key == "T1":
-                    results = compare_slicing_strategies(**scenario_kwargs)
+                    result = compare_slicing_strategies(**scenario_kwargs)
                 else:
                     st.warning("Comparison not available for this scenario.")
-                    results = None
-
-            if results:
-                _display_comparison(results, scenario_key)
-        else:
-            with st.spinner("Running simulation…"):
+            else:
                 if scenario_key == "E1":
-                    report = run_scenario_e1(**scenario_kwargs)
+                    result = run_scenario_e1(**scenario_kwargs)
                 elif scenario_key == "E2":
                     strat_map = {
                         "Smart": ChargingStrategy.SMART,
                         "Uncoordinated": ChargingStrategy.UNCOORDINATED,
                         "V2G": ChargingStrategy.V2G,
                     }
-                    report = run_scenario_e2(strategy=strat_map[strategy_e2], **scenario_kwargs)
+                    result = run_scenario_e2(strategy=strat_map[strategy_e2], **scenario_kwargs)
                 elif scenario_key == "M1":
-                    report = run_scenario_m1(adaptive_signals=adaptive_m1, **scenario_kwargs)
+                    result = run_scenario_m1(adaptive_signals=adaptive_m1, **scenario_kwargs)
                 elif scenario_key == "T1":
                     strat_map = {
                         "Dynamic": SlicingStrategy.DYNAMIC,
                         "Static": SlicingStrategy.STATIC,
                     }
-                    report = run_scenario_t1(strategy=strat_map[strategy_t1], **scenario_kwargs)
+                    result = run_scenario_t1(strategy=strat_map[strategy_t1], **scenario_kwargs)
 
-            _display_report(report)
+            elapsed = time.time() - t0
+            status.update(label=f"Simulation completed in {elapsed:.1f}s",
+                          state="complete", expanded=False)
 
+        # Persist in session state so results survive widget interactions
+        st.session_state["last_result"] = result
+        st.session_state["last_scenario"] = scenario_key
+        st.session_state["last_compare"] = compare_mode
+        st.session_state["last_elapsed"] = elapsed
+        st.session_state["last_log"] = log_stream.getvalue()
+
+    except Exception as e:
+        st.error(f"Simulation failed: {e}")
     finally:
         root_logger.removeHandler(handler)
 
-    # Show simulation log
-    log_output = log_stream.getvalue()
-    if log_output:
-        with st.expander("Simulation Log"):
-            st.code(log_output, language="text")
-else:
+# ---------------------------------------------------------------------------
+# Display results (persisted across widget interactions)
+# ---------------------------------------------------------------------------
+if "last_result" in st.session_state and st.session_state.get("last_scenario") == scenario_key:
+    result = st.session_state["last_result"]
+    if result is not None:
+        elapsed = st.session_state.get("last_elapsed", 0)
+        st.success(f"Simulation completed in {elapsed:.1f}s")
+
+        if st.session_state.get("last_compare"):
+            _display_comparison(result, scenario_key)
+        else:
+            _display_report(result)
+
+        log_output = st.session_state.get("last_log", "")
+        if log_output:
+            with st.expander("Simulation Log"):
+                st.code(log_output, language="text")
+elif not run_button:
     st.info("Configure the scenario in the sidebar and click **Run Simulation**.")
