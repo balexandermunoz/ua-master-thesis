@@ -33,7 +33,7 @@ The proposed framework follows a three-layer modular architecture designed to ac
     \label{fig:architecture}
 \end{figure}
 
-\subsection{Core Simulation Engine}
+\subsection{Core Simulation Engine (Layer 1)}
 
 The lowest layer is a \textbf{domain-independent simulation engine} responsible for all generic simulation concerns: agent lifecycle management, event scheduling, temporal stepping, and state propagation. It makes no assumptions about the nature of the entities being simulated---whether they are power grid components, vehicles, or network nodes---relying instead on well-defined interfaces.
 
@@ -46,7 +46,7 @@ The engine supports the following core abstractions:
     \item \textbf{Collector}: A generic metrics accumulation mechanism decoupled from any domain-specific reporting logic.
 \end{itemize}
 
-\subsection{Domain Modules}
+\subsection{Domain Modules (Layer 2)}
 
 The middle layer consists of \textbf{autonomous domain modules}, each encapsulating the logic, models, and agents of one urban infrastructure domain:
 
@@ -58,7 +58,7 @@ The middle layer consists of \textbf{autonomous domain modules}, each encapsulat
 
 Each module is independently runnable in standalone mode or as a HELICS federate. Only the \texttt{use\_helics} flag differs between the two modes; domain logic is unchanged.
 
-\subsection{Co-Simulation Layer}
+\subsection{Co-Simulation (Layer 3)}
 
 The top layer is the \textbf{co-simulation orchestration layer}, built on HELICS (Hierarchical Engine for Large-scale Infrastructure Co-Simulation)~\cite{helics}. HELICS manages:
 
