@@ -41,7 +41,7 @@ The engine supports the following core abstractions:
 
 \begin{itemize}
     \item \textbf{Agents}: Autonomous entities with an internal state and a \texttt{step()} function invoked at each simulation tick. Agents encapsulate all domain-specific behavior and are entirely managed by the engine.
-    \item \textbf{Time Control}: Discrete-event temporal stepping with configurable resolution. Each scenario defines its own $\Delta t$, ranging from one second (Scenario M1) to fifteen minutes (Scenario E1).
+    \item \textbf{Time Control}: Discrete-event temporal stepping with configurable resolution. Each scenario defines its own $\Delta t$, ranging from 100\,ms (Scenario T1) to fifteen minutes (Scenario E1).
     \item \textbf{Contracts and Interfaces}: Each domain module must implement a defined interface including initialization, per-step update, and reporting methods. This contract ensures that new domains can be integrated without modifying engine internals.
     \item \textbf{Collector}: A generic metrics accumulation mechanism decoupled from any domain-specific reporting logic.
 \end{itemize}
@@ -53,7 +53,7 @@ The middle layer consists of \textbf{autonomous domain modules}, each encapsulat
 \begin{itemize}
     \item \textbf{Energy Module}: Models electrical distribution networks including generation assets (solar PV, wind turbines), distributed storage (batteries), and responsive loads (Scenarios E1 and E2).
     \item \textbf{Mobility Module}: Agent-based urban traffic simulation with vehicles, signalized intersections, A*-based routing, and adaptive signal control algorithms (Scenario M1).
-    \item \textbf{Telecommunications Module} (planned): Will simulate 5G network slicing and dense IoT deployments in urban environments (Scenarios T1 and T2).
+    \item \textbf{Telecommunications Module}: Models 5G network slicing with resource-block scheduling across multiple gNBs and network slices (Scenario T1). Dense IoT deployments are planned for Scenario T2.
 \end{itemize}
 
 Each module is independently runnable in standalone mode or as a HELICS federate. Only the \texttt{use\_helics} flag differs between the two modes; domain logic is unchanged.
@@ -102,12 +102,12 @@ In co-simulation mode, each domain module registers its inputs (subscriptions) a
 
 \subsubsection{Strategy Pattern for Scenario Variants}
 
-Within Scenarios E2 and M1, multiple behavioral variants are implemented using the strategy pattern. In Scenario E2, the \texttt{ChargingStrategy} enum selects between \texttt{UNCOORDINATED}, \texttt{SMART}, and \texttt{V2G} behaviors at runtime. In Scenario M1, the \texttt{adaptive\_signals} flag switches between fixed-time and queue-adaptive signal control. This enables comparative evaluation without code duplication in the core simulation loop.
+Within Scenarios E2, M1, and T1, multiple behavioral variants are implemented using the strategy pattern. In Scenario E2, the \texttt{ChargingStrategy} enum selects between \texttt{UNCOORDINATED}, \texttt{SMART}, and \texttt{V2G} behaviors at runtime. In Scenario M1, the \texttt{adaptive\_signals} flag switches between fixed-time and queue-adaptive signal control. In Scenario T1, the \texttt{SlicingStrategy} enum selects between \texttt{STATIC} and \texttt{DYNAMIC} resource allocation. This enables comparative evaluation without code duplication in the core simulation loop.
 
 
 \section{Simulation Scenarios}
 
-Six scenarios were designed covering energy, mobility, and telecommunications domains. Three are implemented; three define the scope for future integration work. Each implemented scenario supports both standalone execution and HELICS co-simulation mode. Table~\ref{tab:scenario_summary} provides an overview.
+Six scenarios were designed covering energy, mobility, and telecommunications domains. Four are implemented; two define the scope for future integration work. Each implemented scenario supports both standalone execution and HELICS co-simulation mode. Table~\ref{tab:scenario_summary} provides an overview.
 
 \begin{table}[h]
     \centering
@@ -126,7 +126,7 @@ Six scenarios were designed covering energy, mobility, and telecommunications do
         \hline
         M2 & Autonomous vehicle integration & 2 hours & 0.5 sec & Capacity, safety, fuel & Planned \\
         \hline
-        T1 & 5G slice resource allocation & 1 hour & 100 ms & Slice utilization, QoS rate, RB waste & Planned \\
+        T1 & 5G slice resource allocation & 1 hour & 100 ms & Slice utilization, QoS rate, RB waste & \checkmark \\
         \hline
         T2 & IoT access congestion & 24 hours & 1 min & Delivery rate, access delay, battery & Planned \\
         \hline
@@ -268,11 +268,62 @@ with $\alpha_{idle} = 2.31\,\text{g/s}$ and $\alpha_{move} = 0.15\,\text{g/m}$.
 
 % -------------------------------------------------------
 
+\subsection{Telecommunications Domain Scenarios}
+
+\subsubsection{Scenario T1: 5G Slice Resource Allocation}
+
+Scenario T1 simulates a 5G New Radio (NR) network comprising 3~gNBs (next-generation Node~Bs, the 5G base station defined in 3GPP TS~38.300~\cite{3gpp_38300}) arranged in a triangular layout over a $2 \times 2\,\text{km}$ urban area, serving 200 mobile users across three network slices~\cite{3gpp_23501, network_slicing_survey}: eMBB (enhanced Mobile Broadband, 100 users), URLLC (Ultra-Reliable Low-Latency Communication, 40 users), and mMTC (massive Machine-Type Communication, 60 users)~\cite{telecom_challenges}. Two resource allocation strategies---static slicing and dynamic slicing---are compared to evaluate slice utilization, QoS satisfaction, and resource waste. The simulation runs for 1~hour at 100\,ms resolution (36,000 steps).
+
+\paragraph{Network Topology}
+
+Three gNBs are positioned at $(500,\,500)$, $(1500,\,500)$, and $(1000,\,1500)$\,m, each managing a pool of $N_{RB} = 100$ Resource Blocks (RBs)---the smallest unit of frequency-domain resource allocation in NR, each spanning 12 subcarriers---representing a 20\,MHz carrier with 15\,kHz subcarrier spacing~\cite{3gpp_38300}. Coverage areas overlap, with an effective cell radius of approximately 800\,m and an inter-site distance of approximately 1000\,m.
+
+\paragraph{Radio Propagation}
+
+Received signal strength at distance $d$ from a gNB is computed using the 3GPP Urban Macro (UMa) path loss model defined in TR~38.901~\cite{3gpp_38901}:
+\begin{equation}
+    P_{rx}(d) = P_{tx} - 128.1 - 37.6\,\log_{10}(d_{km}) + X_\sigma
+    \label{eq:path_loss_t1}
+\end{equation}
+where $P_{tx} = 46\,\text{dBm}$ is the gNB transmit power, $d_{km}$ is the Euclidean distance in kilometres (minimum 10\,m enforced to avoid singularity), and $X_\sigma \sim \mathcal{N}(0, \sigma^2)$ with $\sigma = 4$\,dB is a log-normal shadow fading component representing slow variations caused by buildings and terrain~\cite{3gpp_38901}.
+
+\paragraph{User Mobility and Handover}
+
+Users move within the service area following the Random Waypoint (RWP) mobility model~\cite{random_waypoint} at pedestrian speed $v \sim U(0.5, 2.0)\,\text{m/s}$ (1.8--7.2\,km/h). Each user selects a random destination uniformly within the area, moves toward it at constant speed, and upon arrival selects a new waypoint. Each user is served by the gNB providing the strongest received signal. A handover---the process of transferring a user's connection from one gNB to another as the user moves~\cite{3gpp_38300}---is triggered when a neighbouring cell's signal exceeds the serving cell's by a hysteresis margin $H = 3\,\text{dB}$, subject to a cooldown of 10 steps (1\,s) to suppress ping-pong effects (rapid back-and-forth handovers between two cells). Each triggered handover succeeds with probability $P_{success} = 0.95$; a failure results in one step of QoS outage.
+
+\paragraph{Slice Resource Allocation Strategies}
+
+\textbf{Static Slicing}~\cite{network_slicing_survey}: Each gNB divides its RB pool into fixed fractions---50\% eMBB, 30\% URLLC, 20\% mMTC---regardless of instantaneous demand. Within each slice, RBs are distributed equally among connected users:
+\begin{equation}
+    RB_{user} = \left\lfloor \frac{RB_{slice}}{N_{slice,gNB}} \right\rfloor
+    \label{eq:static_alloc}
+\end{equation}
+
+\textbf{Dynamic Slicing}~\cite{network_slicing_survey}: RBs are allocated proportionally to each slice's instantaneous demand, with a guaranteed floor of $RB_{min} = 5$:
+\begin{equation}
+    RB_{slice} = \max\!\left(RB_{min},\; \left\lfloor \frac{D_{slice}}{D_{total}} \cdot N_{RB} \right\rfloor\right), \quad D_{slice} = N_{slice,gNB} \cdot RB_{req,slice}
+    \label{eq:dynamic_alloc}
+\end{equation}
+This is analogous to the adaptive green time allocation in Scenario~M1 (Equation~\ref{eq:adaptive_signal}), where capacity is distributed proportionally to measured demand rather than fixed a priori.
+
+\paragraph{QoS Evaluation}
+
+QoS is satisfied for user $u$ in slice $s$ when the allocated RBs meet or exceed the slice's requirement:
+\begin{equation}
+    QoS(u) = \mathbf{1}\!\left[RB_{user}(u) \geq RB_{req}(s)\right]
+    \label{eq:qos_t1}
+\end{equation}
+where $RB_{req}$ is 2 for eMBB and URLLC (reflecting their higher throughput and reliability requirements), and 1 for mMTC (which transmits small, infrequent payloads)~\cite{3gpp_23501}. Users undergoing a failed handover automatically have QoS unsatisfied for that step.
+
+\paragraph{mMTC Activity Model}
+
+Unlike eMBB and URLLC users which are continuously active, mMTC devices follow a periodic reporting pattern with bursty peaks, reflecting the intermittent nature of IoT sensor traffic~\cite{telecom_challenges}. A base activity probability of 30\% creates the sparse, event-driven traffic characteristic of IoT deployments; activity bursts ($p_{active} = 0.8$) occur every 500 steps (50\,s), modelling synchronized reporting windows typical of smart metering applications.
+
+% -------------------------------------------------------
+
 \subsection{Planned Scenarios}
 
 \textbf{Scenario M2: Autonomous Vehicle Integration} will simulate a 10 km highway/arterial with 1,000 vehicles at CAV penetration rates of 0\%, 25\%, 50\%, and 75\%, evaluating cooperative adaptive cruise control (CACC), platooning efficiency, and time-to-collision safety metrics.
-
-\textbf{Scenario T1: 5G Slice Resource Allocation} will simulate 3 gNBs serving 200 mobile users across three network slices (eMBB, URLLC, mMTC), modeled as a resource-block scheduling problem~\cite{telecom_challenges}. Each gNB manages a fixed pool of $N_{RB}$ resource blocks. Two strategies are compared: \textit{static slicing}, which assigns fixed resource fractions to each slice, and \textit{dynamic slicing}, which allocates resource blocks proportionally to instantaneous demand---analogous to the adaptive signal allocation in Scenario~M1. Radio propagation is modeled using the 3GPP urban macro path loss formula ($P_{rx} = P_{tx} - 128.1 - 37.6\,\log_{10}(d)$), and user mobility follows a random waypoint model with handovers triggered by signal-strength thresholds. QoS satisfaction is evaluated per user per step as a binary metric: whether the assigned slice received sufficient resource blocks to meet its latency or throughput target. The simulation runs for 1 hour at 100\,ms resolution (36,000 steps).
 
 \textbf{Scenario T2: IoT Access Congestion with Smart Metering} will model 1,000 NB-IoT smart grid sensors deployed across the distribution network of Scenario~E1, focusing on random-access congestion during synchronized reporting periods. In each reporting window, $k$ devices contend for $M$ preamble slots; collision probability follows
 \begin{equation}
@@ -304,6 +355,7 @@ Each implemented scenario is validated against expected physical behaviors:
     \item \textbf{E1}: Voltage profiles must vary within realistic bounds for the IEEE 33-bus system; curtailment must occur only when battery storage is saturated (capacity or charge-rate limited); DR must produce a measurable load reduction between 17:00 and 22:00.
     \item \textbf{E2}: Smart charging must reduce peak demand compared to uncoordinated; V2G must decrease net charging costs; all vehicles in non-V2G strategies must meet their departure SOC target ($\geq$\,0.8). V2G vehicles may trade departure SOC for grid revenue, with $\geq$\,95\% meeting the target.
     \item \textbf{M1}: Adaptive control must reduce average travel time and total delay; emissions must decrease in proportion to reduced idling; queue lengths must be lower than under fixed-time control.
+    \item \textbf{T1}: Dynamic slicing must improve overall resource utilization and reduce waste compared to static allocation; handover success rate must remain above 90\%; per-slice QoS rates must reflect the relative demand--supply balance.
 \end{itemize}
 
 \subsection{Architectural Validation}
@@ -311,7 +363,7 @@ Each implemented scenario is validated against expected physical behaviors:
 \begin{itemize}
     \item \textbf{Domain Independence}: Each module executes identically in standalone and co-simulation modes; only \texttt{use\_helics} differs.
     \item \textbf{Interface Compliance}: Verified by confirming all domain agents implement the engine contract without modifying engine internals.
-    \item \textbf{Strategy Substitutability}: Strategy variants (E2, M1) produce statistically distinct outcomes under identical inputs, confirming correct behavioral switching.
+    \item \textbf{Strategy Substitutability}: Strategy variants (E2, M1, T1) produce statistically distinct outcomes under identical inputs, confirming correct behavioral switching.
     \item \textbf{Time Synchronization}: In co-simulation mode, HELICS time grants are verified to ensure all federates advance in step and cross-domain data arrives before use.
 \end{itemize}
 
@@ -334,13 +386,15 @@ Table~\ref{tab:metrics_summary} summarizes the key performance indicators used p
         \hline
         M1 & Avg travel time (s), total delay (s), completion rate (\%), CO$_2$ emissions (g), avg queue length & Fixed signals vs.\ adaptive signals \\
         \hline
+        T1 & Slice QoS rate (\%), RB utilization (\%), RB waste (\%), handover success rate (\%), handover failures & Static slicing vs.\ dynamic slicing \\
+        \hline
     \end{tabular}
 \end{table}
 
 
 \section{Summary}
 
-This chapter described the Design Science Research methodology underpinning the dissertation, the three-layer modular architecture of the proposed co-simulation framework, and the rationale for key design and technology decisions. Three simulation scenarios---E1 (smart grid with renewables), E2 (EV charging infrastructure), and M1 (urban traffic management)---were presented with their mathematical models, component descriptions, and evaluation criteria. Three additional scenarios and cross-domain integration cases were defined as the planned scope for completing the framework.
+This chapter described the Design Science Research methodology underpinning the dissertation, the three-layer modular architecture of the proposed co-simulation framework, and the rationale for key design and technology decisions. Four simulation scenarios---E1 (smart grid with renewables), E2 (EV charging infrastructure), M1 (urban traffic management), and T1 (5G slice resource allocation)---were presented with their mathematical models, component descriptions, and evaluation criteria. Two additional scenarios and cross-domain integration cases were defined as the planned scope for completing the framework.
 
 The next chapter presents the implementation details of the framework prototype and the results obtained from executing the implemented scenarios.
 
