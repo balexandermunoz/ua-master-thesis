@@ -41,7 +41,7 @@ The engine supports the following core abstractions:
 
 \begin{itemize}
     \item \textbf{Agents}: Autonomous entities with an internal state and a \texttt{step()} function invoked at each simulation tick. Agents encapsulate all domain-specific behavior and are entirely managed by the engine.
-    \item \textbf{Time Control}: Discrete-event temporal stepping with configurable resolution. Each scenario defines its own $\Delta t$, ranging from 100\,ms (Scenario T1) to fifteen minutes (Scenario E1).
+    \item \textbf{Time Control}: Discrete-event temporal stepping with configurable resolution. Each scenario defines its own $\Delta t$, ranging from 100\,ms to fifteen minutes.
     \item \textbf{Contracts and Interfaces}: Each domain module must implement a defined interface including initialization, per-step update, and reporting methods. This contract ensures that new domains can be integrated without modifying engine internals.
     \item \textbf{Collector}: A generic metrics accumulation mechanism decoupled from any domain-specific reporting logic.
 \end{itemize}
@@ -51,9 +51,9 @@ The engine supports the following core abstractions:
 The middle layer consists of \textbf{autonomous domain modules}, each encapsulating the logic, models, and agents of one urban infrastructure domain:
 
 \begin{itemize}
-    \item \textbf{Energy Module}: Models electrical distribution networks including generation assets (solar PV, wind turbines), distributed storage (batteries), and responsive loads (Scenarios E1 and E2).
-    \item \textbf{Mobility Module}: Agent-based urban traffic simulation with vehicles, signalized intersections, A*-based routing, and adaptive signal control algorithms (Scenario M1).
-    \item \textbf{Telecommunications Module}: Models 5G network slicing with resource-block scheduling across multiple gNBs and network slices (Scenario T1). Dense IoT deployments are planned for Scenario T2.
+    \item \textbf{Energy Module}: Models electrical distribution networks including generation assets (solar PV, wind turbines), distributed storage (batteries), and responsive loads.
+    \item \textbf{Mobility Module}: Agent-based urban traffic simulation with vehicles, signalized intersections, A*-based routing, and adaptive signal control algorithms.
+    \item \textbf{Telecommunications Module}: Models 5G network slicing with resource-block scheduling across multiple gNBs and network slices.
 \end{itemize}
 
 Each module is independently runnable in standalone mode or as a HELICS federate. Only the \texttt{use\_helics} flag differs between the two modes; domain logic is unchanged.
