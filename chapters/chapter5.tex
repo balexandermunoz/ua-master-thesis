@@ -58,15 +58,31 @@ This chapter presents the conclusions drawn from this work, highlighting the mai
 
 \section{Future Work}
 
-% Propose directions for future research or development
-% Build upon your work and address current limitations
+The current framework implements four standalone scenarios (E1, E2, M1, T1) across three urban domains. Several extensions were identified during the design phase and are proposed as future work to broaden the framework's coverage and demonstrate its full cross-domain potential.
 
-\subsection{Short-term Future Work}
+\subsection{Additional Simulation Scenarios}
 
-% Improvements or extensions that could be done in the near future
+Two additional domain scenarios were designed but not implemented within the scope of this dissertation. Their inclusion would complete the coverage of two scenarios per domain.
 
+\subsubsection{Scenario M2: Autonomous Vehicle Integration}
 
-\subsection{Long-term Future Work}
+Scenario M2 extends the mobility domain to model autonomous vehicle (AV) behaviour within mixed urban traffic. The scenario simulates a 2-hour period at 0.5-second resolution, evaluating road capacity utilisation, safety metrics, and fuel efficiency under varying AV penetration rates. Unlike Scenario M1, which focuses on infrastructure-level signal control, M2 targets vehicle-level decision-making---lane keeping, platooning, and cooperative merging---in a mixed autonomy environment where conventional and autonomous vehicles share the road network.
+
+\subsubsection{Scenario T2: Dense IoT Network}
+
+Scenario T2 models a dense IoT deployment with thousands of low-power devices operating over a 24-hour period using event-driven time stepping. The scenario evaluates connectivity, energy consumption, and coverage in a smart city context where devices such as environmental sensors, smart meters, and parking occupancy detectors transmit small payloads at irregular intervals. The IoT collision model considers the probability of simultaneous transmissions in shared channels and the impact of exponential backoff on message delivery latency.
+
+\subsection{Cross-Domain Integration Scenarios}
+
+The HELICS-based architecture was designed to support coupled multi-domain simulations. Three cross-domain integration cases were defined during the design phase:
+
+\begin{itemize}
+    \item \textbf{E2 + M1 (Energy--Mobility)}: EVs navigate through traffic to available charging stations; charging demand feeds back into the grid model, creating a bidirectional coupling between transportation routing and electrical load.
+    \item \textbf{M2 + T1 (Mobility--Telecommunications)}: Evaluates how 5G network latency and handover events affect autonomous vehicle control loops. Vehicle positions from M2 drive user locations in T1, while network QoS degradation introduces delays in V2X communication.
+    \item \textbf{E1 + T2 (Energy--Telecommunications)}: IoT devices in T2 serve as the smart meters and grid sensors of E1. Communication failures (collisions, excessive backoff) cause delayed or missing grid measurements, degrading demand response activation timing and accuracy.
+\end{itemize}
+
+\subsection{Long-term Extensions}
 
 % More ambitious research directions or applications
 
