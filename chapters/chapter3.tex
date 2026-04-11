@@ -139,16 +139,38 @@ Six scenarios were designed covering energy, mobility, and telecommunications do
 
 Scenario E1 simulates an IEEE 33-bus radial distribution network under high renewable penetration, combining solar PV, wind generation, battery storage, and demand-responsive loads~\cite{smartgrid_challenges, renewable_integration}. The scenario covers a 24-hour period at 15-minute resolution (96 time steps).
 
-\paragraph{Component Models}
+\medskip\noindent\textbf{Component Models}
 
-\textbf{Solar PV}: Fifty installations (5--10 kW each) follow a sine-based irradiance model during daylight hours (06:00--18:00):
+Table~\ref{tab:e1_components} summarises the grid components and their key parameters.
+
+\begin{table}[h]
+    \centering
+    \caption{Scenario E1 component parameters}
+    \label{tab:e1_components}
+    \small
+    \begin{tabular}{|l|c|l|l|}
+        \hline
+        \textbf{Component} & \textbf{Count} & \textbf{Rating} & \textbf{Key Parameters} \\
+        \hline
+        Solar PV & 50 & 5--10 kW each & $\eta_{sys} = 0.85$, $C_{cloud} \sim U(0.8, 1.0)$ \\
+        \hline
+        Wind Turbines & 3 & 500 kW each & $v_{ci} = 3.0$, $v_r = 12.0$, $v_{co} = 25.0\,\text{m/s}$ \\
+        \hline
+        BESS & 5 & 50 kWh / 25 kW & $SOC \in [0.20, 0.95]$, $\eta_{charge} = 0.92$ \\
+        \hline
+        Residential Loads & 800 & --- & Load factor 0.5--1.0, DR 15\% reduction \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\textbf{Solar PV} installations follow a sine-based irradiance model during daylight hours (06:00--18:00):
 \begin{equation}
 P_{solar}(t) = P_{rated} \cdot \sin\!\left(\frac{(h-6)\,\pi}{12}\right) \cdot C_{cloud} \cdot \eta_{sys}
 \label{eq:solar_power}
 \end{equation}
 where $h$ is the hour of the day, $C_{cloud} \sim U(0.8, 1.0)$ is a stochastic cloud factor, and $\eta_{sys} = 0.85$.
 
-\textbf{Wind Turbines}: Three 500 kW turbines follow a three-region power curve:
+\textbf{Wind turbines} follow a three-region power curve:
 \begin{equation}
 P_{wind}(v) =
 \begin{cases}
@@ -161,16 +183,16 @@ P_{rated} & v_{r} \leq v < v_{co} \\[4pt]
 \end{equation}
 with cut-in $v_{ci} = 3.0\,\text{m/s}$, rated $v_{r} = 12.0\,\text{m/s}$, and cut-out $v_{co} = 25.0\,\text{m/s}$.
 
-\textbf{Battery Energy Storage (BESS)}: Five 50 kWh systems (25 kW max, 0.5C) operate within $SOC \in [0.20,\,0.95]$. The SOC update during charging is:
+\textbf{Battery Energy Storage (BESS)} systems (0.5C rate) update their state of charge as:
 \begin{equation}
 SOC_{new} = SOC_{current} + \frac{P_{charge} \cdot \Delta t \cdot \eta_{charge}}{E_{capacity}}
 \label{eq:soc_charge}
 \end{equation}
 with $\eta_{charge} = 0.92$, giving a round-trip efficiency of $\approx 84.6\%$.
 
-\textbf{Residential Loads}: 800 households with time-varying load factors (0.5 off-peak to 1.0 during evening peak 17:00--22:00) and $\pm 10\%$ stochastic variation. Demand Response (DR) activates for 70\% of loads during peak hours, reducing consumption by 15\%~\cite{der_challenges}.
+\textbf{Residential loads} use time-varying load factors (0.5 off-peak to 1.0 during evening peak 17:00--22:00) with $\pm 10\%$ stochastic variation. Demand Response (DR) activates for 70\% of loads during peak hours, reducing consumption by 15\%~\cite{der_challenges}.
 
-\paragraph{Power Balance and Curtailment}
+\medskip\noindent\textbf{Power Balance and Curtailment}
 
 Net system power at each time step:
 \begin{equation}
@@ -181,7 +203,7 @@ Batteries charge when $P_{net} < 0$ (surplus) and discharge when $P_{net} > 0$ (
 P_{curtail}(t) = \max\!\left(0,\; -P_{net}^{final}(t)\right)
 \end{equation}
 
-\paragraph{Voltage Model}
+\medskip\noindent\textbf{Voltage Model}
 
 Bus voltages are estimated via a simplified linear drop model:
 \begin{equation}
