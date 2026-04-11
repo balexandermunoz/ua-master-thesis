@@ -107,7 +107,7 @@ Within Scenarios E2, M1, and T1, multiple behavioral variants are implemented us
 
 \section{Simulation Scenarios}
 
-Six scenarios were designed covering energy, mobility, and telecommunications domains. Four are implemented; two define the scope for future integration work. Each implemented scenario supports both standalone execution and HELICS co-simulation mode. Table~\ref{tab:scenario_summary} provides an overview.
+Four scenarios were designed covering energy, mobility, and telecommunications domains. Each scenario supports both standalone execution and HELICS co-simulation mode. Table~\ref{tab:scenario_summary} provides an overview.
 
 \begin{table}[h]
     \centering
@@ -124,11 +124,7 @@ Six scenarios were designed covering energy, mobility, and telecommunications do
         \hline
         M1 & Mobility & Urban traffic management & 3 hours & 1 sec & Travel time, delay, emissions & \checkmark \\
         \hline
-        M2 & Mobility & Autonomous vehicle integration & 2 hours & 0.5 sec & Capacity, safety, fuel & Planned \\
-        \hline
         T1 & Telecom & 5G slice resource allocation & 1 hour & 100 ms & Slice utilization, QoS rate, RB waste & \checkmark \\
-        \hline
-        T2 & Telecom & IoT access congestion & 24 hours & 1 min & Delivery rate, access delay, battery & Planned \\
         \hline
     \end{tabular}
 \end{table}
@@ -342,17 +338,6 @@ where $RB_{req}$ is 2 for eMBB and URLLC (reflecting their higher throughput and
 Unlike eMBB and URLLC users which are continuously active, mMTC devices follow a periodic reporting pattern with bursty peaks, reflecting the intermittent nature of IoT sensor traffic~\cite{telecom_challenges}. A base activity probability of 30\% creates the sparse, event-driven traffic characteristic of IoT deployments; activity bursts ($p_{active} = 0.8$) occur every 500 steps (50\,s), modelling synchronized reporting windows typical of smart metering applications.
 
 % -------------------------------------------------------
-
-\subsection{Planned Scenarios}
-
-\textbf{Scenario M2: Autonomous Vehicle Integration} will simulate a 10 km highway/arterial with 1,000 vehicles at CAV penetration rates of 0\%, 25\%, 50\%, and 75\%, evaluating cooperative adaptive cruise control (CACC), platooning efficiency, and time-to-collision safety metrics.
-
-\textbf{Scenario T2: IoT Access Congestion with Smart Metering} will model 1,000 NB-IoT smart grid sensors deployed across the distribution network of Scenario~E1, focusing on random-access congestion during synchronized reporting periods. In each reporting window, $k$ devices contend for $M$ preamble slots; collision probability follows
-\begin{equation}
-P_{collision} = 1 - \left(1 - \frac{1}{M}\right)^{k-1}
-\label{eq:iot_collision}
-\end{equation}
-with binary exponential backoff for failed attempts ($t_{backoff} \sim U(0, W)$, $W$ doubling per failure). Device battery drain is modeled as a linear energy cost per transmission attempt, analogous to the SOC model in Scenario~E1. Two strategies are compared: \textit{uncoordinated reporting}, where all devices transmit at the same periodic interval, and \textit{staggered scheduling}, where reporting windows are offset to distribute access load. The simulation covers 24 hours at 1-minute resolution (1,440 steps). Key metrics include successful delivery rate, average access delay, peak collision rate, and estimated device battery lifetime.
 
 \subsection{Cross-Domain Integration}
 
