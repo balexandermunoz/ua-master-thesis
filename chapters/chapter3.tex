@@ -359,10 +359,10 @@ The framework is evaluated along two dimensions: the correctness of domain model
 Each implemented scenario is validated against expected physical behaviors:
 
 \begin{itemize}
-    \item \textbf{E1}: Voltage profiles must vary within realistic bounds for the IEEE 33-bus system; curtailment must occur only when battery storage is saturated (capacity or charge-rate limited); DR must produce a measurable load reduction between 17:00 and 22:00.
-    \item \textbf{E2}: Smart charging must reduce peak demand compared to uncoordinated; V2G must decrease net charging costs; all vehicles in non-V2G strategies must meet their departure SOC target ($\geq$\,0.8). V2G vehicles may trade departure SOC for grid revenue, with $\geq$\,95\% meeting the target.
-    \item \textbf{M1}: Adaptive control must reduce average travel time and total delay; emissions must decrease in proportion to reduced idling; queue lengths must be lower than under fixed-time control.
-    \item \textbf{T1}: Dynamic slicing must improve overall resource utilization and reduce waste compared to static allocation; handover success rate must remain above 90\%; per-slice QoS rates must reflect the relative demand--supply balance.
+    \item \textbf{E1 -- Smart Grid with Renewable Integration}: Voltage profiles must vary within realistic bounds for the IEEE 33-bus system; curtailment must occur only when battery storage is saturated (capacity or charge-rate limited); DR must produce a measurable load reduction between 17:00 and 22:00.
+    \item \textbf{E2 -- Electric Vehicle Charging Infrastructure}: Smart charging must reduce peak demand compared to uncoordinated; V2G must decrease net charging costs; all vehicles in non-V2G strategies must meet their departure SOC target ($\geq$\,0.8). V2G vehicles may trade departure SOC for grid revenue, with $\geq$\,95\% meeting the target.
+    \item \textbf{M1 -- Urban Traffic Congestion Management}: Adaptive control must reduce average travel time and total delay; emissions must decrease in proportion to reduced idling; queue lengths must be lower than under fixed-time control.
+    \item \textbf{T1 -- 5G Slice Resource Allocation}: Dynamic slicing must improve overall resource utilization and reduce waste compared to static allocation; handover success rate must remain above 90\%; per-slice QoS rates must reflect the relative demand--supply balance.
 \end{itemize}
 
 \subsection{Architectural Validation}
