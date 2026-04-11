@@ -242,6 +242,129 @@ class TrafficNetwork:
         return routes
 
 
+# ======================================================================
+#  Reusable traffic helpers (used by M1 and cross-domain scenarios)
+# ======================================================================
+
+def create_random_vehicles(
+    num_vehicles: int,
+    grid_size: int,
+    network: TrafficNetwork,
+    id_offset: int = 0,
+) -> List[Vehicle]:
+    """Create vehicles with random OD pairs and staggered departures."""
+    vehicles: List[Vehicle] = []
+    for i in range(num_vehicles):
+        origin = (np.random.randint(0, grid_size),
+                  np.random.randint(0, grid_size))
+        destination = (np.random.randint(0, grid_size),
+                       np.random.randint(0, grid_size))
+        while origin == destination:
+            destination = (np.random.randint(0, grid_size),
+                           np.random.randint(0, grid_size))
+        v = Vehicle(id_offset + i, origin, destination)
+        routes = network.get_alternative_routes(origin, destination)
+        v.route = routes[np.random.randint(0, min(len(routes), 3))]
+        v.departure_time = np.random.uniform(0, 3600)
+        vehicles.append(v)
+    return vehicles
+
+
+def update_signals(
+    vehicles: List[Vehicle],
+    network: TrafficNetwork,
+    dt: float,
+    adaptive: bool = True,
+) -> None:
+    """Update all traffic signals based on directional demand."""
+    position_vehicles: Dict[Tuple[int, int], List[Vehicle]] = {}
+    for v in vehicles:
+        if v.completed or not v.departed or v.travel_countdown > 0:
+            continue
+        position_vehicles.setdefault(v.current_position, []).append(v)
+
+    for pos, signal in network.signals.items():
+        ns_demand = ew_demand = 0
+        for v in position_vehicles.get(pos, []):
+            if v.current_route_index >= len(v.route) - 1:
+                continue
+            next_pos = v.route[v.current_route_index + 1]
+            dx = next_pos[0] - pos[0]
+            dy = next_pos[1] - pos[1]
+            if dx != 0:
+                ns_demand += 1
+            elif dy != 0:
+                ew_demand += 1
+        if adaptive:
+            signal.update(dt, ns_demand, ew_demand)
+        else:
+            signal.update(dt, 1, 1)
+
+
+def move_vehicles_step(
+    vehicles: List[Vehicle],
+    network: TrafficNetwork,
+    dt: float,
+    current_time: float,
+    completed_vehicles: List[Vehicle],
+) -> None:
+    """Advance all vehicles by one time step through the traffic grid."""
+    link_travel_time = network.spacing / 13.9
+
+    for vehicle in vehicles:
+        if vehicle.completed:
+            continue
+        if not vehicle.departed:
+            if current_time >= vehicle.departure_time:
+                vehicle.departed = True
+            else:
+                continue
+        if vehicle.travel_countdown > 0:
+            vehicle.travel_countdown -= dt
+            vehicle.travel_time += dt
+            vehicle.speed_mps = vehicle.max_speed_mps
+            vehicle.calculate_emissions(dt)
+            if vehicle.travel_countdown <= 0:
+                vehicle.current_route_index += 1
+                vehicle.current_position = vehicle.route[vehicle.current_route_index]
+                vehicle.distance_traveled += network.spacing
+            continue
+        if vehicle.current_position == vehicle.destination:
+            vehicle.completed = True
+            completed_vehicles.append(vehicle)
+            continue
+        if vehicle.current_route_index < len(vehicle.route) - 1:
+            next_pos = vehicle.route[vehicle.current_route_index + 1]
+            signal = network.signals[vehicle.current_position]
+            if signal.can_pass(vehicle.current_position, next_pos):
+                vehicle.travel_countdown = link_travel_time
+                vehicle.travel_time += dt
+                vehicle.speed_mps = vehicle.max_speed_mps
+                vehicle.calculate_emissions(dt)
+            else:
+                vehicle.speed_mps = 0.0
+                vehicle.total_delay += dt
+                vehicle.travel_time += dt
+                vehicle.calculate_emissions(dt)
+        else:
+            vehicle.completed = True
+            completed_vehicles.append(vehicle)
+
+
+def collect_queue_lengths(
+    vehicles: List[Vehicle],
+    intersections: Dict,
+    queue_lengths: Dict[Tuple[int, int], List[int]],
+) -> None:
+    """Count vehicles waiting at each intersection and append to history."""
+    for pos in intersections:
+        queue = sum(1 for v in vehicles
+                    if not v.completed and v.departed
+                    and v.travel_countdown <= 0
+                    and v.current_position == pos)
+        queue_lengths[pos].append(queue)
+
+
 class TrafficSimulation(BaseFederate):
     """Main traffic simulation with HELICS support"""
     
@@ -275,120 +398,23 @@ class TrafficSimulation(BaseFederate):
     def initialize_vehicles(self, num_vehicles: int = 2500):
         """Initialize vehicles with random OD pairs"""
         logger.info(f"Initializing {num_vehicles} vehicles...")
-        
-        for i in range(num_vehicles):
-            # Random origin and destination
-            origin = (np.random.randint(0, self.grid_size), np.random.randint(0, self.grid_size))
-            destination = (np.random.randint(0, self.grid_size), np.random.randint(0, self.grid_size))
-            
-            while origin == destination:
-                destination = (np.random.randint(0, self.grid_size), np.random.randint(0, self.grid_size))
-                
-            vehicle = Vehicle(i, origin, destination)
-            
-            # Assign route (select from alternatives based on traffic info)
-            routes = self.network.get_alternative_routes(origin, destination)
-            vehicle.route = routes[np.random.randint(0, min(len(routes), 3))]
-            
-            # Staggered departure over first hour
-            vehicle.departure_time = np.random.uniform(0, 3600)
-            
-            self.vehicles.append(vehicle)
-            
+        self.vehicles = create_random_vehicles(
+            num_vehicles, self.grid_size, self.network, id_offset=0)
         logger.info(f"Created {len(self.vehicles)} vehicles")
         
     def update_traffic_signals(self, dt: float):
         """Update all traffic signals"""
-        # Build position map for efficient lookup
-        position_vehicles = {}
-        for v in self.vehicles:
-            if v.completed or not v.departed or v.travel_countdown > 0:
-                continue
-            position_vehicles.setdefault(v.current_position, []).append(v)
-
-        for pos, signal in self.network.signals.items():
-            # Count vehicles waiting by direction (NS vs EW)
-            ns_demand = 0
-            ew_demand = 0
-            for v in position_vehicles.get(pos, []):
-                if v.current_route_index >= len(v.route) - 1:
-                    continue
-                next_pos = v.route[v.current_route_index + 1]
-                dx = next_pos[0] - pos[0]
-                dy = next_pos[1] - pos[1]
-                if dx != 0:  # Row changes → NS movement
-                    ns_demand += 1
-                elif dy != 0:  # Column changes → EW movement
-                    ew_demand += 1
-
-            if self.adaptive_signals:
-                signal.update(dt, ns_demand, ew_demand)
-            else:
-                # Fixed timing: equal weights
-                signal.update(dt, 1, 1)
+        update_signals(self.vehicles, self.network, dt, self.adaptive_signals)
                 
     def move_vehicles(self, dt: float, current_time: float):
         """Move all vehicles with realistic inter-intersection travel time"""
-        link_travel_time = self.network.spacing / 13.9  # seconds per link
-
-        for vehicle in self.vehicles:
-            if vehicle.completed:
-                continue
-
-            # Check departure time
-            if not vehicle.departed:
-                if current_time >= vehicle.departure_time:
-                    vehicle.departed = True
-                else:
-                    continue
-
-            # In transit between intersections
-            if vehicle.travel_countdown > 0:
-                vehicle.travel_countdown -= dt
-                vehicle.travel_time += dt
-                vehicle.speed_mps = vehicle.max_speed_mps
-                vehicle.calculate_emissions(dt)
-                if vehicle.travel_countdown <= 0:
-                    vehicle.current_route_index += 1
-                    vehicle.current_position = vehicle.route[vehicle.current_route_index]
-                    vehicle.distance_traveled += self.network.spacing
-                continue
-
-            # At intersection - check if destination reached
-            if vehicle.current_position == vehicle.destination:
-                vehicle.completed = True
-                self.completed_vehicles.append(vehicle)
-                continue
-
-            # Try to cross intersection
-            if vehicle.current_route_index < len(vehicle.route) - 1:
-                next_pos = vehicle.route[vehicle.current_route_index + 1]
-                signal = self.network.signals[vehicle.current_position]
-                if signal.can_pass(vehicle.current_position, next_pos):
-                    # Enter transit to next intersection
-                    vehicle.travel_countdown = link_travel_time
-                    vehicle.travel_time += dt
-                    vehicle.speed_mps = vehicle.max_speed_mps
-                    vehicle.calculate_emissions(dt)
-                else:
-                    # Stopped at red light
-                    vehicle.speed_mps = 0.0
-                    vehicle.total_delay += dt
-                    vehicle.travel_time += dt
-                    vehicle.calculate_emissions(dt)
-            else:
-                vehicle.completed = True
-                self.completed_vehicles.append(vehicle)
+        move_vehicles_step(self.vehicles, self.network, dt, current_time,
+                           self.completed_vehicles)
                 
     def collect_metrics(self):
         """Collect simulation metrics"""
-        # Queue lengths at each intersection (exclude in-transit)
-        for pos in self.network.intersections.keys():
-            queue = sum(1 for v in self.vehicles 
-                       if not v.completed and v.departed
-                       and v.travel_countdown <= 0
-                       and v.current_position == pos)
-            self.queue_lengths[pos].append(queue)
+        collect_queue_lengths(self.vehicles, self.network.intersections,
+                              self.queue_lengths)
             
         # Average emissions
         total_emissions = sum(v.emissions_g for v in self.vehicles)

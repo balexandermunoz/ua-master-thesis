@@ -9,6 +9,7 @@ from scenarios.scenario_e1 import run_scenario_e1
 from scenarios.scenario_e2 import run_scenario_e2, compare_strategies, ChargingStrategy
 from scenarios.scenario_m1 import run_scenario_m1, compare_signal_strategies
 from scenarios.scenario_t1 import run_scenario_t1, compare_slicing_strategies, SlicingStrategy
+from scenarios.scenario_e2m1 import run_scenario_e2m1, compare_coupling_modes, ChargingStrategy as E2M1ChargingStrategy
 
 
 def main():
@@ -31,12 +32,13 @@ def main():
     logger.info("E2. Electric Vehicle Charging Infrastructure")
     logger.info("M1. Urban Traffic Congestion Management")
     logger.info("T1. 5G Slice Resource Allocation")
+    logger.info("E2M1. Cross-Domain Energy--Mobility Integration")
     logger.info("T2. [Not yet implemented]")
     logger.info("M2. [Not yet implemented]")
     logger.info("=" * 70)
     
     # Select scenario to run
-    scenario = input("\nSelect scenario (E1/E2/M1/T1) or 'compare' (E2/M1/T1): ").strip().upper()
+    scenario = input("\nSelect scenario (E1/E2/M1/T1/E2M1) or 'compare' (E2/M1/T1/E2M1): ").strip().upper()
     
     if scenario == "E1" or scenario == "1":
         logger.info("\nRunning Scenario E1...")
@@ -62,14 +64,29 @@ def main():
             report = run_scenario_t1(strategy=SlicingStrategy.STATIC)
         else:
             report = run_scenario_t1(strategy=SlicingStrategy.DYNAMIC)
+    elif scenario == "E2M1" or scenario == "5":
+        logger.info("\nRunning Cross-Domain Scenario E2+M1...")
+        coupled = input("Coupled mode? (y/n) [y]: ").strip().lower()
+        use_coupled = coupled != "n"
+        strat = input("Charging strategy (smart/uncoordinated/v2g) [smart]: ").strip().lower()
+        if strat == "uncoordinated":
+            cs = E2M1ChargingStrategy.UNCOORDINATED
+        elif strat == "v2g":
+            cs = E2M1ChargingStrategy.V2G
+        else:
+            cs = E2M1ChargingStrategy.SMART
+        report = run_scenario_e2m1(coupled=use_coupled, charging_strategy=cs)
     elif scenario == "COMPARE":
-        compare_type = input("Compare E2, M1 or T1? [E2]: ").strip().upper()
+        compare_type = input("Compare E2, M1, T1 or E2M1? [E2]: ").strip().upper()
         if compare_type == "M1":
             logger.info("\nComparing M1 signal control strategies...")
             results = compare_signal_strategies()
         elif compare_type == "T1":
             logger.info("\nComparing T1 slicing strategies...")
             results = compare_slicing_strategies()
+        elif compare_type == "E2M1":
+            logger.info("\nComparing E2+M1 coupling modes...")
+            results = compare_coupling_modes()
         else:
             logger.info("\nComparing E2 charging strategies...")
             results = compare_strategies()

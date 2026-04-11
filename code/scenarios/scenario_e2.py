@@ -279,6 +279,40 @@ class SmartChargingController:
         return power_allocation
 
 
+# ======================================================================
+#  Reusable charging helpers (used by E2 and cross-domain scenarios)
+# ======================================================================
+
+def calculate_base_load(hour: float, base_load_kw: float = 2000.0) -> float:
+    """Calculate base electrical load without EV charging."""
+    if 0 <= hour < 6:
+        load_factor = 0.5
+    elif 6 <= hour < 9:
+        load_factor = 0.75
+    elif 9 <= hour < 17:
+        load_factor = 0.8
+    elif 17 <= hour < 22:
+        load_factor = 1.0
+    else:
+        load_factor = 0.6
+    return base_load_kw * load_factor
+
+
+def uncoordinated_alloc(
+    charging_stations: List[ChargingStation],
+) -> Dict[int, float]:
+    """Allocate max power to every connected vehicle (no grid awareness)."""
+    alloc: Dict[int, float] = {}
+    for station in charging_stations:
+        for vehicle in station.connected_vehicles:
+            if vehicle.soc < vehicle.soc_target:
+                alloc[vehicle.id] = min(station.max_power_kw,
+                                        vehicle.max_charge_rate_kw)
+            else:
+                alloc[vehicle.id] = 0.0
+    return alloc
+
+
 class EVChargingFederate(BaseFederate):
     """HELICS federate for EV charging simulation"""
     
@@ -392,36 +426,11 @@ class EVChargingFederate(BaseFederate):
                         
     def calculate_base_load(self, hour: float) -> float:
         """Calculate base load without EV charging"""
-        # Typical daily load profile
-        if 0 <= hour < 6:
-            load_factor = 0.5
-        elif 6 <= hour < 9:
-            load_factor = 0.75
-        elif 9 <= hour < 17:
-            load_factor = 0.8
-        elif 17 <= hour < 22:
-            load_factor = 1.0  # Peak
-        else:
-            load_factor = 0.6
-            
-        return self.base_load_kw * load_factor
+        return calculate_base_load(hour, self.base_load_kw)
         
     def uncoordinated_charging(self, current_time: float) -> Dict[int, float]:
         """Uncoordinated charging: charge immediately at max power"""
-        power_allocation = {}
-        
-        for station in self.charging_stations:
-            for vehicle in station.connected_vehicles:
-                if vehicle.soc < vehicle.soc_target:
-                    # Charge at maximum rate
-                    power_allocation[vehicle.id] = min(
-                        station.max_power_kw,
-                        vehicle.max_charge_rate_kw
-                    )
-                else:
-                    power_allocation[vehicle.id] = 0.0
-                    
-        return power_allocation
+        return uncoordinated_alloc(self.charging_stations)
         
     def run_simulation(self):
         """Run the 24-hour EV charging simulation"""
