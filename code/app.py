@@ -26,6 +26,9 @@ from scenarios.scenario_m1 import (
 from scenarios.scenario_t1 import (
     run_scenario_t1, compare_slicing_strategies, SlicingStrategy,
 )
+from scenarios.scenario_e2m1 import (
+    run_scenario_e2m1, compare_coupling_modes,
+)
 
 # ---------------------------------------------------------------------------
 # Page configuration
@@ -47,6 +50,7 @@ SCENARIOS = {
     "E2 – Electric Vehicle Charging Infrastructure": "E2",
     "M1 – Urban Traffic Congestion Management": "M1",
     "T1 – 5G Slice Resource Allocation": "T1",
+    "E2+M1 – Energy–Mobility Cross-Domain": "E2M1",
 }
 
 scenario_label = st.sidebar.selectbox("Select Scenario", list(SCENARIOS.keys()))
@@ -75,6 +79,10 @@ T1_DEFAULTS = {
     "t1_num_gnbs": 3, "t1_embb_users": 100, "t1_urllc_users": 40,
     "t1_mmtc_users": 60, "t1_rbs_per_gnb": 100,
 }
+E2M1_DEFAULTS = {
+    "e2m1_num_evs": 500, "e2m1_num_background": 2000,
+    "e2m1_grid_size": 5, "e2m1_sim_duration_hours": 3,
+}
 
 def _reset_params(defaults: dict):
     """Reset session_state keys to article defaults."""
@@ -85,6 +93,8 @@ def _reset_params(defaults: dict):
 strategy_e2 = None
 adaptive_m1 = True
 strategy_t1 = None
+strategy_e2m1 = None
+coupled_e2m1 = True
 compare_mode = False
 scenario_kwargs = {}
 
@@ -192,6 +202,35 @@ elif scenario_key == "T1":
             step=10, key="t1_rbs_per_gnb")
         st.button("Reset to Defaults", on_click=_reset_params,
                   args=(d,), key="t1_reset")
+
+elif scenario_key == "E2M1":
+    coupled_e2m1 = st.sidebar.selectbox(
+        "Coupling Mode",
+        ["Coupled", "Uncoupled"],
+    ) == "Coupled"
+    strategy_e2m1 = st.sidebar.selectbox(
+        "Charging Strategy",
+        ["Smart", "Uncoordinated", "V2G"],
+        key="e2m1_strategy",
+    )
+    compare_mode = st.sidebar.checkbox("Compare coupled vs uncoupled")
+    with st.sidebar.expander("Scenario Parameters", expanded=False):
+        st.caption("Article defaults shown. Adjust to explore.")
+        d = E2M1_DEFAULTS
+        scenario_kwargs["num_evs"] = st.number_input(
+            "Number of EVs", 10, 2000, d["e2m1_num_evs"],
+            step=50, key="e2m1_num_evs")
+        scenario_kwargs["num_background"] = st.number_input(
+            "Background vehicles", 100, 10000, d["e2m1_num_background"],
+            step=100, key="e2m1_num_background")
+        scenario_kwargs["grid_size"] = st.number_input(
+            "Grid size (NxN)", 2, 10, d["e2m1_grid_size"],
+            key="e2m1_grid_size")
+        scenario_kwargs["sim_duration_hours"] = st.number_input(
+            "Simulation duration (h)", 1, 12, d["e2m1_sim_duration_hours"],
+            key="e2m1_sim_duration_hours")
+        st.button("Reset to Defaults", on_click=_reset_params,
+                  args=(d,), key="e2m1_reset")
 
 st.sidebar.markdown("---")
 run_button = st.sidebar.button("Run Simulation", type="primary", use_container_width=True)
@@ -325,6 +364,17 @@ def _highlight_keys(scenario_key: str) -> list:
             "handover_success_rate_pct",
             "handover_failures",
         ]
+    if scenario_key == "E2M1":
+        return [
+            "avg_ev_drive_time_s",
+            "avg_ev_queue_time_s",
+            "evs_meeting_soc_target",
+            "total_energy_charged_kwh",
+            "peak_grid_load_kw",
+            "total_emissions_kg_co2",
+            "bg_avg_travel_time_s",
+            "max_queue_length",
+        ]
     return []
 
 
@@ -354,6 +404,15 @@ if run_button:
                     result = compare_signal_strategies(**scenario_kwargs)
                 elif scenario_key == "T1":
                     result = compare_slicing_strategies(**scenario_kwargs)
+                elif scenario_key == "E2M1":
+                    strat_map = {
+                        "Smart": ChargingStrategy.SMART,
+                        "Uncoordinated": ChargingStrategy.UNCOORDINATED,
+                        "V2G": ChargingStrategy.V2G,
+                    }
+                    result = compare_coupling_modes(
+                        charging_strategy=strat_map[strategy_e2m1],
+                        **scenario_kwargs)
                 else:
                     st.warning("Comparison not available for this scenario.")
             else:
@@ -374,6 +433,16 @@ if run_button:
                         "Static": SlicingStrategy.STATIC,
                     }
                     result = run_scenario_t1(strategy=strat_map[strategy_t1], **scenario_kwargs)
+                elif scenario_key == "E2M1":
+                    strat_map = {
+                        "Smart": ChargingStrategy.SMART,
+                        "Uncoordinated": ChargingStrategy.UNCOORDINATED,
+                        "V2G": ChargingStrategy.V2G,
+                    }
+                    result = run_scenario_e2m1(
+                        coupled=coupled_e2m1,
+                        charging_strategy=strat_map[strategy_e2m1],
+                        **scenario_kwargs)
 
             elapsed = time.time() - t0
             status.update(label=f"Simulation completed in {elapsed:.1f}s",
