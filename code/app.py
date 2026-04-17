@@ -103,30 +103,39 @@ if scenario_key == "E1":
         st.caption("Article defaults shown. Adjust to explore.")
         d = E1_DEFAULTS
         scenario_kwargs["num_solar_pvs"] = st.number_input(
-            "Solar PV count", 1, 500, d["e1_num_solar_pvs"], key="e1_num_solar_pvs")
+            "Solar PV count", 1, 500, d["e1_num_solar_pvs"], key="e1_num_solar_pvs",
+            help="Number of rooftop solar PV installations across the grid.")
         col1, col2 = st.columns(2)
         scenario_kwargs["solar_capacity_min_kw"] = col1.number_input(
             "Solar min (kW)", 0.5, 50.0, d["e1_solar_capacity_min_kw"],
-            step=0.5, key="e1_solar_capacity_min_kw")
+            step=0.5, key="e1_solar_capacity_min_kw",
+            help="Minimum rated capacity per solar PV unit.")
         scenario_kwargs["solar_capacity_max_kw"] = col2.number_input(
             "Solar max (kW)", 1.0, 100.0, d["e1_solar_capacity_max_kw"],
-            step=0.5, key="e1_solar_capacity_max_kw")
+            step=0.5, key="e1_solar_capacity_max_kw",
+            help="Maximum rated capacity per solar PV unit.")
         scenario_kwargs["num_wind_turbines"] = st.number_input(
-            "Wind turbine count", 0, 50, d["e1_num_wind_turbines"], key="e1_num_wind_turbines")
+            "Wind turbine count", 0, 50, d["e1_num_wind_turbines"], key="e1_num_wind_turbines",
+            help="Number of wind turbines connected to the grid.")
         scenario_kwargs["wind_capacity_kw"] = st.number_input(
             "Wind capacity (kW each)", 10.0, 5000.0, d["e1_wind_capacity_kw"],
-            step=50.0, key="e1_wind_capacity_kw")
+            step=50.0, key="e1_wind_capacity_kw",
+            help="Rated power capacity per wind turbine.")
         scenario_kwargs["num_batteries"] = st.number_input(
-            "Battery count", 0, 100, d["e1_num_batteries"], key="e1_num_batteries")
+            "Battery count", 0, 100, d["e1_num_batteries"], key="e1_num_batteries",
+            help="Number of battery energy storage systems in the grid.")
         scenario_kwargs["battery_capacity_kwh"] = st.number_input(
             "Battery capacity (kWh each)", 5.0, 500.0, d["e1_battery_capacity_kwh"],
-            step=5.0, key="e1_battery_capacity_kwh")
+            step=5.0, key="e1_battery_capacity_kwh",
+            help="Energy storage capacity per battery unit.")
         scenario_kwargs["num_loads"] = st.number_input(
             "Residential loads", 10, 5000, d["e1_num_loads"],
-            step=10, key="e1_num_loads")
+            step=10, key="e1_num_loads",
+            help="Number of residential loads with smart meters.")
         scenario_kwargs["sim_duration_hours"] = st.number_input(
             "Simulation duration (h)", 1, 72, d["e1_sim_duration_hours"],
-            key="e1_sim_duration_hours")
+            key="e1_sim_duration_hours",
+            help="Total simulation time in hours.")
         st.button("Reset to Defaults", on_click=_reset_params,
                   args=(d,), key="e1_reset")
 
@@ -135,45 +144,65 @@ elif scenario_key == "E2":
         "Charging Strategy",
         ["Smart", "Uncoordinated", "V2G"],
     )
+    _e2_strat_desc = {
+        "Smart": "Prioritises charging based on urgency, time limits, and electricity prices.",
+        "Uncoordinated": "EVs charge at maximum power immediately upon arrival, without grid awareness.",
+        "V2G": "Vehicles discharge energy back to the grid at premium rates during peak hours.",
+    }
+    st.sidebar.caption(_e2_strat_desc[strategy_e2])
     compare_mode = st.sidebar.checkbox("Compare all strategies")
     with st.sidebar.expander("Scenario Parameters", expanded=False):
         st.caption("Article defaults shown. Adjust to explore.")
         d = E2_DEFAULTS
         scenario_kwargs["num_vehicles"] = st.number_input(
             "Number of EVs", 10, 1000, d["e2_num_vehicles"],
-            step=10, key="e2_num_vehicles")
+            step=10, key="e2_num_vehicles",
+            help="Total electric vehicles participating in the simulation.")
         scenario_kwargs["num_l2_stations"] = st.number_input(
             "Level-2 stations", 1, 200, d["e2_num_l2_stations"],
-            key="e2_num_l2_stations")
+            key="e2_num_l2_stations",
+            help="Level-2 AC charging points (7.2 kW residential).")
         scenario_kwargs["num_dc_stations"] = st.number_input(
             "DC-fast stations", 1, 50, d["e2_num_dc_stations"],
-            key="e2_num_dc_stations")
+            key="e2_num_dc_stations",
+            help="DC fast-charging points (50 kW commercial).")
         scenario_kwargs["grid_capacity_kw"] = st.number_input(
             "Grid capacity (kW)", 500.0, 20000.0, d["e2_grid_capacity_kw"],
-            step=100.0, key="e2_grid_capacity_kw")
+            step=100.0, key="e2_grid_capacity_kw",
+            help="Maximum available power capacity from the grid.")
         scenario_kwargs["base_load_kw"] = st.number_input(
             "Base load (kW)", 500.0, 15000.0, d["e2_base_load_kw"],
-            step=100.0, key="e2_base_load_kw")
+            step=100.0, key="e2_base_load_kw",
+            help="Non-EV baseline electrical demand on the grid.")
         st.button("Reset to Defaults", on_click=_reset_params,
                   args=(d,), key="e2_reset")
 
 elif scenario_key == "M1":
-    adaptive_m1 = st.sidebar.selectbox(
+    _m1_signal = st.sidebar.selectbox(
         "Signal Control",
         ["Adaptive", "Fixed"],
-    ) == "Adaptive"
+    )
+    adaptive_m1 = _m1_signal == "Adaptive"
+    _m1_signal_desc = {
+        "Adaptive": "Signal timing adjusts dynamically based on queue length at each approach.",
+        "Fixed": "Static signal timing independent of real-time traffic demand.",
+    }
+    st.sidebar.caption(_m1_signal_desc[_m1_signal])
     compare_mode = st.sidebar.checkbox("Compare both strategies")
     with st.sidebar.expander("Scenario Parameters", expanded=False):
         st.caption("Article defaults shown. Adjust to explore.")
         d = M1_DEFAULTS
         scenario_kwargs["num_vehicles"] = st.number_input(
             "Number of vehicles", 100, 10000, d["m1_num_vehicles"],
-            step=100, key="m1_num_vehicles")
+            step=100, key="m1_num_vehicles",
+            help="Total vehicles in the traffic simulation.")
         scenario_kwargs["grid_size"] = st.number_input(
-            "Grid size (NxN)", 2, 10, d["m1_grid_size"], key="m1_grid_size")
+            "Grid size (NxN)", 2, 10, d["m1_grid_size"], key="m1_grid_size",
+            help="Traffic network dimensions as an NxN grid of intersections.")
         scenario_kwargs["sim_duration_hours"] = st.number_input(
             "Simulation duration (h)", 1, 12, d["m1_sim_duration_hours"],
-            key="m1_sim_duration_hours")
+            key="m1_sim_duration_hours",
+            help="Total simulation runtime in hours.")
         st.button("Reset to Defaults", on_click=_reset_params,
                   args=(d,), key="m1_reset")
 
@@ -182,53 +211,79 @@ elif scenario_key == "T1":
         "Slicing Strategy",
         ["Dynamic", "Static"],
     )
+    _t1_strat_desc = {
+        "Dynamic": "Allocates resource blocks proportionally to demand with a minimum floor guarantee.",
+        "Static": "Fixed resource block percentages per slice, regardless of demand.",
+    }
+    st.sidebar.caption(_t1_strat_desc[strategy_t1])
     compare_mode = st.sidebar.checkbox("Compare both strategies")
     with st.sidebar.expander("Scenario Parameters", expanded=False):
         st.caption("Article defaults shown. Adjust to explore.")
         d = T1_DEFAULTS
         scenario_kwargs["num_gnbs"] = st.number_input(
-            "Number of gNBs", 1, 20, d["t1_num_gnbs"], key="t1_num_gnbs")
+            "Number of gNBs", 1, 20, d["t1_num_gnbs"], key="t1_num_gnbs",
+            help="Number of 5G base stations (gNBs) serving the network.")
         scenario_kwargs["embb_users"] = st.number_input(
             "eMBB users", 10, 500, d["t1_embb_users"],
-            step=10, key="t1_embb_users")
+            step=10, key="t1_embb_users",
+            help="Enhanced Mobile Broadband users (high-bandwidth services like video).")
         scenario_kwargs["urllc_users"] = st.number_input(
             "URLLC users", 5, 200, d["t1_urllc_users"],
-            step=5, key="t1_urllc_users")
+            step=5, key="t1_urllc_users",
+            help="Ultra-Reliable Low-Latency users (mission-critical applications).")
         scenario_kwargs["mmtc_users"] = st.number_input(
             "mMTC users", 5, 500, d["t1_mmtc_users"],
-            step=5, key="t1_mmtc_users")
+            step=5, key="t1_mmtc_users",
+            help="Massive Machine-Type Communication users (IoT/sensor devices).")
         scenario_kwargs["rbs_per_gnb"] = st.number_input(
             "RBs per gNB", 10, 500, d["t1_rbs_per_gnb"],
-            step=10, key="t1_rbs_per_gnb")
+            step=10, key="t1_rbs_per_gnb",
+            help="Total resource blocks available per base station for slice allocation.")
         st.button("Reset to Defaults", on_click=_reset_params,
                   args=(d,), key="t1_reset")
 
 elif scenario_key == "E2M1":
-    coupled_e2m1 = st.sidebar.selectbox(
+    _e2m1_coupling = st.sidebar.selectbox(
         "Coupling Mode",
         ["Coupled", "Uncoupled"],
-    ) == "Coupled"
+    )
+    coupled_e2m1 = _e2m1_coupling == "Coupled"
+    _e2m1_coupling_desc = {
+        "Coupled": "EVs physically drive through the traffic network to reach charging stations.",
+        "Uncoupled": "EVs bypass traffic and teleport directly to stations (baseline).",
+    }
+    st.sidebar.caption(_e2m1_coupling_desc[_e2m1_coupling])
     strategy_e2m1 = st.sidebar.selectbox(
         "Charging Strategy",
         ["Smart", "Uncoordinated", "V2G"],
         key="e2m1_strategy",
     )
+    _e2m1_strat_desc = {
+        "Smart": "Prioritises charging based on urgency, time limits, and electricity prices.",
+        "Uncoordinated": "EVs charge at maximum power immediately upon arrival, without grid awareness.",
+        "V2G": "Vehicles discharge energy back to the grid at premium rates during peak hours.",
+    }
+    st.sidebar.caption(_e2m1_strat_desc[strategy_e2m1])
     compare_mode = st.sidebar.checkbox("Compare coupled vs uncoupled")
     with st.sidebar.expander("Scenario Parameters", expanded=False):
         st.caption("Article defaults shown. Adjust to explore.")
         d = E2M1_DEFAULTS
         scenario_kwargs["num_evs"] = st.number_input(
             "Number of EVs", 10, 2000, d["e2m1_num_evs"],
-            step=50, key="e2m1_num_evs")
+            step=50, key="e2m1_num_evs",
+            help="Number of electric vehicles that need charging.")
         scenario_kwargs["num_background"] = st.number_input(
             "Background vehicles", 100, 10000, d["e2m1_num_background"],
-            step=100, key="e2m1_num_background")
+            step=100, key="e2m1_num_background",
+            help="Non-EV background traffic for network realism.")
         scenario_kwargs["grid_size"] = st.number_input(
             "Grid size (NxN)", 2, 10, d["e2m1_grid_size"],
-            key="e2m1_grid_size")
+            key="e2m1_grid_size",
+            help="Traffic network dimensions as an NxN grid of intersections.")
         scenario_kwargs["sim_duration_hours"] = st.number_input(
             "Simulation duration (h)", 1, 12, d["e2m1_sim_duration_hours"],
-            key="e2m1_sim_duration_hours")
+            key="e2m1_sim_duration_hours",
+            help="Total simulation runtime in hours.")
         st.button("Reset to Defaults", on_click=_reset_params,
                   args=(d,), key="e2m1_reset")
 
