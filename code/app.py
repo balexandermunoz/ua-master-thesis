@@ -70,6 +70,8 @@ E2_DEFAULTS = {
     "e2_num_vehicles": 100, "e2_num_l2_stations": 20,
     "e2_num_dc_stations": 5, "e2_grid_capacity_kw": 2500.0,
     "e2_base_load_kw": 2000.0,
+    "e2_off_peak_price": 0.08, "e2_mid_peak_price": 0.12,
+    "e2_on_peak_price": 0.20,
 }
 M1_DEFAULTS = {
     "m1_num_vehicles": 2500, "m1_grid_size": 5,
@@ -82,6 +84,8 @@ T1_DEFAULTS = {
 E2M1_DEFAULTS = {
     "e2m1_num_evs": 500, "e2m1_num_background": 2000,
     "e2m1_grid_size": 5, "e2m1_sim_duration_hours": 3,
+    "e2m1_off_peak_price": 0.08, "e2m1_mid_peak_price": 0.12,
+    "e2m1_on_peak_price": 0.20,
 }
 
 def _reset_params(defaults: dict):
@@ -174,6 +178,20 @@ elif scenario_key == "E2":
             "Base load (kW)", 500.0, 15000.0, d["e2_base_load_kw"],
             step=100.0, key="e2_base_load_kw",
             help="Non-EV baseline electrical demand on the grid.")
+        st.markdown("**Time-of-Use Tariff ($/kWh)**")
+        p1, p2, p3 = st.columns(3)
+        scenario_kwargs["off_peak_price"] = p1.number_input(
+            "Off-peak", 0.01, 1.00, d["e2_off_peak_price"],
+            step=0.01, format="%.2f", key="e2_off_peak_price",
+            help="Price during off-peak hours (00:00-07:00, 23:00-24:00).")
+        scenario_kwargs["mid_peak_price"] = p2.number_input(
+            "Mid-peak", 0.01, 1.00, d["e2_mid_peak_price"],
+            step=0.01, format="%.2f", key="e2_mid_peak_price",
+            help="Price during mid-peak hours (07:00-17:00, 21:00-23:00).")
+        scenario_kwargs["on_peak_price"] = p3.number_input(
+            "On-peak", 0.01, 1.00, d["e2_on_peak_price"],
+            step=0.01, format="%.2f", key="e2_on_peak_price",
+            help="Price during on-peak hours (17:00-21:00).")
         st.button("Reset to Defaults", on_click=_reset_params,
                   args=(d,), key="e2_reset")
 
@@ -284,6 +302,20 @@ elif scenario_key == "E2M1":
             "Simulation duration (h)", 1, 12, d["e2m1_sim_duration_hours"],
             key="e2m1_sim_duration_hours",
             help="Total simulation runtime in hours.")
+        st.markdown("**Time-of-Use Tariff ($/kWh)**")
+        p1, p2, p3 = st.columns(3)
+        scenario_kwargs["off_peak_price"] = p1.number_input(
+            "Off-peak", 0.01, 1.00, d["e2m1_off_peak_price"],
+            step=0.01, format="%.2f", key="e2m1_off_peak_price",
+            help="Price during off-peak hours (00:00-07:00, 23:00-24:00).")
+        scenario_kwargs["mid_peak_price"] = p2.number_input(
+            "Mid-peak", 0.01, 1.00, d["e2m1_mid_peak_price"],
+            step=0.01, format="%.2f", key="e2m1_mid_peak_price",
+            help="Price during mid-peak hours (07:00-17:00, 21:00-23:00).")
+        scenario_kwargs["on_peak_price"] = p3.number_input(
+            "On-peak", 0.01, 1.00, d["e2m1_on_peak_price"],
+            step=0.01, format="%.2f", key="e2m1_on_peak_price",
+            help="Price during on-peak hours (17:00-21:00).")
         st.button("Reset to Defaults", on_click=_reset_params,
                   args=(d,), key="e2m1_reset")
 

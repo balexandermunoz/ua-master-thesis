@@ -82,7 +82,10 @@ class CrossDomainE2M1(BaseFederate):
                  num_background: int = 2000,
                  grid_size: int = 5,
                  sim_duration_hours: int = 3,
-                 charging_strategy: ChargingStrategy = ChargingStrategy.SMART):
+                 charging_strategy: ChargingStrategy = ChargingStrategy.SMART,
+                 off_peak_price: float = 0.08,
+                 mid_peak_price: float = 0.12,
+                 on_peak_price: float = 0.20):
         super().__init__(name, use_helics,
                          time_step=1.0,
                          sim_duration=sim_duration_hours * 3600)
@@ -104,7 +107,7 @@ class CrossDomainE2M1(BaseFederate):
         # ---- charging infrastructure (E2) ----
         self.charging_stations: List[ChargingStation] = []
         self.transformers: List[TransformerModel] = []
-        self.tariff = TimeOfUseTariff()
+        self.tariff = TimeOfUseTariff(off_peak_price, mid_peak_price, on_peak_price)
         self.smart_controller: Optional[SmartChargingController] = None
 
         # Grid params

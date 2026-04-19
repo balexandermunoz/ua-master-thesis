@@ -191,11 +191,13 @@ class TransformerModel:
 class TimeOfUseTariff:
     """Time-of-use electricity pricing structure"""
     
-    def __init__(self):
+    def __init__(self, off_peak_price: float = 0.08,
+                 mid_peak_price: float = 0.12,
+                 on_peak_price: float = 0.20):
         # Price per kWh for different periods
-        self.off_peak_price = 0.08  # $0.08/kWh (00:00-07:00, 23:00-24:00)
-        self.mid_peak_price = 0.12  # $0.12/kWh (07:00-17:00, 21:00-23:00)
-        self.on_peak_price = 0.20   # $0.20/kWh (17:00-21:00)
+        self.off_peak_price = off_peak_price   # $/kWh (00:00-07:00, 23:00-24:00)
+        self.mid_peak_price = mid_peak_price   # $/kWh (07:00-17:00, 21:00-23:00)
+        self.on_peak_price = on_peak_price     # $/kWh (17:00-21:00)
         
     def get_price(self, hour: float) -> float:
         """Get electricity price for given hour"""
@@ -322,7 +324,10 @@ class EVChargingFederate(BaseFederate):
                  num_l2_stations: int = 20,
                  num_dc_stations: int = 5,
                  grid_capacity_kw: float = 2500.0,
-                 base_load_kw: float = 2000.0):
+                 base_load_kw: float = 2000.0,
+                 off_peak_price: float = 0.08,
+                 mid_peak_price: float = 0.12,
+                 on_peak_price: float = 0.20):
         super().__init__(name, use_helics,
                          time_step=5 * 60,         # 5 minutes in seconds
                          sim_duration=36 * 3600)    # 36 hours
@@ -337,7 +342,7 @@ class EVChargingFederate(BaseFederate):
         self.vehicles: List[ElectricVehicle] = []
         self.charging_stations: List[ChargingStation] = []
         self.transformers: List[TransformerModel] = []
-        self.tariff = TimeOfUseTariff()
+        self.tariff = TimeOfUseTariff(off_peak_price, mid_peak_price, on_peak_price)
         self.smart_controller = None
         
         # Grid parameters (IEEE 13-node)
