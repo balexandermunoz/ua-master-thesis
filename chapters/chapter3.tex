@@ -353,10 +353,18 @@ The first cross-domain scenario couples the EV charging infrastructure model~(E2
 
 Each EV follows a four-phase lifecycle:
 \begin{equation}
-\text{DRIVING\_TO\_STATION} \xrightarrow{\text{arrive + port free}} \text{CHARGING}
-\xrightarrow{SOC \geq SOC_{target}} \text{DRIVING\_BACK} \xrightarrow{\text{arrive}} \text{DONE}
+\begin{aligned}
+\text{DRIVING\_TO\_STATION}
+&\xrightarrow{\text{arrive + port free}}
+\text{CHARGING} \\
+&\xrightarrow{SOC \geq SOC_{target}}
+\text{DRIVING\_BACK} \\
+&\xrightarrow{\text{arrive}}
+\text{DONE}
+\end{aligned}
 \label{eq:ev_phases}
 \end{equation}
+
 where the \texttt{DRIVING} phases reuse M1's movement mechanics (A* routing, signal waiting, link travel) and the \texttt{CHARGING} phase reuses E2's smart-charging allocation strategy~(Eq.~\ref{eq:urgency}).
 
 \paragraph{Station Placement and Assignment}
