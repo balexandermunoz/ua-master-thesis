@@ -41,7 +41,7 @@ The engine supports the following core abstractions:
 
 \begin{itemize}
     \item \textbf{Agents}: Autonomous entities with an internal state and a \texttt{step()} function invoked at each simulation tick. Agents encapsulate all domain-specific behavior and are entirely managed by the engine.
-    \item \textbf{Time Control}: Discrete-event temporal stepping with configurable resolution. Each scenario defines its own $\Delta t$, ranging from 100\,ms to fifteen minutes.
+    \item \textbf{Time Control}: Discrete-event temporal stepping with configurable resolution. Each scenario defines its own time-step duration ($\Delta t$), ranging from 100\,ms to fifteen minutes.
     \item \textbf{Contracts and Interfaces}: Each domain module must implement a defined interface including initialization, per-step update, and reporting methods. This contract ensures that new domains can be integrated without modifying engine internals.
     \item \textbf{Collector}: A generic metrics accumulation mechanism decoupled from any domain-specific reporting logic.
 \end{itemize}
