@@ -77,7 +77,6 @@ Scenario T2 models a dense IoT deployment with thousands of low-power devices op
 The HELICS-based architecture was designed to support coupled multi-domain simulations. Three cross-domain integration cases were defined during the design phase:
 
 \begin{itemize}
-    \item \textbf{E2 + M1 (Energy--Mobility)}: EVs navigate through traffic to available charging stations; charging demand feeds back into the grid model, creating a bidirectional coupling between transportation routing and electrical load.
     \item \textbf{M2 + T1 (Mobility--Telecommunications)}: Evaluates how 5G network latency and handover events affect autonomous vehicle control loops. Vehicle positions from M2 drive user locations in T1, while network QoS degradation introduces delays in V2X communication.
     \item \textbf{E1 + T2 (Energy--Telecommunications)}: IoT devices in T2 serve as the smart meters and grid sensors of E1. Communication failures (collisions, excessive backoff) cause delayed or missing grid measurements, degrading demand response activation timing and accuracy.
 \end{itemize}
