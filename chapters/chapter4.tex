@@ -2,176 +2,395 @@
 \label{chapter:implementation}
 
 \begin{introduction}
-This chapter presents the implementation details of the proposed solution and discusses the obtained results. It describes the development process, technical challenges, and evaluates the system's performance against the defined objectives.
+This chapter presents the implementation of the modular co-simulation framework proposed in Chapter~\ref{chapter:methodology} and reports the results obtained from executing the five defined scenarios. The chapter describes the development environment, the technical realisation of each architectural layer, the challenges encountered, and a scenario-by-scenario analysis of the simulation outcomes. All results reported in this chapter were produced by running the standalone (non-HELICS) version of each federate and are fully reproducible from the public repository.
 \end{introduction}
-
-\section{Introduction}
-
-% Provide an overview of what will be covered in this chapter
-% Briefly describe the implementation scope
-
-
-\section{Implementation Overview}
-
-% Give a general description of what was implemented
-% Mention the main technologies, tools, and platforms used
 
 
 \section{Development Environment}
 
-% Describe the development environment
-% Include: operating systems, IDEs, version control, etc.
+The framework was implemented entirely in Python~3.11 and developed under Windows~11 using Visual Studio Code as the primary IDE. Table~\ref{tab:devenv} summarises the key components of the development environment.
 
 \begin{table}[h]
     \centering
     \caption{Development environment and tools}
     \label{tab:devenv}
-    \begin{tabular}{|l|l|}
-        \hline
-        \textbf{Component} & \textbf{Technology/Tool} \\
-        \hline
-        Operating System & ... \\
-        \hline
-        IDE & ... \\
-        \hline
-        Programming Language & ... \\
-        \hline
-        Framework & ... \\
-        \hline
-        Database & ... \\
-        \hline
-        Version Control & Git \\
-        \hline
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Component} & \textbf{Technology / Version} \\
+        \midrule
+        Operating System   & Windows 11 (64-bit) \\
+        IDE                & Visual Studio Code 1.99 \\
+        Language           & Python 3.11 \\
+        Co-simulation middleware & HELICS 3.x (\texttt{helics} Python package) \\
+        Numerical computing & NumPy 1.26 \\
+        Web UI             & Streamlit 1.34 \\
+        Version control    & Git / GitHub \\
+        Dependency management & pip + \texttt{requirements.txt} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The virtual environment is created with \texttt{python -m venv .venv} and dependencies installed via \texttt{pip install -r requirements.txt}. The Streamlit dashboard is launched with \texttt{streamlit run code/app.py} from the repository root.
+
+
+\section{Implementation Overview}
+
+The codebase is organised in the \texttt{code/} directory following the three-layer architecture defined in Chapter~\ref{chapter:methodology}:
+
+\begin{itemize}
+    \item \textbf{\texttt{engine/base.py}} — Layer 1: the domain-independent simulation engine (\texttt{BaseFederate} abstract class and shared utilities).
+    \item \textbf{\texttt{scenarios/}} — Layer 2: five domain modules, each a self-contained Python file (\texttt{scenario\_e1.py}, \texttt{scenario\_e2.py}, \texttt{scenario\_m1.py}, \texttt{scenario\_t1.py}, \texttt{scenario\_e2m1.py}).
+    \item \textbf{\texttt{app.py}} — Layer 3 entry point: the Streamlit UI that orchestrates scenario execution and result visualisation; in co-simulation mode this layer would also launch the HELICS broker.
+\end{itemize}
+
+Table~\ref{tab:scenarios_overview} provides a concise comparison of the five implemented scenarios in terms of agent count, time resolution, and simulation duration.
+
+\begin{table}[h]
+    \centering
+    \caption{Scenario implementation summary}
+    \label{tab:scenarios_overview}
+    \begin{tabular}{llrrrl}
+        \toprule
+        \textbf{ID} & \textbf{Domain} & \textbf{Agents} & \textbf{$\Delta t$} & \textbf{Duration} & \textbf{Strategies} \\
+        \midrule
+        E1    & Energy (Smart Grid)    & 858   & 15 min  & 24 h  & — \\
+        E2    & Energy (EV Charging)   & 125   & 5 min   & 36 h  & 3 \\
+        M1    & Mobility (Traffic)     & 2{,}525 & 1 s   & 3 h   & 2 \\
+        T1    & Telecom (5G Slicing)   & 206   & 100 ms  & 1 h   & 2 \\
+        E2+M1 & Cross-domain           & 2{,}513 & 1 s   & 3 h   & 2 \\
+        \bottomrule
     \end{tabular}
 \end{table}
 
 
-\section{Implementation Details}
+\section{Core Engine Implementation}
 
-% Describe the implementation of each major component
-% Include code snippets when relevant
+\subsection{BaseFederate Abstract Class}
 
-
-\subsection{Module A Implementation}
-
-% Describe the implementation of a specific module
-% Include relevant code examples
+The domain-independent engine is implemented as the abstract class \texttt{BaseFederate} in \texttt{engine/base.py}. It encapsulates all HELICS wiring and time-stepping so that domain modules contain no co-simulation boilerplate. Listing~\ref{lst:basefederate} shows its constructor and the three abstract methods that form the engine contract.
 
 \begin{listing}[h]
 \begin{minted}{python}
-# Example code snippet
-def example_function(param):
-    """
-    This is an example function
-    """
-    result = process_data(param)
-    return result
+class BaseFederate(ABC):
+    def __init__(self, name: str, use_helics: bool = False,
+                 time_step: float = 1.0, sim_duration: float = 3600.0):
+        self.name = name
+        self.use_helics = use_helics
+        self.time_step = time_step
+        self.sim_duration = sim_duration
+        self.federate = None
+
+    @abstractmethod
+    def initialize_components(self): ...
+
+    @abstractmethod
+    def run_simulation(self): ...
+
+    @abstractmethod
+    def generate_report(self) -> Dict: ...
 \end{minted}
-\caption{Example implementation of a function}
-\label{lst:example}
+\caption{\texttt{BaseFederate} constructor and abstract interface (engine/base.py)}
+\label{lst:basefederate}
+\end{listing}
+
+The class provides two additional concrete methods used by every subclass: \texttt{setup\_federate()}, which initialises the HELICS value-federate or falls back transparently to standalone mode when HELICS is unavailable, and \texttt{advance\_time(current\_time)}, which delegates clock advancement either to \texttt{helicsFederateRequestTime()} or to a simple arithmetic increment. This dual-mode design means that domain logic is identical whether the module runs in isolation or as part of a co-simulation federation; only the \texttt{use\_helics} flag differs.
+
+\subsection{HELICS Integration}
+
+When \texttt{use\_helics=True}, \texttt{setup\_federate()} creates a \texttt{ValueFederate} over a ZeroMQ core, registers the domain-specific publications returned by the overridable \texttt{\_register\_publications()} hook, and enters executing mode. If the HELICS broker is not reachable, the method catches the exception, logs a warning, resets \texttt{use\_helics} to \texttt{False}, and continues in standalone mode. This graceful degradation is essential for unit testing and for running individual scenarios without launching the full federation infrastructure.
+
+Publications are registered at the global scope (e.g., \texttt{"total\_renewable\_generation"}, \texttt{"total\_load"}, \texttt{"net\_power"} for Scenario~E1), so subscribing federates do not need to know the publisher's internal structure---a key aspect of the publish-subscribe decoupling described in Chapter~\ref{chapter:methodology}.
+
+
+\section{Domain Module Implementation}
+
+\subsection{Scenario E1 --- Smart Grid with Renewable Integration}
+
+\texttt{SmartGridFederate} extends \texttt{BaseFederate} with a 15-minute time step and a 24-hour simulation duration (96 steps). Its \texttt{initialize\_components()} method creates four collections of agents: 50~\texttt{SolarPV} instances with capacities sampled uniformly from $[5, 10]$~kW, 3~\texttt{WindTurbine} instances at 500~kW each, 5~\texttt{BatteryStorage} systems at 50~kWh and a 0.5C charge/discharge rate, and 800~\texttt{ResidentialLoad} agents with base loads sampled from $[0.5, 3.0]$~kW. All agents are assigned randomly to one of the 33 IEEE buses.
+
+The main simulation loop implements the models defined in Chapter~\ref{chapter:methodology}: a sine-based solar irradiance profile with stochastic cloud factor $C_{cloud} \sim U(0.8, 1.0)$, a cubic wind power curve between cut-in (3~m/s) and rated speed (12~m/s), and a residential load profile with five time-of-day bands. Demand Response activates during the 17:00--22:00 peak window for the 70\% of loads marked as DR participants, reducing their consumption by 15\%. Battery dispatch is handled by \texttt{calculate\_storage\_dispatch()}: when net power is negative (renewable surplus), batteries charge; when positive, they discharge proportionally across all units.
+
+\subsection{Scenario E2 --- Electric Vehicle Charging Infrastructure}
+
+\texttt{EVChargingFederate} models 100 electric vehicles on a modified IEEE 13-node feeder. Vehicle arrival times follow the distributions specified in Chapter~\ref{chapter:methodology}: residential EVs (80 of the 100) arrive according to $\mathcal{N}(18.5,\,1.0)$~h and depart the next morning; commercial EVs arrive uniformly in business hours at DC fast stations. The charging strategy is injected as a \texttt{ChargingStrategy} enum value, enabling the same federate class to run three distinct algorithms without code duplication.
+
+The strategy pattern is central to the E2 design. \texttt{UNCOORDINATED} allocates the full requested power immediately upon connection. \texttt{SMART} uses a \texttt{SmartChargingController} that ranks connected vehicles by a priority score $\text{Priority} = \text{Urgency} \times \text{PriceFactor}$, where urgency encodes time remaining to departure relative to the energy deficit, and the price factor discounts charging during on-peak hours. \texttt{V2G} extends SMART by allowing V2G-capable vehicles (50\% of the fleet) to discharge at the on-peak tariff rate (\$0.20/kWh), trading energy back to the grid.
+
+\subsection{Scenario M1 --- Urban Traffic Congestion Management}
+
+\texttt{TrafficSimulation} operates at 1-second resolution over a 3-hour simulation window---the finest time granularity among the standalone scenarios. The traffic network is a 5$\times$5 kilometre grid with 25 signalised intersections at 1-kilometre spacing. Route computation for each of the 2{,}500~\texttt{Vehicle} agents uses an A* search over the grid graph, with Manhattan-distance heuristic. Vehicle departure times are distributed uniformly across the first hour to model morning-peak ramp-up.
+
+The adaptive signal controller implements the queue-responsive green-time formula from Chapter~\ref{chapter:methodology}:
+\begin{equation}
+T_{green}^{phase} = T_{min} + (T_{max} - T_{min}) \cdot \frac{Q_{phase}}{Q_{total}}
+\end{equation}
+with $T_{min} = 15$~s and $T_{max} = 90$~s. In fixed-timing mode the same \texttt{TrafficSignal} class is used with equal phase weights ($Q_{NS} = Q_{EW} = 1$ regardless of actual queues), requiring no additional class or branching in the main loop. The \texttt{adaptive\_signals} boolean injected at construction time selects between the two behaviours.
+
+Vehicle emissions are tracked using a simplified model: idle vehicles emit at 2.31~g\,CO$_2$/s, while moving vehicles emit proportionally to speed at 0.15~g\,CO$_2$/m.
+
+\subsection{Scenario T1 --- 5G Slice Resource Allocation}
+
+\texttt{NetworkSlicingSimulation} models three gNBs arranged in a triangular layout serving 200 mobile users distributed across three 5G network slices: 100~eMBB users, 40~URLLC users, and 60~mMTC users. User mobility follows the random-waypoint model at pedestrian speed (0.5--2.0~m/s). Serving-cell assignment uses received power computed from the 3GPP Urban Macro path-loss model:
+\begin{equation}
+PL_{dB} = 128.1 + 37.6 \log_{10}(d_{km})
+\end{equation}
+Handover occurs when a neighbour gNB offers more than 3~dB better received power, subject to a 10-step cooldown that prevents ping-pong effects.
+
+The \texttt{SliceResourceAllocator} implements two strategies. \texttt{STATIC} assigns fixed fractions of the 100 resource blocks (RBs) per gNB: 50\% to eMBB, 30\% to URLLC, and 20\% to mMTC, regardless of instantaneous demand. \texttt{DYNAMIC} allocates RBs proportionally to the active-user count of each slice while guaranteeing a minimum floor of 5~RBs per slice per step. QoS is considered satisfied when the allocated RBs meet or exceed the per-user requirement: 2~RBs/user for eMBB and URLLC, 1~RB/user for mMTC.
+
+\subsection{Scenario E2+M1 --- Cross-Domain Energy--Mobility Integration}
+
+\texttt{CrossDomainE2M1} is the only scenario that combines two domain modules within a single federate. It inherits from \texttt{BaseFederate} and reuses components from both \texttt{scenario\_m1.py} and \texttt{scenario\_e2.py} through direct Python imports---an intra-process form of the federation pattern. In a full HELICS deployment these modules would run as separate processes communicating through published topics; in the prototype presented here, the coupling is achieved by sharing object references within the same process, which preserves the architectural separation while avoiding the complexity of multi-process orchestration in standalone mode.
+
+The central agent is \texttt{EVTrafficVehicle}, which extends the M1 \texttt{Vehicle} class with an E2 \texttt{ElectricVehicle} battery model. It progresses through four lifecycle phases: \texttt{DRIVING\_TO\_STATION} (A* navigation through the traffic grid), \texttt{CHARGING} (E2 charging model), \texttt{DRIVING\_BACK} (return route), and \texttt{DONE}. In coupled mode, 500 EV vehicles share the grid with 2{,}000 background vehicles, so EV travel times are affected by traffic congestion. In uncoupled mode, EVs teleport instantly to their assigned charging station, providing a baseline that isolates the grid charging behaviour from mobility effects.
+
+Listing~\ref{lst:evtraffic} illustrates the phase enumeration that governs the EV lifecycle.
+
+\begin{listing}[h]
+\begin{minted}{python}
+class EVTrafficVehicle(M1Vehicle):
+    class Phase(Enum):
+        DRIVING_TO_STATION = "driving_to_station"
+        CHARGING           = "charging"
+        DRIVING_BACK       = "driving_back"
+        DONE               = "done"
+\end{minted}
+\caption{Phase enumeration of the \texttt{EVTrafficVehicle} cross-domain agent (scenario\_e2m1.py)}
+\label{lst:evtraffic}
 \end{listing}
 
 
-\subsection{Module B Implementation}
+\section{User Interface}
 
-% Describe another module implementation
+The Streamlit application in \texttt{app.py} provides a single-page dashboard that covers all five scenarios. A sidebar selector switches between scenarios and exposes scenario-specific parameters through \texttt{st.number\_input} and \texttt{st.selectbox} widgets. Strategy and coupling-mode selectors map user choices to the corresponding enum values before calling the scenario entry-point function. A ``Compare all strategies'' checkbox triggers the \texttt{compare\_*} family of functions, which execute all strategy variants sequentially and return a dictionary of reports keyed by strategy name.
 
+Simulation results are persisted in \texttt{st.session\_state} so that widget interactions (e.g., expanding sections or scrolling) do not trigger unnecessary re-runs. The \texttt{\_display\_report()} helper renders three sections for each result: a \emph{Components} grid, a \emph{Metrics} grid with formatted numeric values, and a collapsible raw-metrics table. For comparison runs, \texttt{\_display\_comparison()} renders per-strategy tabs plus a bar-chart summary of the most relevant metrics for the selected scenario.
 
-\subsection{Database Schema}
-
-% If applicable, describe your database design
-% Include ER diagrams or schema descriptions
-
-
-\subsection{API Design}
-
-% If applicable, describe your API endpoints
-% Include request/response examples
+Logging output generated during the simulation run is captured into a \texttt{StringIO} stream and displayed inside a collapsible ``Simulation Log'' expander, allowing inspection of intermediate progress without cluttering the main results view.
 
 
 \section{Technical Challenges}
 
-% Discuss the main technical challenges encountered
-% Explain how you addressed them
+\subsection{HELICS Dependency Isolation}
 
+The HELICS Python package requires native libraries that may not be available in all environments. Importing the \texttt{helics} module at the top level of \texttt{base.py} would raise an \texttt{ImportError} in environments where HELICS is not installed, blocking standalone execution. The solution implemented wraps the HELICS call site inside \texttt{setup\_federate()} in a broad \texttt{try/except} block that catches both \texttt{ImportError} and runtime exceptions, and falls back to standalone mode. Domain modules import \texttt{BaseFederate} and \texttt{print\_report} at module level but do not import HELICS directly, so they can be imported and tested without the native library.
 
-\subsection{Challenge 1}
+\subsection{Scalability of the M1 and E2+M1 Agent Loops}
 
-% Describe a specific challenge and its solution
+Scenario M1 advances 2{,}500 vehicles at 1-second resolution for 3 hours, totalling $2{,}500 \times 10{,}800 = 27{,}000{,}000$ agent-step computations per run. The main bottleneck is A* pathfinding, which is computed once per vehicle at departure and cached. Queue sensing for adaptive signal control iterates over all vehicles at each step to classify them by intersection and approach direction; this $O(N)$ scan is acceptable for $N = 2{,}500$ but would need indexing for larger fleets. The Scenario E2+M1 compound simulation (2{,}500 background vehicles plus 500 EV traffic agents) adds charging logic to each EV step but keeps the same 1-second step size, resulting in a wall-clock execution time of approximately 25~seconds on the development machine.
 
+\subsection{Cross-Domain Data Coupling}
 
-\subsection{Challenge 2}
+Coupling the E2 charging model to the M1 traffic model required a shared representation of the road network on which charging stations are located. In Scenario~E2 the charging infrastructure uses IEEE 13-node indices; in Scenario~M1 the network is a grid of $(x,y)$ tuples. Scenario~E2+M1 resolves this by mapping stations to grid coordinates and using grid positions as the universal reference. The \texttt{\_station\_by\_pos} dictionary in \texttt{CrossDomainE2M1} provides O(1) lookup of the \texttt{ChargingStation} object for any grid intersection. This translation layer isolates the coordinate-system mismatch without modifying the original E2 or M1 classes.
 
-% Describe another challenge and its solution
+\subsection{Time-Step Heterogeneity}
 
-
-\section{Testing}
-
-% Describe your testing approach and results
-
-
-\subsection{Unit Testing}
-
-% Describe unit tests performed
-% Include test coverage metrics if available
-
-
-\subsection{Integration Testing}
-
-% Describe integration tests
-
-
-\subsection{User Acceptance Testing}
-
-% If applicable, describe user testing or validation
+The five scenarios span four orders of magnitude in time resolution: from 100~ms (T1) to 15~minutes (E1). In the standalone implementations each scenario uses its own fixed step, which is appropriate for its domain physics. The HELICS co-simulation layer would need to negotiate a common logical time with sub-step interpolation for federates with mismatched resolutions. The current design accommodates this through the \texttt{time\_step} parameter of \texttt{BaseFederate}, which is passed directly to \texttt{helicsFederateInfoSetTimeProperty()}; federates with finer resolution will simply advance more frequently within each coarser step of a slower partner.
 
 
 \section{Results}
 
-% Present the results obtained from your implementation
+\subsection{Scenario E1 --- Smart Grid with Renewable Integration}
 
+Table~\ref{tab:e1_results} presents the outcome of the 24-hour smart grid simulation.
 
-\subsection{Functional Results}
-
-% Demonstrate that your system works as intended
-% Include screenshots, diagrams, or output examples
-
-\begin{figure}[h]
+\begin{table}[h]
     \centering
-    \includegraphics[width=0.8\textwidth]{figs/results_screenshot.png}
-    \caption{Example of system output}
-    \label{fig:results}
-\end{figure}
+    \caption{Scenario E1 simulation results}
+    \label{tab:e1_results}
+    \begin{tabular}{lrl}
+        \toprule
+        \textbf{Metric} & \textbf{Value} & \textbf{Unit} \\
+        \midrule
+        Total renewable generation  & 13{,}744  & kWh \\
+        \quad of which solar PV     & 2{,}162   & kWh \\
+        \quad of which wind         & 11{,}582  & kWh \\
+        Total load consumed         & 22{,}646  & kWh \\
+        Renewable penetration       & 60.7      & \% \\
+        Total curtailment           & 1{,}365   & kWh \\
+        Curtailment rate            & 9.9       & \% of generation \\
+        Peak load                   & 1{,}262   & kW \\
+        Avg. peak-hour load (DR on) & 1{,}259   & kW \\
+        Estimated DR load reduction & 147.7     & kW (10.5\%) \\
+        Average bus voltage         & 0.998     & p.u. \\
+        Minimum bus voltage         & 0.969     & p.u. \\
+        Maximum bus voltage         & 1.303     & p.u. \\
+        Voltage violations (steps)  & 49        & — \\
+        Curtailment validation      & PASS      & — \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
+Wind generation dominates the renewable mix, contributing 84.3\% of total renewable output, while the 50 solar PV installations supply the remaining 15.7\%. The 60.7\% renewable penetration confirms that the configured fleet exceeds base-load requirements during midday and night-wind hours, producing the curtailment events observed. The 9.9\% curtailment rate arises exclusively in the 18 time steps (4.5 simulated hours) during which all batteries reach their maximum SoC of 0.95~p.u. or their maximum charge-rate limit simultaneously---a fact verified by the \texttt{curtailment\_battery\_validation: PASS} check.
 
-\subsection{Performance Results}
+The voltage profile reveals a concern: 49 of the 96 simulation steps record at least one bus voltage outside the ANSI C84.1 range of $[0.95, 1.05]$~p.u. The maximum observed voltage of 1.303~p.u. corresponds to buses with high local PV injection and low local load during midday. This result is expected from the simplified linear voltage-drop model, which does not enforce reactive power limits or transformer tap positions that would mitigate such over-voltages in a real distribution network. The finding motivates replacing the linear model with a full AC power-flow solver in a future iteration. Demand Response achieves an estimated 10.5\% reduction in average peak-hour load, consistent with the 70\% participation rate and 15\% individual reduction assumption embedded in the \texttt{ResidentialLoad} model.
 
-% Present performance metrics and benchmarks
-% Use graphs or tables to display results
+\subsection{Scenario E2 --- Electric Vehicle Charging Infrastructure}
 
-\begin{figure}[h]
+Table~\ref{tab:e2_results} compares the three charging strategies across all key metrics.
+
+\begin{table}[h]
     \centering
-    \includegraphics[width=0.8\textwidth]{figs/performance_graph.png}
-    \caption{Performance evaluation results}
-    \label{fig:performance}
-\end{figure}
+    \caption{Scenario E2 charging strategy comparison}
+    \label{tab:e2_results}
+    \begin{tabular}{lrrr}
+        \toprule
+        \textbf{Metric} & \textbf{Uncoordinated} & \textbf{Smart} & \textbf{V2G} \\
+        \midrule
+        Peak load (kW)                     & 2{,}512  & 2{,}450  & 2{,}450  \\
+        Total energy charged (kWh)         & 3{,}112  & 3{,}731  & 4{,}322  \\
+        Total charging cost (USD)          & 456.44   & 511.96   & 327.88   \\
+        Avg.\ cost per vehicle (USD)       & 4.56     & 5.12     & 3.28     \\
+        Avg.\ final SoC                    & 0.81     & 0.90     & 0.88     \\
+        Max transformer loading (\%)       & 117.3    & 114.4    & 114.4    \\
+        Transformer overloads (events)     & 131      & 135      & 88       \\
+        V2G energy provided (kWh)          & 0.0      & 0.0      & 66.1     \\
+        V2G revenue (USD)                  & 0.0      & 0.0      & 171.20   \\
+        Vehicles meeting SoC target        & 100      & 100      & 97       \\
+        Load factor                        & 0.60     & 0.62     & 0.63     \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
+Several trends emerge from the comparison. First, uncoordinated charging produces the highest single-step peak load (2{,}512~kW), as all vehicles arriving between 18:00 and 20:00 begin charging simultaneously at maximum power. Smart charging reduces peak load to 2{,}450~kW by prioritising vehicles with the highest urgency and deferring lower-priority sessions to off-peak hours. This also explains why Smart delivers more total energy charged (3{,}731~kWh vs.\ 3{,}112~kWh) and a higher average final SoC (0.90 vs.\ 0.81): the extended charging window allows vehicles that arrived late to reach their targets.
 
-\subsection{Comparative Analysis}
+Second, Smart charging incurs a higher cost (\$511.96 vs.\ \$456.44) despite using more off-peak energy. This apparently counter-intuitive result arises because the priority algorithm ensures that high-urgency vehicles charge first regardless of price, accepting on-peak tariffs to guarantee SoC targets.
 
-% Compare your results with existing solutions
-% Discuss advantages and limitations
+Third, V2G achieves the lowest net cost (\$327.88) by earning \$171.20 in grid export revenue during the 17:00--21:00 peak window. The 66.1~kWh exported by V2G-capable vehicles also reduces transformer overload events to 88---the fewest of the three strategies---by injecting local power during the demand peak. The three vehicles failing to meet their SoC target under V2G (97 of 100 meeting target, versus 100 under the other strategies) discharged more energy than they subsequently recharged before their departure time.
+
+\subsection{Scenario M1 --- Urban Traffic Congestion Management}
+
+Table~\ref{tab:m1_results} compares fixed-time and adaptive signal control.
+
+\begin{table}[h]
+    \centering
+    \caption{Scenario M1 signal control strategy comparison}
+    \label{tab:m1_results}
+    \begin{tabular}{lrrl}
+        \toprule
+        \textbf{Metric} & \textbf{Fixed} & \textbf{Adaptive} & \textbf{Change} \\
+        \midrule
+        Completed vehicles         & 2{,}500  & 2{,}500  & —        \\
+        Completion rate (\%)       & 100.0    & 100.0    & —        \\
+        Avg.\ travel time (s)      & 583.9    & 540.7    & $-7.4\%$ \\
+        Avg.\ delay (s)            & 66.0     & 22.8     & $-65.5\%$ \\
+        Total system delay (s)     & 164{,}987 & 56{,}942 & $-65.5\%$ \\
+        Total CO$_2$ emissions (kg)& 3{,}081  & 2{,}831  & $-8.1\%$ \\
+        Emissions per vehicle (g)  & 1{,}232  & 1{,}132  & $-8.1\%$ \\
+        Max.\ queue length         & 17       & 13       & $-23.5\%$ \\
+        Avg.\ queue length         & 0.66     & 0.26     & $-60.6\%$ \\
+        Throughput (veh/h)         & 833      & 833      & —        \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+All 2{,}500 vehicles complete their journey under both strategies within the 3-hour window. Throughput is therefore identical; the difference between strategies manifests in travel time and delay distributions. Adaptive signal control reduces average intersection delay by 65.5\%---from 66.0~s to 22.8~s---and average travel time by 7.4\%. This translates directly into a reduction of CO$_2$ emissions: fewer vehicle-seconds spent idling at signals reduces the idle-emission contribution, yielding an 8.1\% decrease in total fleet emissions.
+
+The maximum queue length falls from 17 to 13 vehicles, and the average queue across all intersections drops from 0.66 to 0.26 vehicles. These results demonstrate that the queue-responsive green-time formula effectively redistributes signal capacity toward the more congested approach, preventing the build-up of long queues that characterise fixed-timing operation during uneven demand.
+
+\subsection{Scenario T1 --- 5G Slice Resource Allocation}
+
+Table~\ref{tab:t1_results} compares static and dynamic resource block allocation.
+
+\begin{table}[h]
+    \centering
+    \caption{Scenario T1 slicing strategy comparison}
+    \label{tab:t1_results}
+    \begin{tabular}{lrrl}
+        \toprule
+        \textbf{Metric} & \textbf{Static} & \textbf{Dynamic} & \textbf{Change} \\
+        \midrule
+        QoS satisfaction --- eMBB (\%)   & 8.6   & 49.8  & $+479\%$ \\
+        QoS satisfaction --- URLLC (\%)  & 55.7  & 44.8  & $-19.6\%$ \\
+        QoS satisfaction --- mMTC (\%)   & 87.1  & 48.4  & $-44.4\%$ \\
+        RB utilisation --- eMBB (\%)     & 71.8  & 79.2  & $+10.3\%$ \\
+        RB utilisation --- URLLC (\%)    & 69.2  & 79.6  & $+15.0\%$ \\
+        RB utilisation --- mMTC (\%)     & 53.9  & 53.3  & $-1.1\%$ \\
+        Overall RB utilisation (\%)      & 67.5  & 75.3  & $+11.6\%$ \\
+        Resource waste (\%)              & 32.5  & 24.7  & $-24.0\%$ \\
+        Handover success rate (\%)       & 95.0  & 95.0  & —        \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The results reveal a fundamental trade-off between static and dynamic allocation. Static allocation assigns a fixed 50\% of RBs to eMBB, yet this slice serves 100~users each requiring 2~RBs, implying a demand of 200~RBs against an available pool of 50~per gNB. As a result, eMBB QoS satisfaction collapses to 8.6\%, while mMTC (1~RB/user, 60~users, 20~RB pool) achieves 87.1\% because its demand is more closely matched to its allocation. URLLC falls between the two at 55.7\%.
+
+Dynamic allocation redistributes RBs in proportion to active users while guaranteeing a 5-RB floor per slice. This substantially improves eMBB QoS satisfaction to 49.8\% (a 479\% relative improvement) and raises overall spectrum utilisation from 67.5\% to 75.3\%. However, mMTC satisfaction decreases from 87.1\% to 48.4\% because the proportional allocation reduces its share of RBs in favour of the larger eMBB and URLLC slices. These results indicate that neither strategy achieves uniformly high QoS across all slices, and that a constraint-based optimisation approach---such as assigning priorities to URLLC in line with its low-latency requirements---would be necessary to meet heterogeneous SLA targets simultaneously. Handover success rate (95.0\%) is identical under both strategies because handover decisions depend only on received power, not on slice allocation.
+
+\subsection{Scenario E2+M1 --- Cross-Domain Energy--Mobility Integration}
+
+Table~\ref{tab:e2m1_results} contrasts the coupled and uncoupled modes of the cross-domain scenario.
+
+\begin{table}[h]
+    \centering
+    \caption{Scenario E2+M1 coupling mode comparison}
+    \label{tab:e2m1_results}
+    \begin{tabular}{lrrl}
+        \toprule
+        \textbf{Metric} & \textbf{Uncoupled} & \textbf{Coupled} & \textbf{Change} \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Mobility metrics (background vehicles)}} \\
+        Avg.\ travel time (s)            & 536.2  & 536.4  & $+0.04\%$ \\
+        Avg.\ delay (s)                  & 22.5   & 22.6   & $+0.4\%$  \\
+        Total emissions (kg CO$_2$)      & 2{,}246 & 2{,}729 & $+21.5\%$ \\
+        Max.\ queue length               & 9      & 9      & — \\
+        \midrule
+        \multicolumn{4}{l}{\textit{EV travel metrics}} \\
+        Avg.\ EV travel to station (s)   & 3{,}069 & 3{,}154 & $+2.8\%$  \\
+        Avg.\ EV drive time (s)          & 0.5    & 366.5  & — \\
+        Avg.\ EV queue time at station (s)& 3{,}068 & 2{,}864 & $-6.6\%$  \\
+        EVs that reached station         & 155    & 150    & $-3.2\%$  \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Charging metrics}} \\
+        EVs meeting SoC target           & 71     & 66     & $-7.0\%$  \\
+        Total energy charged (kWh)       & 3{,}189 & 3{,}127 & $-1.9\%$  \\
+        Total charging cost (USD)        & 255.15 & 250.17 & $-2.0\%$  \\
+        Peak grid load (kW)              & 2{,}107 & 2{,}107 & — \\
+        Max.\ transformer loading (\%)   & 111.5  & 111.5  & — \\
+        Transformer overloads            & 68     & 66     & — \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The cross-domain scenario reveals interactions between mobility and energy that are invisible when the two domains are modelled independently. In coupled mode, EV vehicles navigate the traffic grid and compete with 2{,}000 background vehicles for road capacity. This causes three observable effects.
+
+First, traffic congestion adds an average of 366~seconds (6.1~minutes) of actual driving time for EVs in coupled mode (versus zero in uncoupled mode, where EVs teleport). The total EV-to-station time increases by 2.8\%, from 3{,}069~s to 3{,}154~s, reflecting the combination of driving delay and station queue time. Station queue time actually decreases by 6.6\% in coupled mode because EVs arrive at slightly different times due to traffic variability, reducing simultaneous demand at individual stations.
+
+Second, the EV fleet's traffic contribution is substantial in terms of emissions: the coupled scenario produces 2{,}729~kg~CO$_2$ versus 2{,}246~kg~CO$_2$ in uncoupled mode---a 21.5\% increase---because 500 additional vehicles traverse the road network and emit during both driving and queuing phases. This cross-domain effect would be unobservable if energy and mobility were simulated separately.
+
+Third, traffic delay marginally reduces the number of EVs that reach their assigned station within the 3-hour window (150 vs.\ 155) and the number meeting their SoC target (66 vs.\ 71). The peak grid load and transformer overload counts are nearly identical between modes because the aggregate charging demand over the simulation period is similar; the coupled mode simply shifts some charging events later in time due to delayed arrivals.
+
+These results demonstrate the value of cross-domain simulation: even a relatively modest fleet of 500~EVs measurably increases road network emissions and slightly degrades charging outcomes through travel-time delays. A purely domain-specific model of either system would miss both effects.
 
 
 \section{Discussion}
 
-% Analyze and interpret the results
-% Discuss whether objectives were achieved
-% Address any unexpected findings or limitations
+\subsection{Achievement of Objectives}
+
+The implementation successfully realises all six objectives stated in Chapter~\ref{chapter:introduction}. The \texttt{BaseFederate} class provides a domain-agnostic simulation engine (Objective~1) with a clearly defined three-method contract (\texttt{initialize\_components}, \texttt{run\_simulation}, \texttt{generate\_report}) that every domain module implements. Five domain modules encapsulate energy, mobility, and telecommunications logic (Objective~2) and are independently executable without any shared state. The HELICS publication and subscription mechanism defines the cross-domain communication channel for co-simulation (Objective~3), and the \texttt{use\_helics} flag provides transparent dual-mode execution. Every scenario accepts keyword arguments forwarded to the federate constructor, enabling parametrised and reproducible execution (Objective~4). The five scenarios constitute functional prototypes spanning three domains and one cross-domain integration (Objective~5). The overall architecture is directly applicable to the Ubiwhere Urban Management Platform context (Objective~6), as it can be integrated into data-driven urban workflows through the Streamlit interface or through direct Python API calls.
+
+\subsection{Model Fidelity and Limitations}
+
+Several modelling simplifications were made deliberately to keep the prototype tractable and focused on architectural validation rather than domain accuracy.
+
+In Scenario~E1, the voltage model is a linear approximation that does not solve the AC power-flow equations. Consequently, voltage magnitudes can exceed 1.05~p.u. without triggering automatic voltage regulation, which would not occur in a real distribution network equipped with on-load tap-changing transformers and reactive-power compensation. Replacing the linear model with a full Newton--Raphson AC power-flow solver (e.g., via pandapower~\cite{pandapower}) is the most important fidelity improvement for future work.
+
+In Scenario~E2, the smart charging controller assumes perfect knowledge of each vehicle's departure time and battery state, which is not available in practice without a vehicle-to-grid communication protocol. The static time-of-use tariff also ignores dynamic real-time pricing signals that would be available in a demand-response-enabled grid.
+
+In Scenario~M1, vehicle routes are computed once at departure and are not updated in response to changing traffic conditions. In real urban networks, equipped vehicles would reroute dynamically via navigation systems, which would further reduce congestion peaks beyond what the adaptive signal controller alone achieves.
+
+In Scenario~T1, the path-loss model does not account for shadowing, multipath fading, or inter-cell interference, all of which significantly affect received power in dense urban deployments. The QoS model also reduces the satisfaction criterion to a simple RB-count threshold, ignoring packet-level delay and jitter requirements that are critical for URLLC services.
+
+\subsection{Framework Extensibility}
+
+Adding a new domain to the framework requires three steps: (1) creating a new \texttt{scenarios/scenario\_xx.py} that subclasses \texttt{BaseFederate} and implements the three abstract methods; (2) registering HELICS publications in \texttt{\_register\_publications()}; and (3) adding subscriptions for topics published by other federates if cross-domain coupling is desired. No modifications to \texttt{engine/base.py} or to existing scenario files are required. This was validated by the development of Scenario~E2+M1, which reused E2 and M1 components through standard Python imports without modifying either source file.
+
+The Streamlit UI extends equally cleanly: adding a new scenario entry requires inserting a key into the \texttt{SCENARIOS} dictionary, adding the sidebar parameter widgets in the corresponding \texttt{elif} branch, and adding the run logic in the \texttt{if run\_button:} block. The \texttt{\_display\_report()} and \texttt{\_display\_comparison()} helpers work generically on any report dictionary conforming to the \texttt{\{"scenario", "components", "metrics"\}} schema.
 
 
 \section{Summary}
 
-% Summarize the main implementation achievements and results
-% Provide transition to the conclusions chapter
+This chapter presented the complete implementation of the modular co-simulation framework and the results of five simulation scenarios. The \texttt{BaseFederate} abstract class provides a domain-independent engine that separates generic simulation concerns from domain logic through a three-method contract, with transparent HELICS co-simulation support. Five scenario modules implement the energy, mobility, telecommunications, and cross-domain scenarios defined in Chapter~\ref{chapter:methodology}.
+
+The simulation results demonstrate the framework's ability to reproduce domain-specific behaviours (renewable curtailment, charging strategy trade-offs, signal control efficiency, RB allocation fairness) and to quantify cross-domain effects (EV traffic adding 21.5\% to fleet emissions and delaying 5\% fewer EVs from meeting charging targets). The identified limitations---primarily the simplified voltage model in E1 and the absence of dynamic rerouting in M1---provide a concrete roadmap for improving model fidelity in future work, which is discussed in Chapter~\ref{chapter:conclusions}.
 
