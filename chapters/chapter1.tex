@@ -67,7 +67,7 @@ The research and development approach follows a systematic process:
     
     \item \textbf{Integration and Configuration}: Build a configurable environment supporting scenario loading, parameter specification, and basic result visualization
     
-    \item \textbf{Validation and Testing}: Execute comparative tests across different scenarios to validate the framework's capabilities and identify areas for improvement
+    \item \textbf{Validation and Testing}: Execute implemented scenarios comparing outputs against expected physical behaviors and known benchmarks. Validate domain model correctness through within-domain metrics (voltage profiles, charging costs, travel times, slice utilization) and verify architectural properties including domain independence, interface compliance, strategy substitutability across behavioral variants, and time synchronization in co-simulation mode.
 \end{enumerate}
 
 
@@ -80,8 +80,8 @@ This research aims to deliver the following contributions:
     \item \textbf{Autonomous domain modules} that encapsulate the logic for traffic networks, electrical systems, and telecommunications infrastructure
     \item A \textbf{co-simulation framework} enabling multiple domains to interact within unified scenarios
     \item \textbf{Parametrizable and reproducible} scenario execution supporting configuration-driven simulation
-    \item A \textbf{functional prototype} demonstrating multi-domain simulation capabilities with practical use cases
-    \item \textbf{Code architecture} prepared for comparative testing, future extensions, and integration with urban management platforms
+    \item A \textbf{functional prototype} implementing simulation scenarios across three domains: four domain-specific scenarios and cross-domain integration scenarios
+    \item \textbf{Validated architecture} demonstrating domain independence, interface compliance, strategy substitutability across behavioral variants, and verified co-simulation time synchronization
 \end{itemize}
 
 These contributions will directly support the enhancement of platforms like Ubiwhere's Urban Management Platform by providing advanced simulation capabilities for predictive analysis and strategic planning across multiple urban infrastructure domains.
