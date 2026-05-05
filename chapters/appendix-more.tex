@@ -1,1 +1,178 @@
-\chapter{Additional content}
+\chapter{Scenario Configuration Reference}
+\label{appendix:config}
+
+This appendix documents the configurable parameters exposed by each scenario federate and the HELICS topic registry used for cross-domain data exchange.
+
+% ------------------------------------------------------------------
+\section{Configurable Scenario Parameters}
+\label{sec:appendix-params}
+
+Each scenario federate accepts keyword arguments in its constructor that override the default values used in Chapter~\ref{chapter:implementation}. The tables below list all parameters, their types, default values, and a brief description. Parameters correspond directly to the constructor signatures in the respective \texttt{scenarios/scenario\_*.py} files.
+
+\subsection*{Scenario E1 --- Smart Grid with Renewable Integration}
+
+\begin{table}[h]
+    \centering
+    \caption{SmartGridFederate configurable parameters}
+    \label{tab:params-e1}
+    \small
+    \begin{tabular}{|l|c|r|p{6cm}|}
+        \hline
+        \textbf{Parameter} & \textbf{Type} & \textbf{Default} & \textbf{Description} \\
+        \hline
+        \texttt{num\_solar\_pvs}        & int   & 50    & Number of solar PV units \\
+        \hline
+        \texttt{solar\_capacity\_min\_kw} & float & 5.0 & Minimum rated PV capacity (kW) \\
+        \hline
+        \texttt{solar\_capacity\_max\_kw} & float & 10.0 & Maximum rated PV capacity (kW) \\
+        \hline
+        \texttt{num\_wind\_turbines}    & int   & 3     & Number of wind turbine units \\
+        \hline
+        \texttt{wind\_capacity\_kw}     & float & 500.0 & Rated capacity per turbine (kW) \\
+        \hline
+        \texttt{num\_batteries}         & int   & 5     & Number of BESS units \\
+        \hline
+        \texttt{battery\_capacity\_kwh} & float & 50.0  & Energy capacity per BESS unit (kWh) \\
+        \hline
+        \texttt{num\_loads}             & int   & 800   & Number of residential load agents \\
+        \hline
+        \texttt{sim\_duration\_hours}   & int   & 24    & Simulation duration (hours) \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection*{Scenario E2 --- Electric Vehicle Charging Infrastructure}
+
+\begin{table}[h]
+    \centering
+    \caption{EVChargingFederate configurable parameters}
+    \label{tab:params-e2}
+    \small
+    \begin{tabular}{|l|c|r|p{6cm}|}
+        \hline
+        \textbf{Parameter} & \textbf{Type} & \textbf{Default} & \textbf{Description} \\
+        \hline
+        \texttt{strategy}           & enum  & \texttt{SMART}  & Charging strategy (\texttt{UNCOORDINATED}, \texttt{SMART}, \texttt{V2G}) \\
+        \hline
+        \texttt{num\_vehicles}      & int   & 100    & Number of electric vehicles \\
+        \hline
+        \texttt{num\_l2\_stations}  & int   & 20     & Number of Level~2 charging stations \\
+        \hline
+        \texttt{num\_dc\_stations}  & int   & 5      & Number of DC fast-charging stations \\
+        \hline
+        \texttt{grid\_capacity\_kw} & float & 2500.0 & Distribution feeder capacity (kW) \\
+        \hline
+        \texttt{base\_load\_kw}     & float & 2000.0 & Base residential load at peak (kW) \\
+        \hline
+        \texttt{off\_peak\_price}   & float & 0.08   & Off-peak TOU tariff (USD/kWh) \\
+        \hline
+        \texttt{mid\_peak\_price}   & float & 0.12   & Mid-peak TOU tariff (USD/kWh) \\
+        \hline
+        \texttt{on\_peak\_price}    & float & 0.20   & On-peak TOU tariff (USD/kWh) \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection*{Scenario M1 --- Urban Traffic Congestion Management}
+
+\begin{table}[h]
+    \centering
+    \caption{TrafficSimulation configurable parameters}
+    \label{tab:params-m1}
+    \small
+    \begin{tabular}{|l|c|r|p{6cm}|}
+        \hline
+        \textbf{Parameter} & \textbf{Type} & \textbf{Default} & \textbf{Description} \\
+        \hline
+        \texttt{adaptive\_signals}      & bool & \texttt{True} & Enable queue-adaptive signal control \\
+        \hline
+        \texttt{num\_vehicles}          & int  & 2500  & Number of vehicle agents \\
+        \hline
+        \texttt{grid\_size}             & int  & 5     & Road grid dimension ($N \times N$ nodes) \\
+        \hline
+        \texttt{sim\_duration\_hours}   & int  & 3     & Simulation duration (hours) \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection*{Scenario T1 --- 5G Slice Resource Allocation}
+
+\begin{table}[h]
+    \centering
+    \caption{NetworkSlicingSimulation configurable parameters}
+    \label{tab:params-t1}
+    \small
+    \begin{tabular}{|l|c|r|p{6cm}|}
+        \hline
+        \textbf{Parameter} & \textbf{Type} & \textbf{Default} & \textbf{Description} \\
+        \hline
+        \texttt{strategy}       & enum & \texttt{DYNAMIC} & Slicing strategy (\texttt{STATIC}, \texttt{DYNAMIC}) \\
+        \hline
+        \texttt{num\_gnbs}      & int  & 3   & Number of gNB base stations \\
+        \hline
+        \texttt{embb\_users}    & int  & 100 & Number of eMBB users \\
+        \hline
+        \texttt{urllc\_users}   & int  & 40  & Number of URLLC users \\
+        \hline
+        \texttt{mmtc\_users}    & int  & 60  & Number of mMTC devices \\
+        \hline
+        \texttt{rbs\_per\_gnb}  & int  & 100 & Resource blocks per gNB \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection*{Scenario E2+M1 --- Cross-Domain Energy--Mobility Integration}
+
+\begin{table}[h]
+    \centering
+    \caption{CrossDomainE2M1 configurable parameters}
+    \label{tab:params-e2m1}
+    \small
+    \begin{tabular}{|l|c|r|p{5.5cm}|}
+        \hline
+        \textbf{Parameter} & \textbf{Type} & \textbf{Default} & \textbf{Description} \\
+        \hline
+        \texttt{coupled}                & bool  & \texttt{True}   & Enable physical EV navigation in traffic \\
+        \hline
+        \texttt{num\_evs}               & int   & 500    & Number of EV traffic agents \\
+        \hline
+        \texttt{num\_background}        & int   & 2000   & Number of background vehicle agents \\
+        \hline
+        \texttt{grid\_size}             & int   & 5      & Road grid dimension ($N \times N$ nodes) \\
+        \hline
+        \texttt{sim\_duration\_hours}   & int   & 3      & Simulation duration (hours) \\
+        \hline
+        \texttt{charging\_strategy}     & enum  & \texttt{SMART}  & EV charging algorithm \\
+        \hline
+        \texttt{off\_peak\_price}       & float & 0.08   & Off-peak TOU tariff (USD/kWh) \\
+        \hline
+        \texttt{mid\_peak\_price}       & float & 0.12   & Mid-peak TOU tariff (USD/kWh) \\
+        \hline
+        \texttt{on\_peak\_price}        & float & 0.20   & On-peak TOU tariff (USD/kWh) \\
+        \hline
+    \end{tabular}
+\end{table}
+
+% ------------------------------------------------------------------
+\section{HELICS Topic Registry}
+\label{sec:appendix-helics}
+
+Table~\ref{tab:helics-topics} lists the global HELICS publications registered by \texttt{SmartGridFederate} (Scenario~E1) via its \texttt{\_register\_publications()} hook. These topics are available to any subscribing federate in a multi-domain co-simulation run. Scenarios E2, M1, T1, and E2+M1 include the \texttt{\_register\_publications()} override hook in their class hierarchy but register no topics in the current prototype; they are designed to operate as standalone federates or as subscribers.
+
+\begin{table}[h]
+    \centering
+    \caption{HELICS global publication topics --- Scenario E1}
+    \label{tab:helics-topics}
+    \small
+    \begin{tabular}{|l|l|c|p{5.5cm}|}
+        \hline
+        \textbf{Topic name} & \textbf{HELICS type} & \textbf{Unit} & \textbf{Description} \\
+        \hline
+        \texttt{total\_renewable\_generation} & \texttt{HELICS\_DATA\_TYPE\_DOUBLE} & kW & Instantaneous combined output of all solar PV and wind turbine agents \\
+        \hline
+        \texttt{total\_load} & \texttt{HELICS\_DATA\_TYPE\_DOUBLE} & kW & Instantaneous aggregate load demand across all residential agents \\
+        \hline
+        \texttt{net\_power} & \texttt{HELICS\_DATA\_TYPE\_DOUBLE} & kW & Net system power ($P_{load} - P_{renewable}$); positive values indicate a deficit \\
+        \hline
+    \end{tabular}
+\end{table}

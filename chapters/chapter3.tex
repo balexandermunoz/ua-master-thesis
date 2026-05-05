@@ -106,6 +106,7 @@ Within Scenarios E2, M1, and T1, multiple behavioral variants are implemented us
 
 
 \section{Simulation Scenarios}
+\label{sec:sim-scenarios}
 
 Four domain-specific scenarios were designed covering energy, mobility, and telecommunications domains, plus one cross-domain integration scenario coupling energy and mobility. Each scenario supports both standalone execution and HELICS co-simulation mode. Table~\ref{tab:scenario_summary} provides an overview.
 
@@ -134,6 +135,7 @@ Four domain-specific scenarios were designed covering energy, mobility, and tele
 \subsection{Energy Domain Scenarios}
 
 \subsubsection{Scenario E1: Smart Grid with Renewable Integration}
+\label{sec:scenario-e1}
 
 Scenario E1 simulates an IEEE 33-bus radial distribution network under high renewable penetration, combining solar PV, wind generation, battery storage, and demand-responsive loads~\cite{smartgrid_challenges, renewable_integration}. The scenario covers a 24-hour period at 15-minute resolution (96 time steps).
 
@@ -212,6 +214,7 @@ Violations are counted against ANSI C84.1 limits ($V \notin [0.95,\, 1.05]$ p.u.
 % -------------------------------------------------------
 
 \subsubsection{Scenario E2: Electric Vehicle Charging Infrastructure}
+\label{sec:scenario-e2}
 
 Scenario E2 models the impact of 100 EVs on a modified IEEE 13-node distribution feeder with three charging strategies~\cite{der_challenges}. Nodes 1--8 host 20 Level 2 charging stations (four 7.2\,kW ports each, 80 residential chargers total); nodes 9--13 host 5 DC fast stations (two 50\,kW ports each). The grid feeder capacity is 2500\,kW with a 2000\,kW base load at peak (load factor 1.0 during 17:00--22:00). Time resolution is 5 minutes; the simulation runs for 36 hours (432 steps) to cover overnight residential charging through next-morning departure.
 
@@ -248,6 +251,7 @@ combined with a price factor ($F_{price} = 0.5$ during on-peak, 1.0 otherwise), 
 \subsection{Mobility Domain Scenarios}
 
 \subsubsection{Scenario M1: Urban Traffic Congestion Management}
+\label{sec:scenario-m1}
 
 Scenario M1 simulates a $5 \times 5\,\text{km}$ urban road grid with 2,500 agent-based vehicles and 25 signalized intersections (1250\,m spacing), comparing fixed-time and adaptive signal control strategies on travel time, congestion, and CO$_2$ emissions~\cite{mobility_challenges, agent_traffic_overview}. Vehicles depart stochastically over the first hour ($t_{dep} \sim U(0, 3600)\,\text{s}$) and traverse each link at 50\,km/h ($\approx$\,90\,s per link). The simulation runs for 3 hours at 1-second resolution (10,800 steps).
 
@@ -291,6 +295,7 @@ with $\alpha_{idle} = 2.31\,\text{g/s}$ and $\alpha_{move} = 0.15\,\text{g/m}$.
 \subsection{Telecommunications Domain Scenarios}
 
 \subsubsection{Scenario T1: 5G Slice Resource Allocation}
+\label{sec:scenario-t1}
 
 Scenario T1 simulates a 5G New Radio (NR) network comprising 3~gNBs (next-generation Node~Bs, the 5G base station defined in 3GPP TS~38.300~\cite{3gpp_38300}) arranged in a triangular layout over a $2 \times 2\,\text{km}$ urban area, serving 200 mobile users across three network slices~\cite{3gpp_23501, network_slicing_survey}: eMBB (enhanced Mobile Broadband, 100 users), URLLC (Ultra-Reliable Low-Latency Communication, 40 users), and mMTC (massive Machine-Type Communication, 60 users)~\cite{telecom_challenges}. Two resource allocation strategies---static slicing and dynamic slicing---are compared to evaluate slice utilization, QoS satisfaction, and resource waste. The simulation runs for 1~hour at 100\,ms resolution (36,000 steps).
 
@@ -346,6 +351,7 @@ Unlike eMBB and URLLC users which are continuously active, mMTC devices follow a
 The HELICS-based architecture enables coupled cross-domain simulations where domain modules share state and co-evolve within a synchronized time loop. Cross-domain scenarios are the primary vehicle for validating the thesis claim that siloed domain simulations produce inaccurate system-level predictions.
 
 \subsubsection{Scenario E2+M1: Energy--Mobility Integration}
+\label{sec:scenario-e2m1}
 
 The first cross-domain scenario couples the EV charging infrastructure model~(E2) with the urban traffic management model~(M1) on a shared 5$\times$5 grid network. Five hundred EVs are injected into the M1 traffic network alongside 2000 background vehicles; 13 charging stations (5~DC-fast at inner intersections, 8~Level~2 at perimeter nodes) provide 52 charging ports~\cite{helics_ev_transport}. Simulation runs for 3 hours at 1-second resolution (M1 native), with charging logic executed every 300 steps ($= 5$\,min, matching E2).
 

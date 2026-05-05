@@ -108,41 +108,27 @@ Publications are registered at the global scope (e.g., \texttt{"total\_renewable
 
 \texttt{SmartGridFederate} extends \texttt{BaseFederate} with a 15-minute time step and a 24-hour simulation duration (96 steps). Its \texttt{initialize\_components()} method creates four collections of agents: 50~\texttt{SolarPV} instances with capacities sampled uniformly from $[5, 10]$~kW, 3~\texttt{WindTurbine} instances at 500~kW each, 5~\texttt{BatteryStorage} systems at 50~kWh and a 0.5C charge/discharge rate, and 800~\texttt{ResidentialLoad} agents with base loads sampled from $[0.5, 3.0]$~kW. All agents are assigned randomly to one of the 33 IEEE buses.
 
-The main simulation loop implements the models defined in Chapter~\ref{chapter:methodology}: a sine-based solar irradiance profile with stochastic cloud factor $C_{cloud} \sim U(0.8, 1.0)$, a cubic wind power curve between cut-in (3~m/s) and rated speed (12~m/s), and a residential load profile with five time-of-day bands. Demand Response activates during the 17:00--22:00 peak window for the 70\% of loads marked as DR participants, reducing their consumption by 15\%. Battery dispatch is handled by \texttt{calculate\_storage\_dispatch()}: when net power is negative (renewable surplus), batteries charge; when positive, they discharge proportionally across all units.
+The physical models (solar irradiance, wind power curve, BESS state-of-charge update) are defined in Section~\ref{sec:scenario-e1} (Equations~\ref{eq:solar_power}--\ref{eq:soc_charge}). Battery dispatch is handled by \texttt{calculate\_storage\_dispatch()}: when net power is negative (renewable surplus), batteries charge; when positive, they discharge proportionally across all units.
 
 \subsection{Scenario E2 --- Electric Vehicle Charging Infrastructure}
 
-\texttt{EVChargingFederate} models 100 electric vehicles on a modified IEEE 13-node feeder. Vehicle arrival times follow the distributions specified in Chapter~\ref{chapter:methodology}: residential EVs (80 of the 100) arrive according to $\mathcal{N}(18.5,\,1.0)$~h and depart the next morning; commercial EVs arrive uniformly in business hours at DC fast stations. The charging strategy is injected as a \texttt{ChargingStrategy} enum value, enabling the same federate class to run three distinct algorithms without code duplication.
-
-The strategy pattern is central to the E2 design. \texttt{UNCOORDINATED} allocates the full requested power immediately upon connection. \texttt{SMART} uses a \texttt{SmartChargingController} that ranks connected vehicles by a priority score $\text{Priority} = \text{Urgency} \times \text{PriceFactor}$, where urgency encodes time remaining to departure relative to the energy deficit, and the price factor discounts charging during on-peak hours. \texttt{V2G} extends SMART by allowing V2G-capable vehicles (50\% of the fleet) to discharge at the on-peak tariff rate (\$0.20/kWh), trading energy back to the grid.
+\texttt{EVChargingFederate} models 100 electric vehicles on a modified IEEE 13-node feeder. The charging strategy is injected as a \texttt{ChargingStrategy} enum value at construction time, enabling the same \texttt{EVChargingFederate} class to run \texttt{UNCOORDINATED}, \texttt{SMART}, and \texttt{V2G} algorithms without code duplication. The arrival distributions and strategy algorithms are defined in Section~\ref{sec:scenario-e2} (Equations~\ref{eq:tou}--\ref{eq:urgency}).
 
 \subsection{Scenario M1 --- Urban Traffic Congestion Management}
 
 \texttt{TrafficSimulation} operates at 1-second resolution over a 3-hour simulation window---the finest time granularity among the standalone scenarios. The traffic network is a 5$\times$5 kilometre grid with 25 signalised intersections at 1-kilometre spacing. Route computation for each of the 2{,}500~\texttt{Vehicle} agents uses an A* search over the grid graph, with Manhattan-distance heuristic. Vehicle departure times are distributed uniformly across the first hour to model morning-peak ramp-up.
 
-The adaptive signal controller implements the queue-responsive green-time formula from Chapter~\ref{chapter:methodology}:
-\begin{equation}
-T_{green}^{phase} = T_{min} + (T_{max} - T_{min}) \cdot \frac{Q_{phase}}{Q_{total}}
-\end{equation}
-with $T_{min} = 15$~s and $T_{max} = 90$~s. In fixed-timing mode the same \texttt{TrafficSignal} class is used with equal phase weights ($Q_{NS} = Q_{EW} = 1$ regardless of actual queues), requiring no additional class or branching in the main loop. The \texttt{adaptive\_signals} boolean injected at construction time selects between the two behaviours.
-
-Vehicle emissions are tracked using a simplified model: idle vehicles emit at 2.31~g\,CO$_2$/s, while moving vehicles emit proportionally to speed at 0.15~g\,CO$_2$/m.
+The adaptive signal controller implements the green-time allocation formula defined in Section~\ref{sec:scenario-m1} (Equation~\ref{eq:adaptive_signal}). In fixed-timing mode the same \texttt{TrafficSignal} class is used with equal phase weights ($Q_{NS} = Q_{EW} = 1$ regardless of actual queues), requiring no additional class or branching in the main loop. The \texttt{adaptive\_signals} boolean injected at construction time selects between the two behaviours. Emissions are tracked per-vehicle as defined in Equation~\ref{eq:emissions}.
 
 \subsection{Scenario T1 --- 5G Slice Resource Allocation}
 
-\texttt{NetworkSlicingSimulation} models three gNBs arranged in a triangular layout serving 200 mobile users distributed across three 5G network slices: 100~eMBB users, 40~URLLC users, and 60~mMTC users. User mobility follows the random-waypoint model at pedestrian speed (0.5--2.0~m/s). Serving-cell assignment uses received power computed from the 3GPP Urban Macro path-loss model:
-\begin{equation}
-PL_{dB} = 128.1 + 37.6 \log_{10}(d_{km})
-\end{equation}
-Handover occurs when a neighbour gNB offers more than 3~dB better received power, subject to a 10-step cooldown that prevents ping-pong effects.
-
-The \texttt{SliceResourceAllocator} implements two strategies. \texttt{STATIC} assigns fixed fractions of the 100 resource blocks (RBs) per gNB: 50\% to eMBB, 30\% to URLLC, and 20\% to mMTC, regardless of instantaneous demand. \texttt{DYNAMIC} allocates RBs proportionally to the active-user count of each slice while guaranteeing a minimum floor of 5~RBs per slice per step. QoS is considered satisfied when the allocated RBs meet or exceed the per-user requirement: 2~RBs/user for eMBB and URLLC, 1~RB/user for mMTC.
+\texttt{NetworkSlicingSimulation} models three gNBs arranged in a triangular layout serving 200 mobile users distributed across three 5G network slices: 100~eMBB users, 40~URLLC users, and 60~mMTC users. User mobility follows the random-waypoint model at pedestrian speed (0.5--2.0~m/s). Serving-cell assignment and handover use the 3GPP Urban Macro path-loss model defined in Section~\ref{sec:scenario-t1} (Equation~\ref{eq:path_loss_t1}), with a 3~dB hysteresis margin and a 10-step cooldown to prevent ping-pong effects. The \texttt{SliceResourceAllocator} implements the \texttt{STATIC} and \texttt{DYNAMIC} slicing strategies defined in Section~\ref{sec:scenario-t1} (Equations~\ref{eq:static_alloc}--\ref{eq:qos_t1}), selected via the \texttt{SlicingStrategy} enum at construction time.
 
 \subsection{Scenario E2+M1 --- Cross-Domain Energy--Mobility Integration}
 
 \texttt{CrossDomainE2M1} is the only scenario that combines two domain modules within a single federate. It inherits from \texttt{BaseFederate} and reuses components from both \texttt{scenario\_m1.py} and \texttt{scenario\_e2.py} through direct Python imports---an intra-process form of the federation pattern. In a full HELICS deployment these modules would run as separate processes communicating through published topics; in the prototype presented here, the coupling is achieved by sharing object references within the same process, which preserves the architectural separation while avoiding the complexity of multi-process orchestration in standalone mode.
 
-The central agent is \texttt{EVTrafficVehicle}, which extends the M1 \texttt{Vehicle} class with an E2 \texttt{ElectricVehicle} battery model. It progresses through four lifecycle phases: \texttt{DRIVING\_TO\_STATION} (A* navigation through the traffic grid), \texttt{CHARGING} (E2 charging model), \texttt{DRIVING\_BACK} (return route), and \texttt{DONE}. In coupled mode, 500 EV vehicles share the grid with 2{,}000 background vehicles, so EV travel times are affected by traffic congestion. In uncoupled mode, EVs teleport instantly to their assigned charging station, providing a baseline that isolates the grid charging behaviour from mobility effects.
+The central agent is \texttt{EVTrafficVehicle}, which extends the M1 \texttt{Vehicle} class with an E2 \texttt{ElectricVehicle} battery model. It progresses through the four-phase lifecycle defined in Section~\ref{sec:scenario-e2m1} (Equation~\ref{eq:ev_phases}). In coupled mode, 500~EV vehicles share the grid with 2{,}000 background vehicles, so EV travel times are affected by traffic congestion. In uncoupled mode, EVs teleport instantly to their assigned charging station, providing a baseline that isolates the grid charging behaviour from mobility effects.
 
 Listing~\ref{lst:evtraffic} illustrates the phase enumeration that governs the EV lifecycle.
 
