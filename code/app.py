@@ -29,6 +29,9 @@ from scenarios.scenario_t1 import (
 from scenarios.scenario_e2m1 import (
     run_scenario_e2m1, compare_coupling_modes,
 )
+from scenarios.scenario_m1t1 import (
+    run_scenario_m1t1, compare_coupling_modes_m1t1,
+)
 
 # ---------------------------------------------------------------------------
 # Page configuration
@@ -51,6 +54,7 @@ SCENARIOS = {
     "M1 – Urban Traffic Congestion Management": "M1",
     "T1 – 5G Slice Resource Allocation": "T1",
     "E2+M1 – Energy–Mobility Cross-Domain": "E2M1",
+    "M1+T1 – Mobility–Telecom Cross-Domain": "M1T1",
 }
 
 scenario_label = st.sidebar.selectbox("Select Scenario", list(SCENARIOS.keys()))
@@ -87,6 +91,10 @@ E2M1_DEFAULTS = {
     "e2m1_off_peak_price": 0.08, "e2m1_mid_peak_price": 0.12,
     "e2m1_on_peak_price": 0.20,
 }
+M1T1_DEFAULTS = {
+    "m1t1_num_connected": 200, "m1t1_num_background": 2300,
+    "m1t1_grid_size": 5, "m1t1_sim_duration_hours": 3,
+}
 
 def _reset_params(defaults: dict):
     """Reset session_state keys to article defaults."""
@@ -99,6 +107,8 @@ adaptive_m1 = True
 strategy_t1 = None
 strategy_e2m1 = None
 coupled_e2m1 = True
+strategy_m1t1 = None
+coupled_m1t1 = True
 compare_mode = False
 scenario_kwargs = {}
 
@@ -319,6 +329,51 @@ elif scenario_key == "E2M1":
         st.button("Reset to Defaults", on_click=_reset_params,
                   args=(d,), key="e2m1_reset")
 
+elif scenario_key == "M1T1":
+    _m1t1_coupling = st.sidebar.selectbox(
+        "Coupling Mode",
+        ["Coupled", "Uncoupled"],
+        key="m1t1_coupling",
+    )
+    coupled_m1t1 = _m1t1_coupling == "Coupled"
+    _m1t1_coupling_desc = {
+        "Coupled": "Vehicle positions drive UE locations; URLLC QoS degradation suppresses adaptive signals near congested cells.",
+        "Uncoupled": "UEs move via random waypoint independently; no QoS feedback to traffic signals (baseline).",
+    }
+    st.sidebar.caption(_m1t1_coupling_desc[_m1t1_coupling])
+    strategy_m1t1 = st.sidebar.selectbox(
+        "Slicing Strategy",
+        ["Dynamic", "Static"],
+        key="m1t1_strategy",
+    )
+    _m1t1_strat_desc = {
+        "Dynamic": "Allocates resource blocks proportionally to demand with a minimum floor guarantee.",
+        "Static": "Fixed resource block percentages per slice, regardless of demand.",
+    }
+    st.sidebar.caption(_m1t1_strat_desc[strategy_m1t1])
+    compare_mode = st.sidebar.checkbox("Compare coupled vs uncoupled")
+    with st.sidebar.expander("Scenario Parameters", expanded=False):
+        st.caption("Article defaults shown. Adjust to explore.")
+        d = M1T1_DEFAULTS
+        scenario_kwargs["num_connected"] = st.number_input(
+            "Connected vehicles", 10, 1000, d["m1t1_num_connected"],
+            step=10, key="m1t1_num_connected",
+            help="Vehicles hosting a 5G UE whose positions feed the radio model.")
+        scenario_kwargs["num_background"] = st.number_input(
+            "Background vehicles", 100, 10000, d["m1t1_num_background"],
+            step=100, key="m1t1_num_background",
+            help="Non-connected background traffic vehicles.")
+        scenario_kwargs["grid_size"] = st.number_input(
+            "Grid size (NxN)", 2, 10, d["m1t1_grid_size"],
+            key="m1t1_grid_size",
+            help="Traffic network dimensions as an NxN grid of intersections.")
+        scenario_kwargs["sim_duration_hours"] = st.number_input(
+            "Simulation duration (h)", 1, 12, d["m1t1_sim_duration_hours"],
+            key="m1t1_sim_duration_hours",
+            help="Total simulation runtime in hours.")
+        st.button("Reset to Defaults", on_click=_reset_params,
+                  args=(d,), key="m1t1_reset")
+
 st.sidebar.markdown("---")
 run_button = st.sidebar.button("Run Simulation", type="primary", use_container_width=True)
 
@@ -462,6 +517,20 @@ def _highlight_keys(scenario_key: str) -> list:
             "bg_avg_travel_time_s",
             "max_queue_length",
         ]
+    if scenario_key == "M1T1":
+        return [
+            "qos_satisfaction_urllc_pct",
+            "qos_satisfaction_embb_pct",
+            "qos_satisfaction_mmtc_pct",
+            "handover_attempts",
+            "handover_rate_per_min",
+            "load_imbalance_std_users",
+            "degradation_events",
+            "affected_intersections",
+            "bg_avg_travel_time_s",
+            "bg_avg_delay_s",
+            "total_emissions_kg_co2",
+        ]
     return []
 
 
@@ -500,6 +569,14 @@ if run_button:
                     result = compare_coupling_modes(
                         charging_strategy=strat_map[strategy_e2m1],
                         **scenario_kwargs)
+                elif scenario_key == "M1T1":
+                    strat_map_m1t1 = {
+                        "Dynamic": SlicingStrategy.DYNAMIC,
+                        "Static": SlicingStrategy.STATIC,
+                    }
+                    result = compare_coupling_modes_m1t1(
+                        slicing_strategy=strat_map_m1t1[strategy_m1t1],
+                        **scenario_kwargs)
                 else:
                     st.warning("Comparison not available for this scenario.")
             else:
@@ -529,6 +606,15 @@ if run_button:
                     result = run_scenario_e2m1(
                         coupled=coupled_e2m1,
                         charging_strategy=strat_map[strategy_e2m1],
+                        **scenario_kwargs)
+                elif scenario_key == "M1T1":
+                    strat_map_m1t1 = {
+                        "Dynamic": SlicingStrategy.DYNAMIC,
+                        "Static": SlicingStrategy.STATIC,
+                    }
+                    result = run_scenario_m1t1(
+                        coupled=coupled_m1t1,
+                        slicing_strategy=strat_map_m1t1[strategy_m1t1],
                         **scenario_kwargs)
 
             elapsed = time.time() - t0
