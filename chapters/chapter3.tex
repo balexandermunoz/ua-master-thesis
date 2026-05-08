@@ -108,7 +108,7 @@ Within Scenarios E2, M1, and T1, multiple behavioral variants are implemented us
 \section{Simulation Scenarios}
 \label{sec:sim-scenarios}
 
-Four domain-specific scenarios were designed covering energy, mobility, and telecommunications domains, plus one cross-domain integration scenario coupling energy and mobility. Each scenario supports both standalone execution and HELICS co-simulation mode. Table~\ref{tab:scenario_summary} provides an overview.
+Four domain-specific scenarios were designed covering energy, mobility, and telecommunications domains, plus two cross-domain integration scenarios: one coupling energy with mobility and one coupling mobility with telecommunications. Each scenario supports both standalone execution and HELICS co-simulation mode. Table~\ref{tab:scenario_summary} provides an overview.
 
 \begin{table}[h]
     \centering
@@ -128,6 +128,8 @@ Four domain-specific scenarios were designed covering energy, mobility, and tele
         T1 & Telecom & 5G slice resource allocation & 1 hour & 100 ms & Slice utilization, QoS rate, RB waste & \checkmark \\
         \hline
         E2+M1 & Cross-domain & Energy--Mobility integration & 3 hours & 1 sec / 5 min & EV drive time, emission uplift, SOC deficit & \checkmark \\
+        \hline
+        M1+T1 & Cross-domain & Mobility--Telecom integration & 3 hours & 1 sec & Handover uplift, signal degradation, load imbalance & \checkmark \\
         \hline
     \end{tabular}
 \end{table}
@@ -400,12 +402,73 @@ Three metrics isolate the cross-domain effect:
 
 % -------------------------------------------------------
 
+\subsubsection{Scenario M1+T1: Mobility--Telecommunications Integration}
+\label{sec:scenario-m1t1}
+
+The second cross-domain scenario couples the urban traffic simulation (M1) with the 5G slice resource allocation model (T1) on a shared $5 \times 5$\,km grid. Two hundred \emph{connected vehicles} drawn from the M1 fleet serve simultaneously as T1 mobile users, replacing the Random Waypoint (RWP) mobility model with physically grounded vehicular trajectories. Conversely, degradation of URLLC quality-of-service in T1 triggers a fallback from adaptive to fixed-time signal control at the affected intersections in M1. The simulation runs for 3~hours at 1-second resolution (10{,}800 steps), matching M1's native time step; T1's resource-allocation logic executes once per M1 tick ($\Delta t = 1\,\text{s}$, compared to the standalone 100\,ms resolution).
+
+\paragraph{Coupling Hypothesis}
+
+In siloed models, T1 users move under the RWP model at pedestrian speed (0.5--2.0\,m/s), producing spatially uniform coverage that spreads load evenly across gNBs. Real urban vehicles travel at 50\,km/h between intersections and stop at red lights for up to 90\,s, creating bursty, spatially clustered radio traffic. The hypothesis is that this clustering raises per-gNB load variance and handover rates above RWP predictions, and that QoS degradation caused by the resulting overloads measurably increases intersection delay through the signal-control feedback path---an effect invisible to siloed simulation.
+
+\paragraph{Coordinate Mapping}
+
+M1 uses a $5 \times 5$ grid with 1{,}250\,m node spacing (extent 0--5{,}000\,m per axis). T1's coverage area is rescaled from 2{,}000\,m to 5{,}000\,m to align with the traffic grid, and the three gNB positions are adjusted proportionally (Table~\ref{tab:m1t1_gnb}).
+
+\begin{table}[h]
+    \centering
+    \caption{gNB positions rescaled for M1+T1 coordinate mapping}
+    \label{tab:m1t1_gnb}
+    \small
+    \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{gNB} & \textbf{Original (2\,000\,m area)} & \textbf{Rescaled (5\,000\,m area)} \\
+        \hline
+        gNB~0 & $(500,\;500)$ & $(1{,}250,\;1{,}250)$ \\
+        \hline
+        gNB~1 & $(1{,}500,\;500)$ & $(3{,}750,\;1{,}250)$ \\
+        \hline
+        gNB~2 & $(1{,}000,\;1{,}500)$ & $(2{,}500,\;3{,}750)$ \\
+        \hline
+    \end{tabular}
+\end{table}
+
+A connected vehicle at grid node $(i,\,j)$ maps to T1 coordinates as:
+\begin{equation}
+    x_{T1} = i \times 1{,}250\;\text{m}, \quad y_{T1} = j \times 1{,}250\;\text{m}
+    \label{eq:m1t1_mapping}
+\end{equation}
+
+\paragraph{Bidirectional Coupling}
+
+\textbf{M1 $\rightarrow$ T1 (position injection):} At every time step, each connected vehicle's current grid node is converted to T1 metres via Equation~\ref{eq:m1t1_mapping} and written to the corresponding \texttt{MobileUser} position. T1's handover and RB-allocation logic then runs on these real positions, replacing the RWP update.
+
+\textbf{T1 $\rightarrow$ M1 (QoS feedback):} After each T1 step, the URLLC QoS satisfaction rate is computed per gNB. For any gNB where the rate falls below a threshold $\theta_{URLLC} = 0.80$, all intersections within its coverage radius receive a \texttt{signal\_degraded} flag. Degraded intersections revert to fixed-time signal control (equal phase weights $Q_{NS} = Q_{EW} = 1$, Equation~\ref{eq:adaptive_signal}) for the duration of the degradation event.
+
+\paragraph{Coupled vs.\ Uncoupled Comparison}
+
+Two modes are compared under the same RNG seed~(42):
+\begin{itemize}
+    \item \textbf{Coupled}: Connected vehicles inject their M1 positions into T1; URLLC QoS feedback can suppress adaptive signal control at affected intersections.
+    \item \textbf{Uncoupled}: T1 users follow independent RWP mobility; signal control remains always adaptive regardless of network state.
+\end{itemize}
+
+\paragraph{Coupling-Specific Metrics}
+
+Three metrics isolate the cross-domain effect:
+\begin{itemize}
+    \item \textbf{Handover Rate Uplift}: Handover events per minute in coupled mode versus uncoupled mode; vehicular stop-and-go motion is expected to trigger higher burst handover rates than smooth RWP pedestrian movement.
+    \item \textbf{Signal Degradation Duration}: Total seconds during which adaptive signal control is suppressed at one or more intersections due to URLLC QoS drops, and the corresponding increase in intersection delay.
+    \item \textbf{Per-gNB Load Imbalance}: Standard deviation of active users per gNB across time steps; vehicular clustering at intersections near cell boundaries is expected to produce higher variance than the spatially uniform RWP baseline.
+\end{itemize}
+
+% -------------------------------------------------------
+
 \subsubsection{Planned Cross-Domain Scenarios}
 
-Two additional cross-domain scenarios are defined as future work:
+One additional cross-domain scenario is defined as future work:
 
 \begin{itemize}
-    \item \textbf{M1 + T1 (Mobility--Telecommunications)}: Vehicle positions from M1 drive user locations in T1, determining serving gNB and slice demand; conversely, network QoS degradation in T1 introduces latency in adaptive signal control commands in M1.
     \item \textbf{E1 + T2 (Energy--Telecommunications)}: IoT devices in T2 serve as the smart meters and grid sensors of E1. Communication failures (collisions, excessive backoff) cause delayed or missing grid measurements, degrading demand response activation timing and accuracy.
 \end{itemize}
 

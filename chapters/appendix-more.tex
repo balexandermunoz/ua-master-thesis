@@ -153,11 +153,39 @@ Each scenario federate accepts keyword arguments in its constructor that overrid
     \end{tabular}
 \end{table}
 
+\subsection*{Scenario M1+T1 --- Cross-Domain Mobility--Telecommunications Integration}
+
+\begin{table}[h]
+    \centering
+    \caption{CrossDomainM1T1 configurable parameters}
+    \label{tab:params-m1t1}
+    \small
+    \begin{tabular}{|l|c|r|p{5.5cm}|}
+        \hline
+        \textbf{Parameter} & \textbf{Type} & \textbf{Default} & \textbf{Description} \\
+        \hline
+        \texttt{coupled}              & bool  & \texttt{True}     & Enable vehicle-position-driven UE mobility and URLLC QoS feedback to signal control \\
+        \hline
+        \texttt{num\_connected}      & int   & 200    & Connected vehicles, each hosting one 5G UE \\
+        \hline
+        \texttt{num\_background}     & int   & 2300   & Non-connected background vehicle agents \\
+        \hline
+        \texttt{grid\_size}          & int   & 5      & Road grid dimension ($N \times N$ nodes) \\
+        \hline
+        \texttt{sim\_duration\_hours} & int  & 3      & Simulation duration (hours) \\
+        \hline
+        \texttt{slicing\_strategy}   & enum  & \texttt{DYNAMIC} & RB allocation policy (\texttt{STATIC}, \texttt{DYNAMIC}) \\
+        \hline
+        \texttt{urllc\_qos\_threshold} & float & 0.80 & Per-gNB URLLC satisfaction rate below which adaptive signal control is suppressed at nearby intersections \\
+        \hline
+    \end{tabular}
+\end{table}
+
 % ------------------------------------------------------------------
 \section{HELICS Topic Registry}
 \label{sec:appendix-helics}
 
-Table~\ref{tab:helics-topics} lists the global HELICS publications registered by \texttt{SmartGridFederate} (Scenario~E1) via its \texttt{\_register\_publications()} hook. These topics are available to any subscribing federate in a multi-domain co-simulation run. Scenarios E2, M1, T1, and E2+M1 include the \texttt{\_register\_publications()} override hook in their class hierarchy but register no topics in the current prototype; they are designed to operate as standalone federates or as subscribers.
+Table~\ref{tab:helics-topics} lists the global HELICS publications registered by \texttt{SmartGridFederate} (Scenario~E1) via its \texttt{\_register\_publications()} hook. These topics are available to any subscribing federate in a multi-domain co-simulation run. Scenario~T1 additionally registers two global topics via its \texttt{\_register\_publications()} hook: \texttt{urllc\_qos\_status} (dimensionless URLLC satisfaction rate, \texttt{HELICS\_DATA\_TYPE\_DOUBLE}) and \texttt{total\_network\_load} (active RBs, unit W, \texttt{HELICS\_DATA\_TYPE\_DOUBLE}). Scenarios E2, M1, E2+M1, and M1+T1 include the hook in their class hierarchy but register no topics in the current prototype; they are designed to operate as standalone federates or as subscribers.
 
 \begin{table}[h]
     \centering

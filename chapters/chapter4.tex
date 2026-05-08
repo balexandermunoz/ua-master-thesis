@@ -2,7 +2,7 @@
 \label{chapter:implementation}
 
 \begin{introduction}
-This chapter presents the implementation of the modular co-simulation framework proposed in Chapter~\ref{chapter:methodology} and reports the results obtained from executing the five defined scenarios. The chapter describes the development environment, the technical realisation of each architectural layer, the challenges encountered, and a scenario-by-scenario analysis of the simulation outcomes. All results reported in this chapter were produced by running the standalone (non-HELICS) version of each federate and are fully reproducible from the public repository.
+This chapter presents the implementation of the modular co-simulation framework proposed in Chapter~\ref{chapter:methodology} and reports the results obtained from executing the six defined scenarios. The chapter describes the development environment, the technical realisation of each architectural layer, the challenges encountered, and a scenario-by-scenario analysis of the simulation outcomes. All results reported in this chapter were produced by running the standalone (non-HELICS) version of each federate and are fully reproducible from the public repository.
 \end{introduction}
 
 
@@ -39,7 +39,7 @@ The codebase is organised in the \texttt{code/} directory following the three-la
 
 \begin{itemize}
     \item \textbf{\texttt{engine/base.py}} — Layer 1: the domain-independent simulation engine (\texttt{BaseFederate} abstract class and shared utilities).
-    \item \textbf{\texttt{scenarios/}} — Layer 2: five domain modules, each a self-contained Python file (\texttt{scenario\_e1.py}, \texttt{scenario\_e2.py}, \texttt{scenario\_m1.py}, \texttt{scenario\_t1.py}, \texttt{scenario\_e2m1.py}).
+    \item \textbf{\texttt{scenarios/}} — Layer 2: six domain modules, each a self-contained Python file (\texttt{scenario\_e1.py}, \texttt{scenario\_e2.py}, \texttt{scenario\_m1.py}, \texttt{scenario\_t1.py}, \texttt{scenario\_e2m1.py}, \texttt{scenario\_m1t1.py}).
     \item \textbf{\texttt{app.py}} — Layer 3 entry point: the Streamlit UI that orchestrates scenario execution and result visualisation; in co-simulation mode this layer would also launch the HELICS broker.
 \end{itemize}
 
@@ -58,6 +58,7 @@ Table~\ref{tab:scenarios_overview} provides a concise comparison of the five imp
         M1    & Mobility (Traffic)     & 2{,}525 & 1 s   & 3 h   & 2 \\
         T1    & Telecom (5G Slicing)   & 206   & 100 ms  & 1 h   & 2 \\
         E2+M1 & Cross-domain           & 2{,}513 & 1 s   & 3 h   & 2 \\
+        M1+T1 & Cross-domain           & 2{,}503 & 1 s   & 3 h   & 2 \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -145,6 +146,36 @@ class EVTrafficVehicle(M1Vehicle):
 \label{lst:evtraffic}
 \end{listing}
 
+\subsection{Scenario M1+T1 --- Cross-Domain Mobility--Telecommunications Integration}
+
+\texttt{CrossDomainM1T1} inherits from \texttt{BaseFederate} and reuses components from both \texttt{scenario\_m1.py} and \texttt{scenario\_t1.py} through direct Python imports, following the same intra-process federation pattern established by \texttt{CrossDomainE2M1}. The scenario runs at 1-second resolution for 3~hours, matching M1's native time step; T1's resource-allocation and handover logic execute once per M1 tick rather than at the standalone 100\,ms cadence.
+
+The central agent is \texttt{ConnectedVehicle}, which extends the M1 \texttt{Vehicle} class and holds a T1 \texttt{MobileUser} instance. At every time step, \texttt{ConnectedVehicle.sync\_position()} converts the vehicle's current grid node to T1 metres (Equation~\ref{eq:m1t1_mapping}) and writes the result to the embedded \texttt{MobileUser}, replacing RWP mobility for that user. The T1 path-loss model, handover logic, and RB allocation then operate on the vehicle-derived positions without any modification to the \texttt{scenario\_t1.py} classes.
+
+Listing~\ref{lst:connectedvehicle} illustrates the dual-domain agent.
+
+\begin{listing}[h]
+\begin{minted}{python}
+class ConnectedVehicle(M1Vehicle):
+    def __init__(self, vehicle_id, origin, destination,
+                 user: MobileUser, spacing_m: float = 1250.0):
+        super().__init__(vehicle_id, origin, destination)
+        self.user = user
+        self._spacing_m = spacing_m
+
+    def sync_position(self):
+        """Copy M1 grid coordinates into T1 continuous space."""
+        self.user.x = self.current_position[0] * self._spacing_m
+        self.user.y = self.current_position[1] * self._spacing_m
+\end{minted}
+\caption{\texttt{ConnectedVehicle} dual-domain agent (scenario\_m1t1.py)}
+\label{lst:connectedvehicle}
+\end{listing}
+
+The QoS feedback path is implemented in \texttt{CrossDomainM1T1.\_apply\_qos\_feedback()}, which computes the per-gNB URLLC satisfaction rate after each T1 step and marks any gNB below the 80\% threshold as degraded. The \texttt{TrafficSignal.update()} calls for intersections within degraded cells receive equal-demand weights ($Q_{NS} = Q_{EW} = 1$) rather than measured queue lengths, reverting those signals to fixed-time behaviour for the duration of the degradation event.
+
+In coupled mode, 2{,}300 background vehicles and 200 connected vehicles share the M1 traffic grid; the 200 connected vehicles also serve as T1 users driven by real vehicle positions. In uncoupled mode, the 200 T1 users move under independent RWP and the QoS feedback path is disabled, providing a baseline that treats mobility and telecommunications as independent domains.
+
 
 \section{User Interface}
 
@@ -168,6 +199,8 @@ Scenario M1 advances 2{,}500 vehicles at 1-second resolution for 3 hours, totall
 \subsection{Cross-Domain Data Coupling}
 
 Coupling the E2 charging model to the M1 traffic model required a shared representation of the road network on which charging stations are located. In Scenario~E2 the charging infrastructure uses IEEE 13-node indices; in Scenario~M1 the network is a grid of $(x,y)$ tuples. Scenario~E2+M1 resolves this by mapping stations to grid coordinates and using grid positions as the universal reference. The \texttt{\_station\_by\_pos} dictionary in \texttt{CrossDomainE2M1} provides O(1) lookup of the \texttt{ChargingStation} object for any grid intersection. This translation layer isolates the coordinate-system mismatch without modifying the original E2 or M1 classes.
+
+Scenario~M1+T1 faced a different coordinate-space mismatch: M1's $5 \times 5$ grid spans 5{,}000\,m per axis while T1's area was originally 2{,}000\,m per side. The resolution was to rescale T1's \texttt{area\_size} to 5{,}000\,m and adjust gNB positions proportionally (Equation~\ref{eq:m1t1_mapping}), preserving the triangular inter-site geometry while eliminating the scale mismatch without modifying either source module.
 
 \subsection{Time-Step Heterogeneity}
 
@@ -348,12 +381,51 @@ Third, traffic delay marginally reduces the number of EVs that reach their assig
 
 These results demonstrate the value of cross-domain simulation: even a relatively modest fleet of 500~EVs measurably increases road network emissions and slightly degrades charging outcomes through travel-time delays. A purely domain-specific model of either system would miss both effects.
 
+\subsection{Scenario M1+T1 --- Cross-Domain Mobility--Telecommunications Integration}
+
+Table~\ref{tab:m1t1_results} contrasts the coupled and uncoupled modes of the Mobility--Telecommunications cross-domain scenario.
+
+\begin{table}[h]
+    \centering
+    \caption{Scenario M1+T1 coupling mode comparison}
+    \label{tab:m1t1_results}
+    \begin{tabular}{lrrl}
+        \toprule
+        \textbf{Metric} & \textbf{Uncoupled} & \textbf{Coupled} & \textbf{Change} \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Telecommunications metrics}} \\
+        QoS satisfaction --- eMBB (\%)    & 39.0  & 15.4   & $-60.5\%$ \\
+        QoS satisfaction --- URLLC (\%)   & 39.4  & 19.2   & $-51.3\%$ \\
+        QoS satisfaction --- mMTC (\%)    & 40.5  & 16.9   & $-58.3\%$ \\
+        Overall RB utilisation (\%)       & 73.8  & 60.1   & $-18.6\%$ \\
+        Total handover events             & 134{,}843 & 156{,}168 & $+15.8\%$ \\
+        Handover rate (events/min)        & 749.1 & 867.6  & $+15.8\%$ \\
+        Handover success rate (\%)        & 95.0  & 95.0   & ---        \\
+        Per-gNB load std dev (users)      & 15.6  & 7.0    & $-55.1\%$ \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Mobility metrics (all vehicles)}} \\
+        Avg.\ travel time (s)             & 541.0 & 559.3  & $+3.4\%$   \\
+        Avg.\ delay (s)                   & 22.7  & 41.0   & $+80.9\%$  \\
+        Signal degradation events         & 0     & 25{,}915 & ---        \\
+        Total degradation duration (s)    & 0     & 124{,}664 & ---       \\
+        Intersections affected            & 0     & 14     & ---          \\
+        Total CO$_2$ emissions (kg)       & 2{,}827 & 2{,}933 & $+3.7\%$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The M1+T1 results reveal three distinct cross-domain effects. First, vehicular mobility produces substantially more handovers than pedestrian-speed random-waypoint users: coupled mode records 156{,}168 handover attempts versus 134{,}843 in uncoupled mode---a 15.8\% increase. The high absolute rate (749--868 events/min) reflects the T1 model's independent per-step shadow fading with a 4\,dB standard deviation that frequently exceeds the 3\,dB hysteresis threshold; the coupled premium arises because vehicles traverse a 1{,}250\,m link in approximately 90\,s at 50\,km/h, crossing cell boundaries far more rapidly than pedestrians. The per-gNB load standard deviation falls from 15.6~users (uncoupled) to 7.0~users (coupled)---a 55.1\% decrease---because the traffic network's structured grid distributes vehicles more uniformly across the three gNB coverage areas than unconstrained random-waypoint users, which cluster in ways that happen to be spatially uneven.
+
+QoS satisfaction collapses in coupled mode: eMBB falls from 39.0\% to 15.4\%, URLLC from 39.4\% to 19.2\%, and mMTC from 40.5\% to 16.9\%---reductions of 51--61\%. The primary driver is the burst-loading pattern produced when red-light releases simultaneously dispatch a wave of vehicles into a gNB's coverage area. At those instants the per-gNB active user count spikes far above the time-averaged value, and the dynamic allocator's proportional rule cannot assign each user the two RBs required for QoS; rounding losses are also amplified, reducing overall RB utilisation from 73.8\% to 60.1\%. By contrast, the uncoupled pedestrian model distributes users continuously and smoothly, producing more consistent per-gNB loads.
+
+The T1$\rightarrow$M1 feedback path is the most operationally significant effect. Because coupled URLLC QoS (19.2\%) remains well below the 80\% degradation threshold throughout almost the entire simulation, the feedback mechanism is continuously active: 25{,}915 per-gNB threshold violations across the 10{,}800-step run affect 14 of 25 intersections for a combined 124{,}664 intersection-seconds of fixed-time operation. With 14 intersections reverting to fixed-time signals, the average background-vehicle delay rises from 22.7\,s (uncoupled) to 41.0\,s (coupled)---an 80.9\% increase. The additional idling raises total fleet CO$_2$ emissions by 3.7\% (2{,}827\,kg to 2{,}933\,kg). This constitutes a causal chain only observable through coupled simulation: vehicular RF clustering at intersection nodes degrades URLLC QoS, which suppresses adaptive signal control across 14 intersections, which increases congestion and emissions. No domain-specific model of either traffic or telecommunications in isolation could expose this interaction.
+
 
 \section{Discussion}
 
 \subsection{Achievement of Objectives}
 
-The implementation successfully realises all six objectives stated in Chapter~\ref{chapter:introduction}. The \texttt{BaseFederate} class provides a domain-agnostic simulation engine (Objective~1) with a clearly defined three-method contract (\texttt{initialize\_components}, \texttt{run\_simulation}, \texttt{generate\_report}) that every domain module implements. Five domain modules encapsulate energy, mobility, and telecommunications logic (Objective~2) and are independently executable without any shared state. The HELICS publication and subscription mechanism defines the cross-domain communication channel for co-simulation (Objective~3), and the \texttt{use\_helics} flag provides transparent dual-mode execution. Every scenario accepts keyword arguments forwarded to the federate constructor, enabling parametrised and reproducible execution (Objective~4). The five scenarios constitute functional prototypes spanning three domains and one cross-domain integration (Objective~5). The overall architecture is directly applicable to the Ubiwhere Urban Management Platform context (Objective~6), as it can be integrated into data-driven urban workflows through the Streamlit interface or through direct Python API calls.
+The implementation successfully realises all six objectives stated in Chapter~\ref{chapter:introduction}. The \texttt{BaseFederate} class provides a domain-agnostic simulation engine (Objective~1) with a clearly defined three-method contract (\texttt{initialize\_components}, \texttt{run\_simulation}, \texttt{generate\_report}) that every domain module implements. Five domain modules encapsulate energy, mobility, and telecommunications logic (Objective~2) and are independently executable without any shared state. The HELICS publication and subscription mechanism defines the cross-domain communication channel for co-simulation (Objective~3), and the \texttt{use\_helics} flag provides transparent dual-mode execution. Every scenario accepts keyword arguments forwarded to the federate constructor, enabling parametrised and reproducible execution (Objective~4). The six scenarios constitute functional prototypes spanning three domains and two cross-domain integrations (Objective~5). The overall architecture is directly applicable to the Ubiwhere Urban Management Platform context (Objective~6), as it can be integrated into data-driven urban workflows through the Streamlit interface or through direct Python API calls.
 
 \subsection{Model Fidelity and Limitations}
 
@@ -376,7 +448,7 @@ The Streamlit UI extends equally cleanly: adding a new scenario entry requires i
 
 \section{Summary}
 
-This chapter presented the complete implementation of the modular co-simulation framework and the results of five simulation scenarios. The \texttt{BaseFederate} abstract class provides a domain-independent engine that separates generic simulation concerns from domain logic through a three-method contract, with transparent HELICS co-simulation support. Five scenario modules implement the energy, mobility, telecommunications, and cross-domain scenarios defined in Chapter~\ref{chapter:methodology}.
+This chapter presented the complete implementation of the modular co-simulation framework and the results of six simulation scenarios. The \texttt{BaseFederate} abstract class provides a domain-independent engine that separates generic simulation concerns from domain logic through a three-method contract, with transparent HELICS co-simulation support. Five scenario modules implement the energy, mobility, telecommunications, and cross-domain scenarios defined in Chapter~\ref{chapter:methodology}.
 
-The simulation results demonstrate the framework's ability to reproduce domain-specific behaviours (renewable curtailment, charging strategy trade-offs, signal control efficiency, RB allocation fairness) and to quantify cross-domain effects (EV traffic adding 21.5\% to fleet emissions and delaying 5\% fewer EVs from meeting charging targets). The identified limitations---primarily the simplified voltage model in E1 and the absence of dynamic rerouting in M1---provide a concrete roadmap for improving model fidelity in future work, which is discussed in Chapter~\ref{chapter:conclusions}.
+The simulation results demonstrate the framework's ability to reproduce domain-specific behaviours (renewable curtailment, charging strategy trade-offs, signal control efficiency, RB allocation fairness) and to quantify cross-domain effects: EV traffic adds 21.5\% to fleet emissions and delays charging targets in Scenario~E2+M1; vehicular RF clustering raises handover rates by 15.8\% and triggers a pervasive T1$\rightarrow$M1 feedback loop that reverts 14 of 25 intersections to fixed-time operation, increasing intersection delay by 80.9\% in Scenario~M1+T1. The identified limitations---primarily the simplified voltage model in E1 and the absence of dynamic rerouting in M1---provide a concrete roadmap for improving model fidelity in future work, which is discussed in Chapter~\ref{chapter:conclusions}.
 
