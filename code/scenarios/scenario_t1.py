@@ -157,6 +157,81 @@ class SliceResourceAllocator:
         return allocation
 
 
+# ======================================================================
+#  Reusable telecom helpers (used by T1 and cross-domain scenarios)
+# ======================================================================
+
+def assign_serving_gnb(
+    user: "MobileUser",
+    gnbs: List["GNodeB"],
+    shadow_std_db: float = 4.0,
+) -> None:
+    """Assign *user* to the gNB with the highest received power."""
+    best_gnb = None
+    best_power = -999.0
+    for gnb in gnbs:
+        p_rx = gnb.received_power((user.x, user.y), np.random.normal(0, shadow_std_db))
+        if p_rx > best_power:
+            best_power = p_rx
+            best_gnb = gnb.id
+    user.serving_gnb = best_gnb
+
+
+def check_handover(
+    user: "MobileUser",
+    gnbs: List["GNodeB"],
+    shadow_std_db: float = 4.0,
+    hysteresis_db: float = 3.0,
+    success_prob: float = 0.95,
+    cooldown_steps: int = 10,
+) -> Tuple[bool, bool]:
+    """Evaluate and optionally execute a handover.
+
+    Mutates *user* in-place (serving_gnb, handover_cooldown, handover_failed).
+
+    Returns
+    -------
+    (attempted, succeeded) — both False when user is in cooldown or no better
+    cell was found.
+    """
+    if user.handover_cooldown > 0:
+        user.handover_cooldown -= 1
+        user.handover_failed = False
+        return False, False
+
+    serving_power = gnbs[user.serving_gnb].received_power(
+        (user.x, user.y), np.random.normal(0, shadow_std_db)
+    )
+    best_gnb = user.serving_gnb
+    best_power = serving_power
+
+    for gnb in gnbs:
+        if gnb.id == user.serving_gnb:
+            continue
+        p_rx = gnb.received_power((user.x, user.y), np.random.normal(0, shadow_std_db))
+        if p_rx > best_power:
+            best_power = p_rx
+            best_gnb = gnb.id
+
+    if best_gnb != user.serving_gnb and (best_power - serving_power) > hysteresis_db:
+        user.handover_cooldown = cooldown_steps
+        if np.random.random() < success_prob:
+            user.serving_gnb = best_gnb
+            user.handover_failed = False
+            return True, True
+        else:
+            user.handover_failed = True
+            return True, False
+    else:
+        user.handover_failed = False
+        return False, False
+
+
+def mmtc_activity(current_time: float, burst_period: float = 900.0) -> float:
+    """mMTC burst-activity probability (sinusoidal, period=*burst_period* s)."""
+    return 0.3 + 0.5 * abs(np.sin(2 * np.pi * current_time / burst_period))
+
+
 class NetworkSlicingSimulation(BaseFederate):
     """Main 5G slice resource allocation simulation with HELICS support"""
 
@@ -258,56 +333,23 @@ class NetworkSlicingSimulation(BaseFederate):
 
     def _assign_serving_gnb(self, user: MobileUser):
         """Assign user to strongest gNB"""
-        best_gnb = None
-        best_power = -999.0
-        for gnb in self.gnbs:
-            fading = np.random.normal(0, self.shadow_std_db)
-            p_rx = gnb.received_power((user.x, user.y), fading)
-            if p_rx > best_power:
-                best_power = p_rx
-                best_gnb = gnb.id
-        user.serving_gnb = best_gnb
+        assign_serving_gnb(user, self.gnbs, self.shadow_std_db)
 
     def _check_handover(self, user: MobileUser):
         """Check and execute handover if needed"""
-        if user.handover_cooldown > 0:
-            user.handover_cooldown -= 1
-            user.handover_failed = False
-            return
-
-        serving_power = self.gnbs[user.serving_gnb].received_power(
-            (user.x, user.y), np.random.normal(0, self.shadow_std_db)
+        attempted, succeeded = check_handover(
+            user, self.gnbs, self.shadow_std_db,
+            self.handover_hysteresis_db, self.handover_success_prob,
         )
-
-        best_gnb = user.serving_gnb
-        best_power = serving_power
-
-        for gnb in self.gnbs:
-            if gnb.id == user.serving_gnb:
-                continue
-            fading = np.random.normal(0, self.shadow_std_db)
-            p_rx = gnb.received_power((user.x, user.y), fading)
-            if p_rx > best_power:
-                best_power = p_rx
-                best_gnb = gnb.id
-
-        if best_gnb != user.serving_gnb and (best_power - serving_power) > self.handover_hysteresis_db:
+        if attempted:
             self.handover_attempts += 1
-            if np.random.random() < self.handover_success_prob:
-                user.serving_gnb = best_gnb
+            if succeeded:
                 self.handover_successes += 1
-                user.handover_failed = False
-                user.handover_cooldown = 10  # 1 second cooldown (10 × 100ms)
             else:
                 self.handover_failures += 1
-                user.handover_failed = True
-                user.handover_cooldown = 10  # cooldown even on failure
-        else:
-            user.handover_failed = False
 
     def _mmtc_activity(self, current_time: float) -> float:
-        """mMTC activity probability at time t"""
-        return 0.3 + 0.5 * abs(np.sin(2 * np.pi * current_time / self.burst_period))
+        return mmtc_activity(current_time, self.burst_period)
 
     def run_simulation(self):
         """Run the 1-hour simulation"""

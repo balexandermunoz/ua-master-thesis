@@ -275,8 +275,14 @@ def update_signals(
     network: TrafficNetwork,
     dt: float,
     adaptive: bool = True,
+    degraded_intersections: Optional[set] = None,
 ) -> None:
-    """Update all traffic signals based on directional demand."""
+    """Update all traffic signals based on directional demand.
+
+    Intersections present in *degraded_intersections* receive equal-weight
+    (fixed-time) updates regardless of the *adaptive* flag — used by
+    cross-domain scenarios to model radio-congestion feedback.
+    """
     position_vehicles: Dict[Tuple[int, int], List[Vehicle]] = {}
     for v in vehicles:
         if v.completed or not v.departed or v.travel_countdown > 0:
@@ -284,6 +290,9 @@ def update_signals(
         position_vehicles.setdefault(v.current_position, []).append(v)
 
     for pos, signal in network.signals.items():
+        if degraded_intersections and pos in degraded_intersections:
+            signal.update(dt, 1, 1)
+            continue
         ns_demand = ew_demand = 0
         for v in position_vehicles.get(pos, []):
             if v.current_route_index >= len(v.route) - 1:

@@ -16,17 +16,18 @@ Comparison modes:
 
 import numpy as np
 import logging
-from typing import Dict, List, Tuple, Optional, Set
+from typing import Dict, List, Tuple, Set
 
 from engine.base import BaseFederate, print_report
 from scenarios.scenario_m1 import (
     TrafficNetwork, Vehicle as M1Vehicle,
-    create_random_vehicles, move_vehicles_step,
+    create_random_vehicles, update_signals, move_vehicles_step,
     collect_queue_lengths,
 )
 from scenarios.scenario_t1 import (
     GNodeB, MobileUser, SliceType, SlicingStrategy,
     SLICE_CONFIG, SliceResourceAllocator,
+    assign_serving_gnb, check_handover, mmtc_activity,
 )
 
 logger = logging.getLogger(__name__)
@@ -175,7 +176,7 @@ class CrossDomainM1T1(BaseFederate):
 
         # Assign initial serving gNB after positions are finalised
         for user in self.users:
-            self._assign_serving_gnb(user)
+            assign_serving_gnb(user, self.gnbs, self.shadow_std_db)
 
         logger.info(
             f"Initialised {len(self.users)} UEs "
@@ -243,96 +244,8 @@ class CrossDomainM1T1(BaseFederate):
         logger.info(f"Created {self.num_background} background vehicles")
 
     # ------------------------------------------------------------------
-    #  Traffic helpers
-    # ------------------------------------------------------------------
-
-    def _update_traffic_signals(self, dt: float) -> None:
-        """Update all signals adaptively, with fixed-time override for
-        intersections in degraded radio cells (coupled mode only)."""
-        # Build per-position vehicle list (mirrors M1's update_signals logic)
-        position_vehicles: Dict[Tuple[int, int], List] = {}
-        for v in self.all_vehicles:
-            if v.completed or not v.departed or v.travel_countdown > 0:
-                continue
-            pos = v.current_position
-            if pos not in position_vehicles:
-                position_vehicles[pos] = []
-            position_vehicles[pos].append(v)
-
-        for pos, signal in self.network.signals.items():
-            # Degraded cell → revert to fixed-time (equal weights)
-            if self.coupled and pos in self.degraded_intersections:
-                signal.update(dt, 1, 1)
-                continue
-
-            # Adaptive: measure directional queue demand
-            ns_demand = ew_demand = 0
-            for v in position_vehicles.get(pos, []):
-                if v.current_route_index >= len(v.route) - 1:
-                    continue
-                next_pos = v.route[v.current_route_index + 1]
-                dx = next_pos[0] - pos[0]
-                dy = next_pos[1] - pos[1]
-                if dx != 0:
-                    ns_demand += 1
-                else:
-                    ew_demand += 1
-            signal.update(dt, ns_demand, ew_demand)
-
-    # ------------------------------------------------------------------
     #  Telecom helpers
     # ------------------------------------------------------------------
-
-    def _assign_serving_gnb(self, user: MobileUser) -> None:
-        best_gnb: Optional[int] = None
-        best_power = -999.0
-        for gnb in self.gnbs:
-            fading = np.random.normal(0, self.shadow_std_db)
-            p_rx = gnb.received_power((user.x, user.y), fading)
-            if p_rx > best_power:
-                best_power = p_rx
-                best_gnb = gnb.id
-        user.serving_gnb = best_gnb
-
-    def _check_handover(self, user: MobileUser) -> None:
-        if user.handover_cooldown > 0:
-            user.handover_cooldown -= 1
-            user.handover_failed = False
-            return
-
-        serving_power = self.gnbs[user.serving_gnb].received_power(
-            (user.x, user.y), np.random.normal(0, self.shadow_std_db)
-        )
-        best_gnb = user.serving_gnb
-        best_power = serving_power
-
-        for gnb in self.gnbs:
-            if gnb.id == user.serving_gnb:
-                continue
-            fading = np.random.normal(0, self.shadow_std_db)
-            p_rx = gnb.received_power((user.x, user.y), fading)
-            if p_rx > best_power:
-                best_power = p_rx
-                best_gnb = gnb.id
-
-        if (best_gnb != user.serving_gnb
-                and (best_power - serving_power) > self.handover_hysteresis_db):
-            self.handover_attempts += 1
-            if np.random.random() < self.handover_success_prob:
-                user.serving_gnb = best_gnb
-                self.handover_successes += 1
-                user.handover_failed = False
-                user.handover_cooldown = 1  # 1 s cooldown at 1 s resolution
-            else:
-                self.handover_failures += 1
-                user.handover_failed = True
-                user.handover_cooldown = 1
-        else:
-            user.handover_failed = False
-
-    def _mmtc_activity(self, current_time: float) -> float:
-        """mMTC burst-activity probability (sinusoidal, period = burst_period)."""
-        return 0.3 + 0.5 * abs(np.sin(2 * np.pi * current_time / self.burst_period))
 
     def _run_telecom_step(
         self, current_time: float
@@ -346,10 +259,20 @@ class CrossDomainM1T1(BaseFederate):
         """
         # Handover checks
         for user in self.users:
-            self._check_handover(user)
+            attempted, succeeded = check_handover(
+                user, self.gnbs, self.shadow_std_db,
+                self.handover_hysteresis_db, self.handover_success_prob,
+                cooldown_steps=1,  # 1 s at 1 s time-step resolution
+            )
+            if attempted:
+                self.handover_attempts += 1
+                if succeeded:
+                    self.handover_successes += 1
+                else:
+                    self.handover_failures += 1
 
         # mMTC activity toggle
-        activity_prob = self._mmtc_activity(current_time)
+        activity_prob = mmtc_activity(current_time, self.burst_period)
         for user in self.users:
             if user.slice_type == SliceType.MMTC:
                 user.active = np.random.random() < activity_prob
@@ -475,8 +398,11 @@ class CrossDomainM1T1(BaseFederate):
         step = 0
 
         while current_time < self.sim_duration:
-            # 1. Traffic signals (adaptive, with degradation in coupled mode)
-            self._update_traffic_signals(self.time_step)
+            # 1. Traffic signals (adaptive, degraded intersections revert to fixed-time)
+            update_signals(
+                self.all_vehicles, self.network, self.time_step,
+                degraded_intersections=self.degraded_intersections if self.coupled else None,
+            )
 
             # 2. Move all traffic vehicles
             move_vehicles_step(
