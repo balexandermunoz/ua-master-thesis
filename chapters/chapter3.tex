@@ -487,6 +487,7 @@ Each implemented scenario is validated against expected physical behaviors:
     \item \textbf{M1 -- Urban Traffic Congestion Management}: Adaptive control must reduce average travel time and total delay; emissions must decrease in proportion to reduced idling; queue lengths must be lower than under fixed-time control.
     \item \textbf{T1 -- 5G Slice Resource Allocation}: Dynamic slicing must improve overall resource utilization and reduce waste compared to static allocation; handover success rate must remain above 90\%; per-slice QoS rates must reflect the relative demand--supply balance.
     \item \textbf{E2+M1 -- Energy--Mobility Integration}: Coupling must produce measurably different outcomes than uncoupled operation under the same RNG seed. Specifically: coupled EV drive time must exceed zero (traffic delay); coupled total emissions must exceed uncoupled (EVs add driving CO$_2$); coupled EVs meeting SOC target must be fewer (travel delays reduce charging time).
+    \item \textbf{M1+T1 -- Mobility--Telecommunications Integration}: Coupling must produce measurably different outcomes than uncoupled operation under the same RNG seed. Specifically: coupled handover rate must exceed uncoupled (vehicular mobility crosses cell boundaries faster than pedestrian RWP); coupled URLLC QoS must fall below uncoupled (burst radio load at intersections degrades per-gNB allocation); and the T1$\rightarrow$M1 feedback path must produce non-zero signal degradation events and measurably higher average vehicle delay in coupled mode.
 \end{itemize}
 
 \subsection{Architectural Validation}
@@ -521,13 +522,15 @@ Table~\ref{tab:metrics_summary} summarizes the key performance indicators used p
         \hline
         E2+M1 & EV drive time (s), EV queue time (s), EVs meeting SOC (\%), total emissions (kg CO$_2$), energy charged (kWh), peak grid load (kW) & Coupled (EVs in traffic) vs.\ uncoupled (EVs teleport) \\
         \hline
+        M1+T1 & Slice QoS rate (\%), handover attempts, handover rate (events/min), per-gNB load std dev (users), signal degradation events, degradation duration (s), affected intersections, avg vehicle delay (s), CO$_2$ emissions (kg) & Coupled (vehicles drive UE positions; QoS feedback suppresses adaptive signals) vs.\ uncoupled (UEs use RWP; signals always adaptive) \\
+        \hline
     \end{tabular}
 \end{table}
 
 
 \section{Summary}
 
-This chapter described the Design Science Research methodology underpinning the dissertation, the three-layer modular architecture of the proposed co-simulation framework, and the rationale for key design and technology decisions. Four domain-specific scenarios---E1 (smart grid with renewables), E2 (EV charging infrastructure), M1 (urban traffic management), and T1 (5G slice resource allocation)---were presented alongside the first cross-domain integration scenario E2+M1 (Energy--Mobility), which couples EV charging with urban traffic on a shared network. Two additional cross-domain integration cases were defined as planned extensions.
+This chapter described the Design Science Research methodology underpinning the dissertation, the three-layer modular architecture of the proposed co-simulation framework, and the rationale for key design and technology decisions. Four domain-specific scenarios---E1 (smart grid with renewables), E2 (EV charging infrastructure), M1 (urban traffic management), and T1 (5G slice resource allocation)---were presented alongside two cross-domain integration scenarios: E2+M1 (Energy--Mobility), which couples EV charging with urban traffic on a shared network, and M1+T1 (Mobility--Telecommunications), which couples vehicular trajectories with 5G slice resource allocation through a bidirectional QoS feedback path. One additional cross-domain integration case (E1+T2) was defined as future work.
 
 The next chapter presents the implementation details of the framework prototype and the results obtained from executing the implemented scenarios.
 
