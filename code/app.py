@@ -57,6 +57,15 @@ SCENARIOS = {
     "M1+T1 – Mobility–Telecom Cross-Domain": "M1T1",
 }
 
+SCENARIO_SUMMARIES = {
+    "E1": "Smart-grid operation with solar, wind, batteries, and residential demand response.",
+    "E2": "EV charging impact on a distribution grid with uncoordinated, smart, and V2G strategies.",
+    "M1": "Urban traffic simulation comparing adaptive and fixed signal-control strategies.",
+    "T1": "5G slice resource allocation with static versus dynamic scheduling and QoS tracking.",
+    "E2M1": "Cross-domain coupling between EV mobility and charging demand in a shared urban network.",
+    "M1T1": "Cross-domain coupling between connected-vehicle traffic dynamics and 5G network performance.",
+}
+
 scenario_label = st.sidebar.selectbox("Select Scenario", list(SCENARIOS.keys()))
 scenario_key = SCENARIOS[scenario_label]
 
@@ -381,6 +390,7 @@ run_button = st.sidebar.button("Run Simulation", type="primary", use_container_w
 # Main area
 # ---------------------------------------------------------------------------
 st.title(scenario_label)
+st.caption(SCENARIO_SUMMARIES.get(scenario_key, ""))
 
 
 def _format_metric_name(key: str) -> str:
