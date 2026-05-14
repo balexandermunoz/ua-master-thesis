@@ -1,0 +1,611 @@
+\chapter{Simulation Output Metrics Reference}
+\label{appendix:metrics}
+
+This appendix documents every metric produced by the co-simulation framework
+and displayed in the Streamlit dashboard (\texttt{app.py}).  For each scenario
+the metrics are grouped by \emph{domain concern} and described in terms of
+what they measure, how they are computed in the simulation code, and what
+simulation-level event or physical process they reflect.  Equation and section
+cross-references point back to the corresponding models in
+Chapter~\ref{chapter:methodology}.
+
+Each entry follows the format:
+\begin{quote}
+\texttt{metric\_key} \quad [\textit{unit}] --- description.
+\end{quote}
+
+% ------------------------------------------------------------------
+\section{Scenario E1 --- Smart Grid with Renewable Integration}
+\label{sec:metrics-e1}
+
+\subsection*{Energy Generation}
+
+\begin{description}
+
+\item[\texttt{total\_renewable\_generation\_kwh}] [kWh] ---
+  Total electrical energy produced by all solar PV and wind turbines over the
+  24-hour window.  Computed by summing instantaneous combined output at every
+  15-minute step and multiplying by $\Delta t = 0.25\,\text{h}$.  Compare
+  with \texttt{total\_load\_kwh} to assess net self-sufficiency.
+
+\item[\texttt{total\_solar\_generation\_kwh}] [kWh] ---
+  Energy contribution from solar PV units alone.  Each unit follows the
+  sine-based irradiance model (Equation~\ref{eq:solar_power}), producing
+  output only during daylight hours (06:00--18:00).  Stochastic cloud factors
+  introduce step-to-step variability.
+
+\item[\texttt{total\_wind\_generation\_kwh}] [kWh] ---
+  Energy contribution from wind turbines alone.  Each turbine follows the
+  three-region power curve (Equation~\ref{eq:wind_power}), with zero output
+  below cut-in ($3\,\text{m/s}$) and above cut-out ($25\,\text{m/s}$).
+
+\item[\texttt{renewable\_penetration\_pct}] [\%] ---
+  Fraction of total demand served by renewables:
+  $\text{penetration} = P_{renewable} / P_{load} \times 100$.  Values above
+  100\% indicate periods of surplus generation requiring battery storage or
+  curtailment.
+
+\end{description}
+
+\subsection*{Load and Demand Response}
+
+\begin{description}
+
+\item[\texttt{total\_load\_kwh}] [kWh] ---
+  Aggregate energy consumed by all residential loads over 24 hours.  Each of
+  the 800 \texttt{ResidentialLoad} agents uses a time-varying load factor
+  (0.5 off-peak to 1.0 during evening peak 17:00--22:00) with $\pm10\%$
+  stochastic variation.
+
+\item[\texttt{peak\_load\_kw}] [kW] ---
+  Maximum instantaneous aggregate demand across all 96 time steps.  Determines
+  worst-case feeder loading and indicates whether grid reinforcement would be
+  required in a real deployment.
+
+\item[\texttt{avg\_peak\_hour\_load\_kw}] [kW] ---
+  Mean load during evening peak hours (17:00--22:00) after demand response is
+  applied.  Useful for evaluating how effectively DR flattens the evening peak.
+
+\item[\texttt{avg\_off\_peak\_load\_kw}] [kW] ---
+  Mean load outside peak hours; the baseline against which peak shaving is
+  measured.
+
+\item[\texttt{estimated\_dr\_load\_reduction\_kw}] [kW] ---
+  Estimated load reduction attributable to demand response: difference between
+  the expected peak-hour load without DR and the actual load with DR applied.
+  DR activates for the 70\% of loads that opt in
+  (\texttt{dr\_participation = True}), cutting consumption by 15\% during
+  on-peak hours (Section~\ref{sec:scenario-e1}).
+
+\item[\texttt{estimated\_dr\_load\_reduction\_pct}] [\%] ---
+  Same reduction expressed as a percentage of the pre-DR peak load.
+
+\end{description}
+
+\subsection*{Battery Storage}
+
+\begin{description}
+
+\item[\texttt{avg\_battery\_soc}] [---] ---
+  Time-averaged state of charge across all BESS units, normalised to $[0,1]$.
+  Updated each step via Equation~\ref{eq:soc_charge} with
+  $\eta_{charge} = 0.92$.  Tracks how actively batteries buffer renewable
+  surplus or cover deficits across the day.
+
+\item[\texttt{final\_battery\_soc}] [---] ---
+  List of per-unit SOC values at the end of the 24-hour simulation.  Displayed
+  as a bar chart in the dashboard.  Units close to $SOC_{max} = 0.95$ indicate
+  incomplete discharge; units near $SOC_{min} = 0.20$ indicate heavy use.
+
+\end{description}
+
+\subsection*{Curtailment and Voltage}
+
+\begin{description}
+
+\item[\texttt{total\_curtailment\_kwh}] [kWh] ---
+  Renewable energy discarded because batteries were fully charged and no
+  additional load was available.  Curtailment occurs when
+  $P_{net}^{final}(t) < 0$ even after maximum battery charging
+  (Section~\ref{sec:scenario-e1}).
+
+\item[\texttt{curtailment\_percentage}] [\%] ---
+  Curtailment as a fraction of total renewable generation.  High values
+  suggest insufficient storage or excess installed capacity relative to demand.
+
+\item[\texttt{curtailment\_steps}] [steps] ---
+  Number of 15-minute intervals in which any curtailment occurred.
+
+\item[\texttt{curtailment\_with\_saturated\_battery}] [steps] ---
+  Subset of curtailment steps where at least one battery reached $SOC_{max}$.
+  Used as the denominator for the validation check below.
+
+\item[\texttt{curtailment\_battery\_validation}] [PASS/FAIL] ---
+  Internal consistency check: curtailment may only occur when batteries are
+  saturated.  A \texttt{FAIL} indicates a logic error in
+  \texttt{calculate\_storage\_dispatch()}.
+
+\item[\texttt{avg\_voltage\_pu}] [p.u.] ---
+  Mean bus voltage across all 33 IEEE buses and all time steps.  Computed via
+  the simplified linear drop model
+  $V_{bus}(i) = V_{base} - k_{drop} \cdot P_{bus}(i) \cdot i$.
+  ANSI~C84.1 requires $V \in [0.95,\,1.05]$\,p.u.
+
+\item[\texttt{min\_voltage\_pu}] [p.u.] ---
+  Minimum bus voltage recorded.  Values below 0.95 signal under-voltage events
+  on the most heavily loaded buses.
+
+\item[\texttt{max\_voltage\_pu}] [p.u.] ---
+  Maximum bus voltage recorded.  Values above 1.05 indicate over-voltage from
+  excessive reverse power flow during surplus generation.
+
+\item[\texttt{voltage\_violations}] [count] ---
+  Number of time steps in which any bus voltage fell outside the ANSI limits.
+  Non-zero values would require voltage regulation in a real grid.
+
+\end{description}
+
+% ------------------------------------------------------------------
+\section{Scenario E2 --- Electric Vehicle Charging Infrastructure}
+\label{sec:metrics-e2}
+
+\subsection*{Grid Impact}
+
+\begin{description}
+
+\item[\texttt{peak\_load\_kw}] [kW] ---
+  Highest aggregate load (base load plus EV charging) recorded during the
+  36-hour window.  The uncoordinated strategy typically peaks during the
+  residential evening (17:00--22:00) when EV arrivals and household demand
+  coincide.  Smart and V2G strategies spread and suppress this peak.
+
+\item[\texttt{max\_transformer\_loading\_pct}] [\%] ---
+  Highest per-transformer loading fraction relative to rated capacity.  Values
+  above 100\% indicate the transformer was overloaded and would trip protection
+  equipment in a real network.  Overload events are counted separately.
+
+\item[\texttt{avg\_transformer\_loading\_pct}] [\%] ---
+  Mean transformer utilisation over time; a proxy for infrastructure wear.
+
+\item[\texttt{transformer\_overload\_count}] [count] ---
+  Number of time steps in which any transformer exceeded rated capacity.
+  Directly linked to \texttt{peak\_load\_kw}: peaks above feeder capacity
+  generate overloads.
+
+\item[\texttt{max\_voltage\_deviation\_pu}] [p.u.] ---
+  Maximum deviation of any node voltage from the nominal 1.0\,p.u., used as a
+  proxy for feeder voltage quality.  V2G power injections during on-peak hours
+  can cause positive deviations (over-voltage).
+
+\item[\texttt{load\_factor}] [---] ---
+  Ratio of average to peak load over the simulation horizon.  Values close to
+  1.0 indicate a flat, well-managed profile; values near 0 indicate sharp
+  peaks.  Smart and V2G charging raise the load factor by shifting demand to
+  off-peak hours.
+
+\end{description}
+
+\subsection*{Charging Economics and EV Outcomes}
+
+\begin{description}
+
+\item[\texttt{total\_energy\_charged\_kwh}] [kWh] ---
+  Total electrical energy delivered to EV batteries.  Each charge step uses the
+  urgency-based allocation (Equation~\ref{eq:urgency}) for smart/V2G modes, or
+  immediate full-rate delivery for uncoordinated.
+
+\item[\texttt{total\_charging\_cost\_usd}] [USD] ---
+  Aggregate cost paid by all EV owners under the TOU tariff
+  (Equation~\ref{eq:tou}).  Smart charging preferentially uses off-peak
+  periods (0.08\,USD/kWh) to minimise cost.
+
+\item[\texttt{avg\_cost\_per\_vehicle\_usd}] [USD] ---
+  \texttt{total\_charging\_cost\_usd} divided by the number of vehicles.
+  Normalises fleet-size effects when comparing strategies.
+
+\item[\texttt{avg\_final\_soc}] [---] ---
+  Fleet-average state of charge at simulation end.  A value below
+  $SOC_{target} = 0.80$ indicates that some vehicles could not fully charge
+  due to grid or time constraints.
+
+\item[\texttt{vehicles\_connected}] [count] ---
+  Number of vehicles that successfully connected to a charging station during
+  the simulation.
+
+\item[\texttt{vehicles\_meeting\_soc\_target}] [count] ---
+  Vehicles that reached $SOC_{target} = 0.80$ before departure.  The primary
+  user-satisfaction metric for the charging infrastructure.
+
+\item[\texttt{v2g\_energy\_provided\_kwh}] [kWh] ---
+  Energy exported from EV batteries back to the grid during on-peak hours
+  (17:00--21:00) by V2G-capable vehicles
+  (50\% of fleet, $P_{discharge}^{max} = 10\,\text{kW}$).
+
+\item[\texttt{v2g\_revenue\_usd}] [USD] ---
+  Revenue earned from grid export, compensated at 20\% above the current TOU
+  rate.  Non-zero only under the V2G strategy.
+
+\end{description}
+
+% ------------------------------------------------------------------
+\section{Scenario M1 --- Urban Traffic Congestion Management}
+\label{sec:metrics-m1}
+
+\subsection*{Vehicle Progress}
+
+\begin{description}
+
+\item[\texttt{completed\_vehicles}] [count] ---
+  Vehicles that reached their destination within the 3-hour window.  The 2,500
+  agents depart stochastically during the first hour; completion depends on A*
+  route length and signal-induced delays.
+
+\item[\texttt{completion\_rate\_pct}] [\%] ---
+  Percentage of the fleet that completed their trip.  A lower rate under
+  fixed-time signalling compared to adaptive signals quantifies the throughput
+  benefit of adaptive control.
+
+\item[\texttt{avg\_travel\_time\_s}] [s] ---
+  Mean door-to-door travel time for completed vehicles.  Free-flow travel time
+  is $\approx 90\,\text{s/link} \times$ path length; excess time reflects
+  signal waiting and queue delays.
+
+\item[\texttt{avg\_travel\_time\_min}] [min] ---
+  Same metric in minutes for readability in the dashboard.
+
+\item[\texttt{avg\_delay\_s}] [s] ---
+  Difference between actual and free-flow travel time, averaged over completed
+  vehicles.  The primary efficiency metric contrasting adaptive and fixed
+  signal strategies.
+
+\item[\texttt{avg\_delay\_min}] [min] ---
+  Same metric in minutes.
+
+\item[\texttt{total\_delay\_s}] [s] ---
+  Sum of individual delays across all vehicles.  Scales with fleet size;
+  normalise by \texttt{completed\_vehicles} when comparing runs with different
+  fleet sizes.
+
+\item[\texttt{throughput\_veh\_per\_hour}] [veh/h] ---
+  Rate of trip completions: \texttt{completed\_vehicles} divided by simulation
+  duration in hours.  Higher values indicate better network efficiency.
+
+\end{description}
+
+\subsection*{Queues and Emissions}
+
+\begin{description}
+
+\item[\texttt{max\_queue\_length}] [vehicles] ---
+  Longest queue observed at any intersection approach during the simulation.
+  Reflects worst-case congestion; under fixed signals it is typically higher
+  because green time is not directed toward the most loaded approach.
+
+\item[\texttt{avg\_queue\_length}] [vehicles] ---
+  Mean queue length averaged across all intersections and all time steps.  A
+  proxy for overall network saturation.
+
+\item[\texttt{total\_emissions\_kg\_co2}] [kg\,CO$_2$] ---
+  Total CO$_2$ produced by the entire fleet, computed using the two-state model
+  (Equation~\ref{eq:emissions}): idle vehicles emit
+  $\alpha_{idle} = 2.31\,\text{g/s}$; moving vehicles emit
+  $\alpha_{move} = 0.15\,\text{g/m}$.  Longer red-light waits directly raise
+  idle emissions.
+
+\item[\texttt{emissions\_per\_vehicle\_g}] [g\,CO$_2$] ---
+  Mean emissions per vehicle in grams.  Normalises total emissions by fleet
+  size to allow fair comparison between differently sized runs.
+
+\end{description}
+
+% ------------------------------------------------------------------
+\section{Scenario T1 --- 5G Slice Resource Allocation}
+\label{sec:metrics-t1}
+
+\subsection*{QoS and Slice Utilisation}
+
+\begin{description}
+
+\item[\texttt{qos\_satisfaction\_embb\_pct}] [\%] ---
+  Fraction of eMBB user-steps in which the user received at least
+  $RB_{req} = 2$ resource blocks (Equation~\ref{eq:qos_t1}).  eMBB users
+  require high throughput for broadband services; satisfaction drops when their
+  slice allocation is reduced under heavy demand from other slices.
+
+\item[\texttt{qos\_satisfaction\_urllc\_pct}] [\%] ---
+  Fraction of URLLC user-steps meeting the $RB_{req} = 2$ threshold.  URLLC
+  users require ultra-reliable, low-latency connectivity; failed handovers
+  automatically count as QoS failures.  This metric drives the coupling
+  feedback path in Scenario~M1+T1 (Section~\ref{sec:scenario-m1t1}).
+
+\item[\texttt{qos\_satisfaction\_mmtc\_pct}] [\%] ---
+  Fraction of mMTC device-steps meeting $RB_{req} = 1$.  mMTC devices follow a
+  bursty activity model with base probability 30\% and 50-second burst windows
+  (Section~\ref{sec:scenario-t1}).
+
+\item[\texttt{slice\_utilization\_embb\_pct}] [\%] ---
+  Fraction of RBs allocated to the eMBB slice actually consumed by active
+  users.  Static slicing often shows low utilisation for one slice while
+  another is starved.
+
+\item[\texttt{slice\_utilization\_urllc\_pct}] [\%] ---
+  Same as above for the URLLC slice.
+
+\item[\texttt{slice\_utilization\_mmtc\_pct}] [\%] ---
+  Same as above for the mMTC slice.
+
+\item[\texttt{overall\_utilization\_pct}] [\%] ---
+  Fraction of total available RBs (across all gNBs and slices) that are
+  consumed.  High values indicate a well-loaded network; low values suggest
+  over-provisioning or poor load balancing.
+
+\item[\texttt{resource\_waste\_pct}] [\%] ---
+  RBs allocated to a slice but not used by any active user in a given step,
+  as a fraction of total available RBs.  Static slicing typically produces
+  higher waste because fixed quotas do not track instantaneous demand.
+
+\end{description}
+
+\subsection*{Handovers}
+
+\begin{description}
+
+\item[\texttt{handover\_attempts}] [count] ---
+  Total handover events triggered during the simulation.  A handover occurs
+  when a neighbouring gNB's received signal exceeds the serving gNB's by the
+  3\,dB hysteresis margin, subject to a 10-step cooldown to suppress
+  ping-pong effects (Section~\ref{sec:scenario-t1}).
+
+\item[\texttt{handover\_success\_rate\_pct}] [\%] ---
+  Fraction of attempted handovers that succeeded.  Each attempt succeeds with
+  probability $P_{success} = 0.95$; a failure causes one step of QoS outage
+  for that user.
+
+\item[\texttt{handover\_failures}] [count] ---
+  Number of unsuccessful handovers.  Each failure is also counted as one QoS
+  failure in the affected user's slice, directly reducing the corresponding
+  \texttt{qos\_satisfaction\_*\_pct} value.
+
+\end{description}
+
+% ------------------------------------------------------------------
+\section{Scenario E2+M1 --- Cross-Domain Energy--Mobility Integration}
+\label{sec:metrics-e2m1}
+
+The E2+M1 scenario produces metrics from both domain modules plus
+coupling-specific metrics that are only meaningful when the two domains
+interact.
+
+\subsection*{Background Traffic}
+
+These metrics characterise the 2,000 background vehicles that share the road
+grid with the EV fleet and are affected by the congestion EVs create.
+
+\begin{description}
+
+\item[\texttt{bg\_completion\_rate\_pct}] [\%] ---
+  Fraction of background vehicles completing their trip.  In coupled mode, EVs
+  consume road capacity and cause signal queues, reducing throughput for
+  background traffic compared to uncoupled mode.
+
+\item[\texttt{bg\_avg\_travel\_time\_s}] [s] ---
+  Mean travel time for background vehicles.  The difference between coupled and
+  uncoupled values isolates the road-capacity impact of EV navigation.
+
+\item[\texttt{bg\_avg\_delay\_s}] [s] ---
+  Mean additional delay beyond free-flow travel time for background vehicles.
+  Increases in coupled mode as EVs add to intersection queues.
+
+\item[\texttt{max\_queue\_length}] [vehicles] ---
+  Worst-case queue at any intersection approach, including both EV and
+  background vehicles.
+
+\item[\texttt{avg\_queue\_length}] [vehicles] ---
+  Network-average queue length including all vehicle types.
+
+\item[\texttt{total\_emissions\_kg\_co2}] [kg\,CO$_2$] ---
+  Total CO$_2$ from all vehicles (EVs and background) via the two-state model
+  (Equation~\ref{eq:emissions}).  EVs produce emissions while driving to
+  stations; their idle time at red lights constitutes the \emph{emission
+  uplift} coupling metric (Section~\ref{sec:scenario-e2m1}).
+
+\end{description}
+
+\subsection*{EV Travel and Coupling}
+
+\begin{description}
+
+\item[\texttt{avg\_ev\_drive\_time\_s}] [s] ---
+  Mean time an EV spends actively moving toward its assigned charging station
+  (phase \texttt{DRIVING\_TO\_STATION}, Equation~\ref{eq:ev_phases}).
+  Approximately 0\,s in uncoupled mode (teleportation); non-zero in coupled
+  mode due to traffic delays.
+
+\item[\texttt{avg\_ev\_queue\_time\_s}] [s] ---
+  Mean time an EV spends waiting at red signals during its station-bound trip.
+  The primary coupling signal: queuing time is exactly zero in uncoupled mode.
+
+\item[\texttt{avg\_ev\_travel\_to\_station\_s}] [s] ---
+  End-to-end elapsed time from EV departure to first arrival at the charging
+  station intersection node.
+
+\item[\texttt{evs\_at\_station\_node}] [count] ---
+  Number of EVs that reached the intersection containing their assigned station
+  (but may not yet have connected to a port).
+
+\item[\texttt{evs\_reached\_station}] [count] ---
+  Number of EVs that physically connected to a charging port.
+
+\item[\texttt{evs\_meeting\_soc\_target}] [count] ---
+  Number of EVs that reached $SOC_{target}$ before simulation end.
+  Travel-delayed arrivals consume available charging time, so coupled mode
+  typically records fewer vehicles meeting the target; this gap is the
+  \emph{SOC target deficit} coupling metric
+  (Section~\ref{sec:scenario-e2m1}).
+
+\item[\texttt{avg\_final\_soc}] [---] ---
+  Fleet-average EV state of charge at simulation end.
+
+\end{description}
+
+\subsection*{Charging and Grid}
+
+\begin{description}
+
+\item[\texttt{total\_energy\_charged\_kwh}] [kWh] ---
+  Total energy delivered to all EVs that reached a station.  Reduced in
+  coupled mode relative to uncoupled because travel delays shrink the
+  available charging window.
+
+\item[\texttt{total\_charging\_cost\_usd}] [USD] ---
+  Aggregate cost under the TOU tariff.  Coupled arrivals at later hours may
+  fall into on-peak windows, increasing total cost.
+
+\item[\texttt{peak\_grid\_load\_kw}] [kW] ---
+  Maximum concurrent power draw from the charging infrastructure.  DC fast
+  stations (50\,kW each) at inner grid intersections dominate the peak.
+
+\item[\texttt{max\_transformer\_loading\_pct}] [\%] ---
+  Highest observed transformer utilisation.  Same interpretation as in
+  Scenario~E2 (Section~\ref{sec:metrics-e2}).
+
+\item[\texttt{transformer\_overloads}] [count] ---
+  Number of 5-minute charging steps in which any transformer exceeded rated
+  capacity.
+
+\item[\texttt{v2g\_energy\_kwh}] [kWh] ---
+  Energy exported to the grid by V2G-capable EVs.  Non-zero only when the V2G
+  charging strategy is selected.
+
+\item[\texttt{v2g\_revenue\_usd}] [USD] ---
+  Revenue from V2G exports at the 20\% on-peak premium rate.
+
+\end{description}
+
+% ------------------------------------------------------------------
+\section{Scenario M1+T1 --- Cross-Domain Mobility--Telecommunications Integration}
+\label{sec:metrics-m1t1}
+
+The M1+T1 scenario produces metrics from both domain modules plus
+coupling-specific metrics that expose the causal chain from vehicular
+clustering through URLLC QoS degradation to traffic signal impairment.
+
+\subsection*{Telecom QoS and Resource Allocation}
+
+\begin{description}
+
+\item[\texttt{qos\_satisfaction\_embb\_pct}] [\%] ---
+  Fraction of eMBB user-steps meeting $RB_{req} = 2$
+  (Equation~\ref{eq:qos_t1}).  In coupled mode, vehicular clustering
+  concentrates users near cell boundaries, reducing per-user RB allocation
+  compared to the spatially uniform RWP baseline.
+
+\item[\texttt{qos\_satisfaction\_urllc\_pct}] [\%] ---
+  Critical metric driving the QoS feedback path.  When this drops below
+  $\theta_{URLLC} = 0.80$ at a gNB, all intersections within that gNB's
+  coverage radius revert to fixed-time signal control
+  (Section~\ref{sec:scenario-m1t1}).
+
+\item[\texttt{qos\_satisfaction\_mmtc\_pct}] [\%] ---
+  Fraction of mMTC device-steps meeting $RB_{req} = 1$.  mMTC devices are
+  intermittent (30\% base activity), so this metric is less sensitive to
+  congestion than eMBB or URLLC.
+
+\item[\texttt{overall\_utilization\_pct}] [\%] ---
+  Fraction of all available RBs consumed.  Vehicular clustering can raise
+  utilisation at affected gNBs while leaving others under-utilised, explaining
+  the elevated per-gNB variance in coupled mode.
+
+\item[\texttt{resource\_waste\_pct}] [\%] ---
+  Unused allocated RBs as a fraction of total.  Static slicing produces more
+  waste than dynamic in both coupled and uncoupled modes.
+
+\end{description}
+
+\subsection*{Handovers and Load Imbalance}
+
+\begin{description}
+
+\item[\texttt{handover\_attempts}] [count] ---
+  Total handover triggers across all connected vehicles.  Vehicles travelling
+  at 50\,km/h produce rapid cell transitions, whereas RWP pedestrians
+  (0.5--2.0\,m/s) cross boundaries slowly.  Coupled mode is expected to show
+  substantially more attempts.
+
+\item[\texttt{handover\_successes}] [count] ---
+  Successfully completed handovers (success probability 0.95).
+
+\item[\texttt{handover\_failures}] [count] ---
+  Failed handovers, each causing one step of QoS outage for the affected user
+  and one failure counted in the corresponding QoS satisfaction metric.
+
+\item[\texttt{handover\_success\_rate\_pct}] [\%] ---
+  \texttt{handover\_successes} / \texttt{handover\_attempts} $\times 100$.
+  A lower value in coupled mode reflects the higher volume of bursty handovers
+  from stop-and-go vehicle motion.
+
+\item[\texttt{handover\_rate\_per\_min}] [events/min] ---
+  Handover attempts normalised by simulation duration.  The difference between
+  coupled and uncoupled values is the \emph{handover rate uplift} coupling
+  metric (Section~\ref{sec:scenario-m1t1}).
+
+\item[\texttt{load\_imbalance\_std\_users}] [users] ---
+  Standard deviation of active users per gNB, averaged over all simulation
+  steps.  Vehicular clustering at intersections near gNB coverage boundaries
+  pushes users unevenly across cells, raising this value above the near-zero
+  RWP baseline.
+
+\end{description}
+
+\subsection*{Signal Degradation and Traffic}
+
+\begin{description}
+
+\item[\texttt{degradation\_events}] [count] ---
+  Number of distinct gNB degradation activations: each time a gNB's URLLC
+  satisfaction rate falls below 0.80 and one or more of its covered
+  intersections receive the \texttt{signal\_degraded} flag.
+
+\item[\texttt{degradation\_duration\_s}] [s] ---
+  Cumulative seconds during which adaptive signal control was suppressed at one
+  or more intersections.  This is the \emph{signal degradation duration}
+  coupling metric (Section~\ref{sec:scenario-m1t1}).
+
+\item[\texttt{affected\_intersections}] [count] ---
+  Total number of distinct intersection nodes that received the
+  \texttt{signal\_degraded} flag at least once.  Always zero in uncoupled mode.
+
+\item[\texttt{bg\_completion\_rate\_pct}] [\%] ---
+  Fraction of background vehicles completing their trip.  Degrades when
+  adaptive signals are suppressed, reducing intersection throughput.
+
+\item[\texttt{bg\_avg\_travel\_time\_s}] [s] ---
+  Mean travel time of background (non-connected) vehicles.  Increases during
+  degradation periods because affected intersections revert to fixed
+  equal-phase timing ($Q_{NS} = Q_{EW} = 1$,
+  Equation~\ref{eq:adaptive_signal}).
+
+\item[\texttt{bg\_avg\_delay\_s}] [s] ---
+  Mean excess delay beyond free-flow for background vehicles.  The difference
+  between coupled and uncoupled values quantifies the traffic cost of the QoS
+  feedback path.
+
+\item[\texttt{cv\_avg\_travel\_time\_s}] [s] ---
+  Mean travel time of the 200 connected vehicles.  These vehicles are doubly
+  affected: they contribute to the radio congestion that triggers signal
+  degradation, and they also experience the resulting traffic delays.
+
+\item[\texttt{total\_emissions\_kg\_co2}] [kg\,CO$_2$] ---
+  Total CO$_2$ from all vehicles.  Signal degradation increases idle time at
+  affected intersections, raising per-vehicle emissions via
+  $\alpha_{idle} = 2.31\,\text{g/s}$ (Equation~\ref{eq:emissions}).
+
+\item[\texttt{max\_queue\_length}] [vehicles] ---
+  Worst-case queue across all intersections and steps.  Spikes during
+  degradation periods when the equal-phase policy under-serves the dominant
+  direction.
+
+\item[\texttt{avg\_queue\_length}] [vehicles] ---
+  Network-average queue length over the full simulation window.
+
+\end{description}
