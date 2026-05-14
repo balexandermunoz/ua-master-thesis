@@ -179,7 +179,13 @@ In coupled mode, 2{,}300 background vehicles and 200 connected vehicles share th
 
 \section{User Interface}
 
-The Streamlit application in \texttt{app.py} provides a single-page dashboard that covers all five scenarios. A sidebar selector switches between scenarios and exposes scenario-specific parameters through \texttt{st.number\_input} and \texttt{st.selectbox} widgets. Strategy and coupling-mode selectors map user choices to the corresponding enum values before calling the scenario entry-point function. A ``Compare all strategies'' checkbox triggers the \texttt{compare\_*} family of functions, which execute all strategy variants sequentially and return a dictionary of reports keyed by strategy name.
+A key design goal of the framework is that researchers and practitioners should be able to run, configure, and compare simulation scenarios without writing code. To this end, the third architectural layer is a web-based graphical dashboard built with Streamlit~\cite{streamlit}, a Python library that converts ordinary scripts into interactive applications served at \texttt{localhost:8501}. The dashboard exposes all six implemented scenarios through a unified interface: users select a scenario from a dropdown, adjust its parameters interactively, choose a strategy or coupling mode, and launch the simulation with a single button click. Results are rendered immediately in the browser as structured metric grids and bar charts, and a collapsible log panel allows inspection of intermediate simulation progress. No knowledge of the underlying Python classes, HELICS configuration, or command-line tooling is required. The dashboard is launched with:
+
+\begin{minted}{bash}
+streamlit run code/app.py
+\end{minted}
+
+The Streamlit application in \texttt{app.py} provides a single-page dashboard that covers all six scenarios. A sidebar selector switches between scenarios and exposes scenario-specific parameters through \texttt{st.number\_input} and \texttt{st.selectbox} widgets. Strategy and coupling-mode selectors map user choices to the corresponding enum values before calling the scenario entry-point function. A ``Compare all strategies'' checkbox triggers the \texttt{compare\_*} family of functions, which execute all strategy variants sequentially and return a dictionary of reports keyed by strategy name.
 
 Simulation results are persisted in \texttt{st.session\_state} so that widget interactions (e.g., expanding sections or scrolling) do not trigger unnecessary re-runs. The \texttt{\_display\_report()} helper renders three sections for each result: a \emph{Components} grid, a \emph{Metrics} grid with formatted numeric values, and a collapsible raw-metrics table. For comparison runs, \texttt{\_display\_comparison()} renders per-strategy tabs plus a bar-chart summary of the most relevant metrics for the selected scenario.
 
