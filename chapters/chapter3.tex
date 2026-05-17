@@ -220,11 +220,11 @@ Violations are counted against ANSI C84.1 limits ($V \notin [0.95,\, 1.05]$ p.u.
 
 Scenario E2 models the impact of 100 EVs on a modified IEEE 13-node distribution feeder with three charging strategies~\cite{der_challenges}. Nodes 1--8 host 20 Level 2 charging stations (four 7.2\,kW ports each, 80 residential chargers total); nodes 9--13 host 5 DC fast stations (two 50\,kW ports each). The grid feeder capacity is 2500\,kW with a 2000\,kW base load at peak (load factor 1.0 during 17:00--22:00). Time resolution is 5 minutes; the simulation runs for 36 hours (432 steps) to cover overnight residential charging through next-morning departure. The complete set of output metrics produced by this scenario is documented in Appendix~\ref{appendix:metrics}, Section~\ref{sec:metrics-e2}.
 
-\paragraph{Arrival Patterns}
+\medskip\noindent\textbf{Arrival Patterns}
 
 Residential EVs (80\% of fleet): $t_{arrival} \sim \mathcal{N}(18.5, 1.0)\,\text{h}$; depart next morning at $t_{dep} \sim \mathcal{N}(8.0, 0.5)\,\text{h}$. Commercial EVs (20\%): $t_{arrival} \sim U(8,18)\,\text{h}$ with 1--2 hour dwell time at DC fast stations.
 
-\paragraph{Time-of-Use Tariff}
+\medskip\noindent\textbf{Time-of-Use Tariff}
 
 \begin{equation}
 c(h) = \begin{cases}
@@ -235,7 +235,7 @@ c(h) = \begin{cases}
 \label{eq:tou}
 \end{equation}
 
-\paragraph{Charging Strategies}
+\medskip\noindent\textbf{Charging Strategies}
 
 \textbf{Uncoordinated}: Each vehicle charges at full rated power immediately upon connection, with no grid awareness. This baseline typically produces a sharp demand peak coinciding with the residential evening peak.
 
@@ -257,7 +257,7 @@ combined with a price factor ($F_{price} = 0.5$ during on-peak, 1.0 otherwise), 
 
 Scenario M1 simulates a $5 \times 5\,\text{km}$ urban road grid with 2,500 agent-based vehicles and 25 signalized intersections (1250\,m spacing), comparing fixed-time and adaptive signal control strategies on travel time, congestion, and CO$_2$ emissions~\cite{mobility_challenges, agent_traffic_overview}. Vehicles depart stochastically over the first hour ($t_{dep} \sim U(0, 3600)\,\text{s}$) and traverse each link at 50\,km/h ($\approx$\,90\,s per link). The simulation runs for 3 hours at 1-second resolution (10,800 steps). The complete set of output metrics produced by this scenario is documented in Appendix~\ref{appendix:metrics}, Section~\ref{sec:metrics-m1}.
 
-\paragraph{Routing: A* Algorithm}
+\medskip\noindent\textbf{Routing: A* Algorithm}
 
 Vehicle routes are computed using A* with a Manhattan distance heuristic:
 \begin{equation}
@@ -266,7 +266,7 @@ f(n) = g(n) + h(n), \quad h(n) = |x_n - x_{goal}| + |y_n - y_{goal}|
 \end{equation}
 Alternative routes are generated stochastically using neighbor weights $w_n = 1/(d_n + 1) + \xi$, $\xi \sim U(0, 0.3)$, to distribute traffic across the network.
 
-\paragraph{Adaptive Traffic Signal Control}
+\medskip\noindent\textbf{Adaptive Traffic Signal Control}
 
 Each intersection cycles between two phases—North–South~(NS) and East–West~(EW)—separated by a fixed 3-second yellow interval. At every phase transition the controller counts the vehicles waiting at the intersection, classifying each one as NS or EW demand according to the direction of its next route segment. This directional queue measurement is the key input to the adaptive algorithm.
 
@@ -279,7 +279,7 @@ with $T_{min} = 15\,\text{s}$ and $T_{max} = 90\,\text{s}$. When one direction i
 
 In fixed-time mode, the controller ignores the measured queues and assigns equal weight to both phases ($Q_{NS} = Q_{EW} = 1$), yielding a constant cycle length regardless of traffic conditions. This provides a baseline against which the adaptive strategy is compared.
 
-\paragraph{Emissions Model}
+\medskip\noindent\textbf{Emissions Model}
 
 CO$_2$ emissions are computed using a two-state model:
 \begin{equation}
@@ -301,11 +301,11 @@ with $\alpha_{idle} = 2.31\,\text{g/s}$ and $\alpha_{move} = 0.15\,\text{g/m}$.
 
 Scenario T1 simulates a 5G New Radio (NR) network comprising 3~gNBs (next-generation Node~Bs, the 5G base station defined in 3GPP TS~38.300~\cite{3gpp_38300}) arranged in a triangular layout over a $2 \times 2\,\text{km}$ urban area, serving 200 mobile users across three network slices~\cite{3gpp_23501, network_slicing_survey}: eMBB (enhanced Mobile Broadband, 100 users), URLLC (Ultra-Reliable Low-Latency Communication, 40 users), and mMTC (massive Machine-Type Communication, 60 users)~\cite{telecom_challenges}. Two resource allocation strategies---static slicing and dynamic slicing---are compared to evaluate slice utilization, QoS satisfaction, and resource waste. The simulation runs for 1~hour at 100\,ms resolution (36,000 steps). The complete set of output metrics produced by this scenario is documented in Appendix~\ref{appendix:metrics}, Section~\ref{sec:metrics-t1}.
 
-\paragraph{Network Topology}
+\medskip\noindent\textbf{Network Topology}
 
 Three gNBs are positioned at $(500,\,500)$, $(1500,\,500)$, and $(1000,\,1500)$\,m, each managing a pool of $N_{RB} = 100$ Resource Blocks (RBs)---the smallest unit of frequency-domain resource allocation in NR, each spanning 12 subcarriers---representing a 20\,MHz carrier with 15\,kHz subcarrier spacing~\cite{3gpp_38300}. Coverage areas overlap, with an effective cell radius of approximately 800\,m and an inter-site distance of approximately 1000\,m.
 
-\paragraph{Radio Propagation}
+\medskip\noindent\textbf{Radio Propagation}
 
 Received signal strength at distance $d$ from a gNB is computed using the 3GPP Urban Macro (UMa) path loss model defined in TR~38.901~\cite{3gpp_38901}:
 \begin{equation}
@@ -314,11 +314,11 @@ Received signal strength at distance $d$ from a gNB is computed using the 3GPP U
 \end{equation}
 where $P_{tx} = 46\,\text{dBm}$ is the gNB transmit power, $d_{km}$ is the Euclidean distance in kilometres (minimum 10\,m enforced to avoid singularity), and $X_\sigma \sim \mathcal{N}(0, \sigma^2)$ with $\sigma = 4$\,dB is a log-normal shadow fading component representing slow variations caused by buildings and terrain~\cite{3gpp_38901}.
 
-\paragraph{User Mobility and Handover}
+\medskip\noindent\textbf{User Mobility and Handover}
 
 Users move within the service area following the Random Waypoint (RWP) mobility model~\cite{random_waypoint} at pedestrian speed $v \sim U(0.5, 2.0)\,\text{m/s}$ (1.8--7.2\,km/h). Each user selects a random destination uniformly within the area, moves toward it at constant speed, and upon arrival selects a new waypoint. Each user is served by the gNB providing the strongest received signal. A handover---the process of transferring a user's connection from one gNB to another as the user moves~\cite{3gpp_38300}---is triggered when a neighbouring cell's signal exceeds the serving cell's by a hysteresis margin $H = 3\,\text{dB}$, subject to a cooldown of 10 steps (1\,s) to suppress ping-pong effects (rapid back-and-forth handovers between two cells). Each triggered handover succeeds with probability $P_{success} = 0.95$; a failure results in one step of QoS outage.
 
-\paragraph{Slice Resource Allocation Strategies}
+\medskip\noindent\textbf{Slice Resource Allocation Strategies}
 
 \textbf{Static Slicing}~\cite{network_slicing_survey}: Each gNB divides its RB pool into fixed fractions---50\% eMBB, 30\% URLLC, 20\% mMTC---regardless of instantaneous demand. Within each slice, RBs are distributed equally among connected users:
 \begin{equation}
@@ -333,7 +333,7 @@ Users move within the service area following the Random Waypoint (RWP) mobility 
 \end{equation}
 This is analogous to the adaptive green time allocation in Scenario~M1 (Equation~\ref{eq:adaptive_signal}), where capacity is distributed proportionally to measured demand rather than fixed a priori.
 
-\paragraph{QoS Evaluation}
+\medskip\noindent\textbf{QoS Evaluation}
 
 QoS is satisfied for user $u$ in slice $s$ when the allocated RBs meet or exceed the slice's requirement:
 \begin{equation}
@@ -342,7 +342,7 @@ QoS is satisfied for user $u$ in slice $s$ when the allocated RBs meet or exceed
 \end{equation}
 where $RB_{req}$ is 2 for eMBB and URLLC (reflecting their higher throughput and reliability requirements), and 1 for mMTC (which transmits small, infrequent payloads)~\cite{3gpp_23501}. Users undergoing a failed handover automatically have QoS unsatisfied for that step.
 
-\paragraph{mMTC Activity Model}
+\medskip\noindent\textbf{mMTC Activity Model}
 
 Unlike eMBB and URLLC users which are continuously active, mMTC devices follow a periodic reporting pattern with bursty peaks, reflecting the intermittent nature of IoT sensor traffic~\cite{telecom_challenges}. A base activity probability of 30\% creates the sparse, event-driven traffic characteristic of IoT deployments; activity bursts ($p_{active} = 0.8$) occur every 500 steps (50\,s), modelling synchronized reporting windows typical of smart metering applications.
 
@@ -357,7 +357,7 @@ The HELICS-based architecture enables coupled cross-domain simulations where dom
 
 The first cross-domain scenario couples the EV charging infrastructure model~(E2) with the urban traffic management model~(M1) on a shared 5$\times$5 grid network. Five hundred EVs are injected into the M1 traffic network alongside 2000 background vehicles; 13 charging stations (5~DC-fast at inner intersections, 8~Level~2 at perimeter nodes) provide 52 charging ports~\cite{helics_ev_transport}. Simulation runs for 3 hours at 1-second resolution (M1 native), with charging logic executed every 300 steps ($= 5$\,min, matching E2). The complete set of output metrics produced by this scenario is documented in Appendix~\ref{appendix:metrics}, Section~\ref{sec:metrics-e2m1}.
 
-\paragraph{EV Lifecycle (Phase State Machine)}
+\medskip\noindent\textbf{EV Lifecycle (Phase State Machine)}
 
 Each EV follows a four-phase lifecycle:
 \begin{equation}
@@ -375,11 +375,11 @@ Each EV follows a four-phase lifecycle:
 
 where the \texttt{DRIVING} phases reuse M1's movement mechanics (A* routing, signal waiting, link travel) and the \texttt{CHARGING} phase reuses E2's smart-charging allocation strategy~(Eq.~\ref{eq:urgency}).
 
-\paragraph{Station Placement and Assignment}
+\medskip\noindent\textbf{Station Placement and Assignment}
 
 DC-fast stations (50\,kW, 4~ports each) are placed at inner grid intersections $\{(1,1),(1,3),(2,2),(3,1),(3,3)\}$; Level~2 stations (7.2\,kW, 4~ports each) at perimeter nodes. Each EV is assigned to the nearest station by Manhattan distance with a random tie-breaker to distribute load across both charger types.
 
-\paragraph{Coupled vs.\ Uncoupled Comparison}
+\medskip\noindent\textbf{Coupled vs.\ Uncoupled Comparison}
 
 Two modes are compared under the same RNG seed~(42):
 \begin{itemize}
@@ -387,11 +387,11 @@ Two modes are compared under the same RNG seed~(42):
     \item \textbf{Uncoupled}: EVs are removed from the traffic network entirely and teleport to their assigned station at departure time, providing a baseline that treats energy and mobility as independent domains.
 \end{itemize}
 
-\paragraph{Multi-Rate Temporal Alignment}
+\medskip\noindent\textbf{Multi-Rate Temporal Alignment}
 
 The scenario reconciles two native time scales: M1's 1-second traffic step serves as the base tick, while E2's 5-minute charging logic is applied every 300 ticks. This preserves full-fidelity traffic dynamics while executing charging decisions at their domain-native cadence.
 
-\paragraph{Coupling-Specific Metrics}
+\medskip\noindent\textbf{Coupling-Specific Metrics}
 
 Three metrics isolate the cross-domain effect:
 \begin{itemize}
@@ -407,11 +407,11 @@ Three metrics isolate the cross-domain effect:
 
 The second cross-domain scenario couples the urban traffic simulation (M1) with the 5G slice resource allocation model (T1) on a shared $5 \times 5$\,km grid. Two hundred \emph{connected vehicles} drawn from the M1 fleet serve simultaneously as T1 mobile users, replacing the Random Waypoint (RWP) mobility model with physically grounded vehicular trajectories. Conversely, degradation of URLLC quality-of-service in T1 triggers a fallback from adaptive to fixed-time signal control at the affected intersections in M1. The simulation runs for 3~hours at 1-second resolution (10{,}800 steps), matching M1's native time step; T1's resource-allocation logic executes once per M1 tick ($\Delta t = 1\,\text{s}$, compared to the standalone 100\,ms resolution). The complete set of output metrics produced by this scenario is documented in Appendix~\ref{appendix:metrics}, Section~\ref{sec:metrics-m1t1}.
 
-\paragraph{Coupling Hypothesis}
+\medskip\noindent\textbf{Coupling Hypothesis}
 
 In siloed models, T1 users move under the RWP model at pedestrian speed (0.5--2.0\,m/s), producing spatially uniform coverage that spreads load evenly across gNBs. Real urban vehicles travel at 50\,km/h between intersections and stop at red lights for up to 90\,s, creating bursty, spatially clustered radio traffic. The hypothesis is that this clustering raises per-gNB load variance and handover rates above RWP predictions, and that QoS degradation caused by the resulting overloads measurably increases intersection delay through the signal-control feedback path---an effect invisible to siloed simulation.
 
-\paragraph{Coordinate Mapping}
+\medskip\noindent\textbf{Coordinate Mapping}
 
 M1 uses a $5 \times 5$ grid with 1{,}250\,m node spacing (extent 0--5{,}000\,m per axis). T1's coverage area is rescaled from 2{,}000\,m to 5{,}000\,m to align with the traffic grid, and the three gNB positions are adjusted proportionally (Table~\ref{tab:m1t1_gnb}).
 
@@ -439,13 +439,13 @@ A connected vehicle at grid node $(i,\,j)$ maps to T1 coordinates as:
     \label{eq:m1t1_mapping}
 \end{equation}
 
-\paragraph{Bidirectional Coupling}
+\medskip\noindent\textbf{Bidirectional Coupling}
 
 \textbf{M1 $\rightarrow$ T1 (position injection):} At every time step, each connected vehicle's current grid node is converted to T1 metres via Equation~\ref{eq:m1t1_mapping} and written to the corresponding \texttt{MobileUser} position. T1's handover and RB-allocation logic then runs on these real positions, replacing the RWP update.
 
 \textbf{T1 $\rightarrow$ M1 (QoS feedback):} After each T1 step, the URLLC QoS satisfaction rate is computed per gNB. For any gNB where the rate falls below a threshold $\theta_{URLLC} = 0.80$, all intersections within its coverage radius receive a \texttt{signal\_degraded} flag. Degraded intersections revert to fixed-time signal control (equal phase weights $Q_{NS} = Q_{EW} = 1$, Equation~\ref{eq:adaptive_signal}) for the duration of the degradation event.
 
-\paragraph{Coupled vs.\ Uncoupled Comparison}
+\medskip\noindent\textbf{Coupled vs.\ Uncoupled Comparison}
 
 Two modes are compared under the same RNG seed~(42):
 \begin{itemize}
@@ -453,7 +453,7 @@ Two modes are compared under the same RNG seed~(42):
     \item \textbf{Uncoupled}: T1 users follow independent RWP mobility; signal control remains always adaptive regardless of network state.
 \end{itemize}
 
-\paragraph{Coupling-Specific Metrics}
+\medskip\noindent\textbf{Coupling-Specific Metrics}
 
 Three metrics isolate the cross-domain effect:
 \begin{itemize}
