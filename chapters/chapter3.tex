@@ -119,13 +119,13 @@ Four domain-specific scenarios were designed covering energy, mobility, and tele
         \hline
         \textbf{Scenario} & \textbf{Domain} & \textbf{Description} & \textbf{Duration} & \textbf{Time Step} & \textbf{Key Metrics} \\
         \hline
-        E1 & Energy & Smart grid with renewables & 24 hours & 15 min & Voltage, power flow, curtailment \\
+        E1 & Energy & Smart grid with renewables & 24 hours & 15 min & Renewable penetration, voltage violations \\
         \hline
-        E2 & Energy & EV charging infrastructure & 36 hours & 5 min & Load profile, charging cost, V2G \\
+        E2 & Energy & EV charging infrastructure & 36 hours & 5 min & Peak load, charging cost \\
         \hline
-        M1 & Mobility & Urban traffic management & 3 hours & 1 sec & Travel time, delay, emissions \\
+        M1 & Mobility & Urban traffic management & 3 hours & 1 sec & Avg delay, total emissions \\
         \hline
-        T1 & Telecom & 5G slice resource allocation & 1 hour & 100 ms & Slice utilization, QoS rate, RB waste \\
+        T1 & Telecom & 5G slice resource allocation & 1 hour & 100 ms & QoS satisfaction, resource waste \\
         \hline
         E2+M1 & Cross-domain & Energy--Mobility integration & 3 hours & 1 sec / 5 min & EV drive time, emission uplift, SOC deficit \\
         \hline
