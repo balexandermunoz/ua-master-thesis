@@ -8,12 +8,10 @@ Scenario M1: Urban Traffic Congestion Management
 - Real-time traffic information system
 """
 
-import helics as h
 import numpy as np
 import logging
 from typing import Dict, List, Tuple, Optional
 from enum import Enum
-from collections import deque
 
 from engine.base import BaseFederate, print_report
 
