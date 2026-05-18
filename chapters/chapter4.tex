@@ -185,6 +185,13 @@ A key design goal of the framework is that researchers and practitioners should 
 streamlit run code/app.py
 \end{minted}
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figs/UIM1_light.png}
+    \caption{Streamlit user interface showing scenario selection, parameter configuration, and simulation results.}
+    \label{fig:ui_streamlit_overview}
+\end{figure}
+
 The Streamlit application in \texttt{app.py} provides a single-page dashboard that covers all six scenarios. A sidebar selector switches between scenarios and exposes scenario-specific parameters through \texttt{st.number\_input} and \texttt{st.selectbox} widgets. Strategy and coupling-mode selectors map user choices to the corresponding enum values before calling the scenario entry-point function. A ``Compare all strategies'' checkbox triggers the \texttt{compare\_*} family of functions, which execute all strategy variants sequentially and return a dictionary of reports keyed by strategy name.
 
 Simulation results are persisted in \texttt{st.session\_state} so that widget interactions (e.g., expanding sections or scrolling) do not trigger unnecessary re-runs. The \texttt{\_display\_report()} helper renders three sections for each result: a \emph{Components} grid, a \emph{Metrics} grid with formatted numeric values, and a collapsible raw-metrics table. For comparison runs, \texttt{\_display\_comparison()} renders per-strategy tabs plus a bar-chart summary of the most relevant metrics for the selected scenario.
