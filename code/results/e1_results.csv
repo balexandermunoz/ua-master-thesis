@@ -1,0 +1,21 @@
+﻿,Metric,Value
+0,Total Renewable Generation (Kwh),13838.18637244823
+1,Total Solar Generation (Kwh),2123.3674711048006
+2,Total Wind Generation (Kwh),11714.818901343426
+3,Renewable Penetration (%),62.078458936622994
+4,Total Load (Kwh),22291.446355934644
+5,Total Curtailment (Kwh),1356.2796550777587
+6,Curtailment Percentage,9.800992836590968
+7,Avg Voltage (P.U.),0.9976347988729882
+8,Min Voltage (P.U.),0.9724862532709441
+9,Max Voltage (P.U.),1.2632820639738382
+10,Voltage Violations,50
+11,Avg Battery Soc,0.241680421578499
+12,Peak Load (Kw),1250.220296187381
+13,Avg Peak Hour Load (Kw),1245.8994254454333
+14,Avg Off Peak Load (Kw),845.365748879341
+15,Estimated Dr Load Reduction (Kw),146.16697170030216
+16,Estimated Dr Load Reduction (%),10.499999999999995
+17,Curtailment Steps,19
+18,Curtailment With Saturated Battery,19
+19,Curtailment Battery Validation,PASS
