@@ -57,7 +57,7 @@ Six simulation scenarios were executed and validated: four domain-specific scena
 
 \subsection{Objective 6: Urban Management Platform Integration}
 
-The framework aligns with Ubiwhere's Urban Management Platform needs by providing simulation capabilities across multiple urban verticals through a unified API and web interface. The Streamlit dashboard provides the immediate integration point, while the Python API enables programmatic access for data-driven workflows. The publish-subscribe architecture matches the platform's event-driven data ingestion patterns. This objective was achieved.
+This objective aimed to integrate the simulation framework with Ubiwhere's Urban Management Platform to support data-driven decision-making and strategic planning. While the framework's architecture was designed with this integration in mind---the publish-subscribe pattern matches the platform's event-driven data ingestion, and the Python API and Streamlit dashboard provide viable integration points---the actual connection to the production platform was not completed within the timeframe of this dissertation. The primary effort was directed toward achieving architectural soundness and validating the simulation engine across multiple domains (Objectives~1--5), which consumed the available development time. The integration requires adapting the framework's output format to the platform's data ingestion API, implementing authentication and data pipeline connectors, and validating the end-to-end workflow with real platform instances. These steps are technically feasible given the existing architecture but require coordination with the platform development team and access to production infrastructure. This objective was partially achieved at the architectural level and is proposed as future work in Section~\ref{sec:fw-ump-integration}.
 
 
 \section{Limitations}
@@ -90,6 +90,11 @@ The most impactful fidelity improvement is replacing the linear voltage-drop mod
 For the mobility domain, incorporating dynamic vehicle rerouting based on real-time congestion information would better represent modern connected vehicle behaviour and would alter the spatial distribution of traffic in ways that affect both emissions patterns and cross-domain coupling with telecommunications.
 
 For the telecommunications domain, extending the path-loss model with correlated shadow fading~\cite{3gpp_38901}, frequency-selective fading, and inter-cell interference would produce more realistic QoS estimates. Additionally, modelling packet-level delay and jitter for URLLC services, rather than the current RB-count threshold, would enable stricter SLA compliance evaluation.
+
+\subsection{Urban Management Platform Integration}
+\label{sec:fw-ump-integration}
+
+The most immediate engineering task is completing the integration with Ubiwhere's Urban Management Platform~\cite{ubiwhere_urban_platform}. The framework's publish-subscribe architecture and structured metric outputs are designed to be compatible with the platform's data ingestion pipeline, but three concrete steps remain: (1)~implementing REST or message-queue connectors that translate simulation outputs into the platform's data model; (2)~enabling the platform to trigger parametrised simulation runs on demand, receiving results asynchronously; and (3)~validating the end-to-end workflow with real urban datasets ingested from the platform's IoT data streams. Completing this integration would close the loop between operational monitoring and predictive simulation, enabling digital-twin-style what-if analysis directly from the platform's user interface.
 
 \subsection{Full HELICS Multi-Process Deployment}
 
