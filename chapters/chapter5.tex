@@ -2,63 +2,98 @@
 \label{chapter:conclusions}
 
 \begin{introduction}
-This chapter presents the conclusions drawn from this work, highlighting the main contributions, discussing limitations, and proposing directions for future work.
+This chapter presents the conclusions drawn from this work, highlighting the main contributions, discussing limitations, and proposing directions for future work. The modular co-simulation framework developed in this dissertation addresses the fundamental challenge of cross-domain urban infrastructure simulation, providing a reusable architecture validated across energy, mobility, and telecommunications domains.
 \end{introduction}
 
 \section{Overview}
 
-% Provide a brief recap of the thesis
-% Summarize the problem addressed and the approach taken
+This dissertation addressed the lack of modular, reusable simulation architectures capable of supporting multiple urban infrastructure domains while enabling the modelling of their interactions. Existing simulation tools are predominantly domain-specific---traffic simulators focus on mobility, power system simulators concentrate on energy distribution, and network simulators address telecommunications---with domain logic tightly integrated into core simulation mechanisms. This tight coupling limits reusability, prevents cross-domain interaction modelling, and complicates maintenance and extensibility.
+
+The proposed solution follows a three-layer modular architecture: a domain-independent simulation engine (\texttt{BaseFederate}), autonomous domain modules encapsulating energy, mobility, and telecommunications logic, and a HELICS-based co-simulation orchestration layer enabling cross-domain coupling through publish-subscribe communication. The framework was validated through six simulation scenarios---four standalone domain scenarios (E1, E2, M1, T1) and two cross-domain integration scenarios (E2+M1, M1+T1)---demonstrating both within-domain correctness and the ability to quantify emergent cross-domain effects invisible to isolated simulations.
+
+The work was developed in the context of an internship at Ubiwhere, directly aligned with the analytical needs of urban management platforms that require predictive multi-domain simulation capabilities for data-driven governance and strategic decision-making~\cite{ubiwhere_urban_platform}.
 
 
 \section{Main Contributions}
 
-% Clearly state the main contributions of your work
-% What new knowledge, tools, or insights did you provide?
+This dissertation delivers the following contributions to the field of urban infrastructure simulation:
 
 \begin{itemize}
-    \item \textbf{Contribution 1:} Description of the first main contribution
-    \item \textbf{Contribution 2:} Description of the second main contribution
-    \item \textbf{Contribution 3:} Description of the third main contribution
+    \item \textbf{Domain-Agnostic Simulation Engine}: A generic and reusable simulation engine (\texttt{BaseFederate}) completely independent of domain-specific logic, requiring only three abstract methods (\texttt{initialize\_components}, \texttt{run\_simulation}, \texttt{generate\_report}) from domain implementations. The engine transparently supports both standalone execution and HELICS co-simulation mode through a single boolean flag, enabling domain modules to be developed and tested independently before federation.
+
+    \item \textbf{Multi-Domain Scenario Framework}: Five autonomous domain modules spanning three urban infrastructure verticals---energy (Scenarios E1 and E2), mobility (Scenario M1), and telecommunications (Scenario T1)---plus two cross-domain integration scenarios (E2+M1 and M1+T1) that couple domains through shared agent state and HELICS publications. Each module is independently executable, parametrizable, and produces structured metrics conforming to a common reporting schema.
+
+    \item \textbf{Quantification of Cross-Domain Interactions}: Empirical demonstration that cross-domain effects produce measurable impacts that are invisible to isolated domain simulations. Specifically: EV traffic increases fleet CO$_2$ emissions by 21.5\% and reduces charging target achievement by 7.0\% in the energy--mobility coupling (E2+M1); vehicular RF clustering triggers a T1$\rightarrow$M1 feedback loop that reverts 14 of 25 intersections to fixed-time operation, raising intersection delay by 80.9\% in the mobility--telecommunications coupling (M1+T1).
+
+    \item \textbf{Strategy Substitutability via Design Patterns}: Implementation of the strategy pattern across three scenarios---\texttt{ChargingStrategy} (E2), \texttt{adaptive\_signals} (M1), and \texttt{SlicingStrategy} (T1)---enabling comparative evaluation of behavioural variants without code duplication and validating that the engine contract supports diverse domain logic without modification.
+
+    \item \textbf{Reproducible and Accessible Prototype}: A fully functional implementation with a Streamlit-based web dashboard~\cite{streamlit} that enables researchers and practitioners to configure, execute, and compare simulation scenarios without writing code. All results are reproducible from the public repository through a single command-line invocation.
 \end{itemize}
 
 
 \section{Objectives Achievement}
 
-% Review the objectives stated in Chapter 1
-% Discuss to what extent each objective was achieved
+The six objectives stated in Chapter~\ref{chapter:introduction} were achieved as follows.
 
-\subsection{Objective 1}
+\subsection{Objective 1: Domain-Agnostic Simulation Architecture}
 
-% State the objective and discuss how it was addressed
+The \texttt{BaseFederate} abstract class in \texttt{engine/base.py} provides a domain-independent simulation engine with well-defined interfaces. The engine manages agent lifecycle, temporal stepping, HELICS wiring, and state propagation without any knowledge of the entities being simulated. Domain modules interact with the engine exclusively through the three-method contract, ensuring strict separation of concerns. This objective was fully achieved.
 
+\subsection{Objective 2: Domain-Specific Modules}
 
-\subsection{Objective 2}
+Five domain modules were implemented as autonomous Python classes: \texttt{SmartGridFederate} (E1), \texttt{EVChargingFederate} (E2), \texttt{TrafficSimulation} (M1), \texttt{NetworkSlicingSimulation} (T1), and the cross-domain federates \texttt{CrossDomainE2M1} and \texttt{CrossDomainM1T1}. Each module encapsulates its domain logic---power flow models, vehicle dynamics, 5G resource allocation---independently of the others. This objective was fully achieved, covering three domains with at least one scenario per domain as specified.
 
-% State the objective and discuss how it was addressed
+\subsection{Objective 3: Multi-Domain Co-Simulation}
 
+The HELICS-based co-simulation layer enables multiple domain modules to interact within the same simulation through publish-subscribe topics. The cross-domain scenarios E2+M1 and M1+T1 demonstrate bidirectional coupling: mobility affects energy charging outcomes, and telecommunications QoS degradation feeds back into traffic signal control. The architecture supports adding new domains by registering additional topics without modifying existing modules. This objective was fully achieved.
 
-\section{Research Questions}
+\subsection{Objective 4: Reproducibility and Configurability}
 
-% If you defined research questions in Chapter 1, answer them here
-% Provide clear, evidence-based answers
+All scenarios accept keyword arguments forwarded to the federate constructor, enabling parametrised execution. The Streamlit UI exposes scenario parameters through interactive widgets, and all results are deterministic given the same random seed and configuration. The \texttt{requirements.txt} file specifies all dependencies for environment reproducibility. This objective was fully achieved.
+
+\subsection{Objective 5: Validation Through Practical Scenarios}
+
+Six simulation scenarios were executed and validated: four domain-specific scenarios producing physically meaningful results (62\% renewable penetration, 65.5\% delay reduction with adaptive signals, 479\% eMBB QoS improvement with dynamic slicing) and two cross-domain scenarios demonstrating emergent interactions. Within-domain metrics confirm model correctness against expected behaviours, and the battery curtailment validation test passes programmatically. This objective was fully achieved, exceeding the minimum requirement of two distinct domains.
+
+\subsection{Objective 6: Urban Management Platform Integration}
+
+The framework aligns with Ubiwhere's Urban Management Platform needs by providing simulation capabilities across multiple urban verticals through a unified API and web interface. The Streamlit dashboard provides the immediate integration point, while the Python API enables programmatic access for data-driven workflows. The publish-subscribe architecture matches the platform's event-driven data ingestion patterns. This objective was achieved.
 
 
 \section{Limitations}
 
-% Honestly discuss the limitations of your work
-% Consider: scope, generalizability, technical constraints, etc.
+The following limitations were identified during the development and validation of the framework:
 
 \begin{itemize}
-    \item \textbf{Limitation 1:} Description and impact
-    \item \textbf{Limitation 2:} Description and impact
-    \item \textbf{Limitation 3:} Description and impact
+    \item \textbf{Simplified Physical Models}: The voltage model in Scenario E1 uses a linear approximation rather than full AC power-flow equations, producing voltage magnitudes up to 1.303~p.u. that would not occur in real networks equipped with on-load tap-changing transformers and reactive-power compensation~\cite{pandapower}. The path-loss model in T1 does not account for shadowing correlation, multipath fading, or inter-cell interference. These simplifications are acceptable for architectural validation but limit the quantitative accuracy of domain-specific results.
+
+    \item \textbf{Static Routing in Mobility Scenarios}: Vehicle routes in Scenarios M1, E2+M1, and M1+T1 are computed once at departure using A* and are not updated in response to changing traffic conditions. Real urban networks with equipped vehicles would benefit from dynamic rerouting, which would further reduce congestion and alter the cross-domain interaction patterns observed.
+
+    \item \textbf{Perfect Information Assumptions}: The smart charging controller in Scenario E2 assumes perfect knowledge of each vehicle's departure time and battery state. The adaptive signal controller has instantaneous access to queue lengths at all approaches. In practice, these would require vehicle-to-infrastructure communication protocols with associated latency and reliability constraints.
+
+    \item \textbf{Standalone Execution of Cross-Domain Scenarios}: The cross-domain scenarios (E2+M1 and M1+T1) achieve coupling through intra-process shared object references rather than through HELICS inter-process communication. While this preserves the architectural separation and validates the coupling logic, it does not exercise the full federation infrastructure including network serialisation, broker coordination, and time-request synchronisation across separate processes.
+
+    \item \textbf{Scale Constraints}: The largest scenario (M1) simulates 2{,}500 vehicles at 1-second resolution, requiring 27 million agent-step computations. The $O(N)$ per-step queue scan for adaptive signal control would become a bottleneck at larger fleet sizes without spatial indexing. The framework has not been validated beyond the thousands-of-agents scale.
+
+    \item \textbf{Limited Domain Coverage}: Only three urban domains (energy, mobility, telecommunications) were addressed. Other critical urban verticals---water distribution, waste management, public safety---remain outside the current scope but could be integrated following the same modular pattern.
 \end{itemize}
 
 
 \section{Future Work}
 
-The current framework implements four standalone scenarios (E1, E2, M1, T1) across three urban domains. Several extensions were identified during the design phase and are proposed as future work to broaden the framework's coverage and demonstrate its full cross-domain potential.
+The current framework implements four standalone scenarios (E1, E2, M1, T1) across three urban domains and two cross-domain integrations. Several extensions were identified during the design and validation phases and are proposed as future work to broaden the framework's coverage, improve model fidelity, and demonstrate its full cross-domain potential.
+
+\subsection{Model Fidelity Improvements}
+
+The most impactful fidelity improvement is replacing the linear voltage-drop model in Scenario E1 with a full Newton--Raphson AC power-flow solver, either through integration with pandapower~\cite{pandapower} or OpenDSS~\cite{opendss}. This would enforce reactive power limits, model voltage regulation devices, and produce realistic voltage profiles under high DER penetration.
+
+For the mobility domain, incorporating dynamic vehicle rerouting based on real-time congestion information would better represent modern connected vehicle behaviour and would alter the spatial distribution of traffic in ways that affect both emissions patterns and cross-domain coupling with telecommunications.
+
+For the telecommunications domain, extending the path-loss model with correlated shadow fading~\cite{3gpp_38901}, frequency-selective fading, and inter-cell interference would produce more realistic QoS estimates. Additionally, modelling packet-level delay and jitter for URLLC services, rather than the current RB-count threshold, would enable stricter SLA compliance evaluation.
+
+\subsection{Full HELICS Multi-Process Deployment}
+
+Validating the framework in a true multi-process HELICS federation---with each domain module running as an independent process communicating through the HELICS broker over ZeroMQ---would exercise the complete co-simulation infrastructure. This deployment mode is essential for scaling to scenarios where different domains require different computational resources or run on different machines, and for validating time synchronisation under realistic network latency conditions.
 
 \subsection{Additional Simulation Scenarios}
 
@@ -83,12 +118,24 @@ The HELICS-based architecture was designed to support coupled multi-domain simul
 
 \subsection{Long-term Extensions}
 
-% More ambitious research directions or applications
+Several more ambitious research directions emerge from this work:
+
+\begin{itemize}
+    \item \textbf{Real-Time Data Integration}: Connecting the simulation framework to live IoT data streams from Ubiwhere's Urban Management Platform~\cite{ubiwhere_urban_platform} to enable digital-twin-style operation~\cite{digital_twin_cities}, where simulations are continuously calibrated against real measurements and used for short-term predictive control.
+
+    \item \textbf{Optimisation-Driven Scenario Exploration}: Coupling the framework with meta-heuristic or reinforcement-learning algorithms to automatically search the parameter space for optimal control strategies (e.g., jointly optimising charging schedules, signal timing, and slice allocation across all three domains).
+
+    \item \textbf{Scalability to City-Scale Deployments}: Extending the framework to support tens of thousands of agents through spatial indexing, parallel agent stepping, and distributed HELICS federations, enabling simulation of full metropolitan areas with realistic fleet sizes and network densities.
+
+    \item \textbf{Additional Urban Verticals}: Integrating water distribution network simulation and waste management logistics as new domain modules, demonstrating the framework's extensibility beyond the three domains addressed in this dissertation and supporting comprehensive urban system-of-systems analysis.
+\end{itemize}
 
 
 \section{Final Remarks}
 
-% Conclude with final thoughts about the work
-% Reflect on the broader impact or significance of your research
-% End on a positive note highlighting the value of your contribution
+This dissertation demonstrated that a modular, domain-agnostic simulation architecture can effectively support multiple urban infrastructure domains while enabling the quantification of cross-domain interactions that are invisible to isolated simulations. The three-layer design---engine, domain modules, co-simulation orchestration---achieves strict separation of concerns, validated by the fact that cross-domain scenarios reuse existing domain modules without modification through standard Python imports and HELICS publish-subscribe topics.
+
+The empirical results confirm the practical value of cross-domain simulation for urban management: EV traffic increases fleet emissions by 21.5\% due to mobility--energy coupling, while vehicular RF clustering triggers a telecommunications--mobility feedback loop that raises intersection delays by 80.9\%. These effects can only be observed and quantified through integrated multi-domain simulation, reinforcing the need for frameworks that transcend traditional domain-specific tooling.
+
+The framework's design ensures that adding new domains, scenarios, or strategies requires only isolated module development following well-defined interfaces---no modifications to existing code or to the core engine. This extensibility, combined with the accessible Streamlit interface and reproducible execution environment, positions the framework as a practical foundation for advancing simulation capabilities within urban management platforms. As cities continue to evolve toward interconnected, data-driven infrastructure management~\cite{smart_city_platforms, digital_twin_cities}, modular co-simulation frameworks of this nature will become essential tools for understanding, predicting, and optimising the complex interactions that define modern urban systems.
 
