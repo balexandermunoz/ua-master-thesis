@@ -1,0 +1,380 @@
+\chapter{Source Code Excerpts}
+\label{appendix:code}
+
+This appendix presents condensed excerpts of the framework's core implementation. The complete source code is available in the accompanying repository. Excerpts are edited for brevity: logging statements, input validation, and purely cosmetic code are omitted where they do not affect functional understanding.
+
+% ------------------------------------------------------------------
+\section{Domain-Agnostic Simulation Engine}
+\label{sec:code-engine}
+
+Listing~\ref{lst:app-base-federate} shows the complete \texttt{BaseFederate} abstract class, which defines the three-method contract that all domain modules must implement. The engine manages the HELICS lifecycle, time advancement, and report formatting independently of domain logic.
+
+\begin{listing}[H]
+\begin{minted}[fontsize=\scriptsize]{python}
+import helics as h
+from abc import ABC, abstractmethod
+from typing import Dict
+
+class BaseFederate(ABC):
+    """Abstract base for all domain federates.
+    Subclasses must implement:
+        initialize_components()
+        run_simulation()
+        generate_report() -> Dict
+    """
+
+    def __init__(self, name: str, use_helics: bool = False,
+                 time_step: float = 1.0, sim_duration: float = 3600.0):
+        self.name = name
+        self.federate = None
+        self.use_helics = use_helics
+        self.time_step = time_step
+        self.sim_duration = sim_duration
+
+    def setup_federate(self):
+        """Setup HELICS federate (no-op in standalone mode)."""
+        if not self.use_helics:
+            return
+        fedinfo = h.helicsCreateFederateInfo()
+        h.helicsFederateInfoSetCoreName(fedinfo, self.name)
+        h.helicsFederateInfoSetCoreTypeFromString(fedinfo, "zmq")
+        h.helicsFederateInfoSetCoreInitString(
+            fedinfo, "--federates=1 --autobroker")
+        h.helicsFederateInfoSetTimeProperty(
+            fedinfo, h.helics_property_time_delta, self.time_step)
+        self.federate = h.helicsCreateValueFederate(self.name, fedinfo)
+        self._register_publications()
+        h.helicsFederateEnterExecutingMode(self.federate)
+
+    def _register_publications(self):
+        """Override to register domain-specific HELICS publications."""
+        pass
+
+    def advance_time(self, current_time: float) -> float:
+        """Advance simulation clock by one time step."""
+        if self.use_helics and self.federate:
+            return h.helicsFederateRequestTime(
+                self.federate, current_time + self.time_step)
+        return current_time + self.time_step
+
+    def cleanup(self):
+        """Cleanup HELICS federate."""
+        if self.use_helics and self.federate:
+            h.helicsFederateFinalize(self.federate)
+            h.helicsFederateFree(self.federate)
+            h.helicsCloseLibrary()
+
+    # --- Contract methods (domain modules implement these) ---
+
+    @abstractmethod
+    def initialize_components(self):
+        """Create domain-specific agents and models."""
+        ...
+
+    @abstractmethod
+    def run_simulation(self):
+        """Execute the main simulation loop."""
+        ...
+
+    @abstractmethod
+    def generate_report(self) -> Dict:
+        """Return dict with 'scenario', 'components', 'metrics' keys."""
+        ...
+\end{minted}
+\caption{\texttt{engine/base.py} --- Domain-agnostic simulation engine (complete)}
+\label{lst:app-base-federate}
+\end{listing}
+
+% ------------------------------------------------------------------
+\section{Domain Module: Smart Grid (E1)}
+\label{sec:code-e1}
+
+Listing~\ref{lst:app-e1-federate} shows the condensed \texttt{SmartGridFederate} class, demonstrating how a domain module implements the engine contract. Agent models (solar PV, wind turbine, battery) and the main simulation loop illustrate the pattern followed by all domain modules.
+
+\begin{listing}[H]
+\begin{minted}[fontsize=\scriptsize]{python}
+import numpy as np
+from engine.base import BaseFederate
+
+class SolarPV:
+    def __init__(self, pv_id, capacity_kw, bus_id):
+        self.capacity_kw = capacity_kw
+        self.generation_kw = 0.0
+
+    def calculate_generation(self, hour, cloud_factor=1.0):
+        if 6 <= hour <= 18:
+            time_factor = np.sin((hour - 6) * np.pi / 12)
+            self.generation_kw = self.capacity_kw * time_factor * cloud_factor * 0.85
+        else:
+            self.generation_kw = 0.0
+        return self.generation_kw
+
+class WindTurbine:
+    def __init__(self, turbine_id, capacity_kw, bus_id):
+        self.capacity_kw = capacity_kw
+
+    def calculate_generation(self, wind_speed_ms):
+        cut_in, rated, cut_out = 3.0, 12.0, 25.0
+        if wind_speed_ms < cut_in or wind_speed_ms > cut_out:
+            return 0.0
+        elif wind_speed_ms < rated:
+            return self.capacity_kw * ((wind_speed_ms - cut_in) / (rated - cut_in)) ** 3
+        return self.capacity_kw
+
+class BatteryStorage:
+    def __init__(self, battery_id, capacity_kwh, power_kw, bus_id):
+        self.capacity_kwh = capacity_kwh
+        self.power_kw = power_kw
+        self.soc = 0.5
+        self.soc_min, self.soc_max = 0.2, 0.95
+        self.efficiency = 0.92
+
+    def charge(self, power_kw, dt_hours):
+        max_energy = min(power_kw, self.power_kw) * dt_hours * self.efficiency
+        available = (self.soc_max - self.soc) * self.capacity_kwh
+        energy = min(max_energy, available)
+        self.soc += energy / self.capacity_kwh
+        return energy / dt_hours if dt_hours > 0 else 0
+
+    def discharge(self, power_kw, dt_hours):
+        max_energy = min(power_kw, self.power_kw) * dt_hours
+        available = (self.soc - self.soc_min) * self.capacity_kwh
+        energy = min(max_energy, available) * self.efficiency
+        self.soc -= energy / (self.capacity_kwh * self.efficiency)
+        return energy / dt_hours if dt_hours > 0 else 0
+
+class SmartGridFederate(BaseFederate):
+    def __init__(self, name, use_helics=False, num_solar_pvs=50,
+                 num_wind_turbines=3, num_batteries=5, num_loads=800, **kwargs):
+        super().__init__(name, use_helics, time_step=900.0, sim_duration=24*3600)
+        self.num_solar_pvs = num_solar_pvs
+        self.num_wind_turbines = num_wind_turbines
+        self.num_batteries = num_batteries
+        self.solar_pvs, self.wind_turbines, self.batteries = [], [], []
+
+    def initialize_components(self):
+        for i in range(self.num_solar_pvs):
+            capacity = np.random.uniform(5.0, 10.0)
+            self.solar_pvs.append(SolarPV(i, capacity, bus_id=i % 33))
+        for i in range(self.num_wind_turbines):
+            self.wind_turbines.append(WindTurbine(i, 500.0, bus_id=i))
+        for i in range(self.num_batteries):
+            self.batteries.append(BatteryStorage(i, 50.0, 25.0, i))
+
+    def run_simulation(self):
+        current_time = 0.0
+        while current_time < self.sim_duration:
+            hour = (current_time / 3600.0) % 24
+            cloud_factor = 0.8 + 0.2 * np.random.random()
+            solar_total = sum(pv.calculate_generation(hour, cloud_factor)
+                              for pv in self.solar_pvs)
+            wind_speed = 5.0 + 7.0 * np.random.random()
+            wind_total = sum(wt.calculate_generation(wind_speed)
+                             for wt in self.wind_turbines)
+            total_renewable = solar_total + wind_total
+            # Load calculation, battery dispatch, voltage profile ...
+            current_time = self.advance_time(current_time)
+
+    def generate_report(self):
+        return {
+            "scenario": "E1 - Smart Grid with Renewable Integration",
+            "components": {"solar_pv_count": len(self.solar_pvs),
+                           "wind_turbine_count": len(self.wind_turbines),
+                           "battery_count": len(self.batteries)},
+            "metrics": {"renewable_penetration_pct": ...,
+                        "total_curtailment_kwh": ...}
+        }
+\end{minted}
+\caption{\texttt{scenarios/scenario\_e1.py} --- Smart grid federate (condensed)}
+\label{lst:app-e1-federate}
+\end{listing}
+
+% ------------------------------------------------------------------
+\section{Strategy Pattern: Charging Strategies (E2)}
+\label{sec:code-strategy}
+
+Listing~\ref{lst:app-strategy} illustrates the strategy pattern implementation in Scenario~E2. The \texttt{ChargingStrategy} enum selects between behavioural variants without modifying the simulation engine or the charging infrastructure model.
+
+\begin{listing}[H]
+\begin{minted}[fontsize=\scriptsize]{python}
+from enum import Enum
+from engine.base import BaseFederate
+
+class ChargingStrategy(Enum):
+    UNCOORDINATED = "uncoordinated"  # Immediate charging on arrival
+    SMART = "smart"                  # Grid-aware coordinated charging
+    V2G = "v2g"                      # Vehicle-to-Grid bidirectional
+
+class ElectricVehicle:
+    def __init__(self, ev_id, battery_capacity_kwh, initial_soc):
+        self.battery_capacity_kwh = battery_capacity_kwh
+        self.soc = initial_soc
+        self.soc_target = 0.8
+        self.v2g_enabled = np.random.random() > 0.5
+
+    def charge(self, power_kw, dt_hours, price_per_kwh):
+        available = (0.9 - self.soc) * self.battery_capacity_kwh
+        energy = min(power_kw * dt_hours * 0.90, available)
+        self.soc += energy / self.battery_capacity_kwh
+        return energy / dt_hours
+
+    def discharge(self, power_kw, dt_hours, price_per_kwh):
+        """V2G discharge (only if v2g_enabled)."""
+        if not self.v2g_enabled:
+            return 0.0
+        available = (self.soc - 0.3) * self.battery_capacity_kwh
+        energy = min(power_kw * dt_hours, available) * 0.90
+        self.soc -= energy / (self.battery_capacity_kwh * 0.90)
+        return energy / dt_hours
+
+class SmartChargingController:
+    """Grid-aware charging coordinator."""
+    def allocate(self, evs, grid_capacity, base_load, hour):
+        available_power = grid_capacity - base_load
+        queue = sorted(evs, key=lambda ev: (ev.soc, ev.departure_time))
+        for ev in queue:
+            alloc = min(ev.max_charge_rate_kw, available_power / max(1, len(queue)))
+            yield ev, alloc
+
+class EVChargingFederate(BaseFederate):
+    def __init__(self, name, use_helics=False,
+                 strategy=ChargingStrategy.SMART, **kwargs):
+        super().__init__(name, use_helics, time_step=300.0, sim_duration=24*3600)
+        self.strategy = strategy
+
+    def run_simulation(self):
+        current_time = 0.0
+        while current_time < self.sim_duration:
+            hour = (current_time / 3600.0) % 24
+            if self.strategy == ChargingStrategy.UNCOORDINATED:
+                self._uncoordinated_step(hour)
+            elif self.strategy == ChargingStrategy.SMART:
+                self._smart_step(hour)
+            else:  # V2G
+                self._v2g_step(hour)
+            current_time = self.advance_time(current_time)
+\end{minted}
+\caption{\texttt{scenarios/scenario\_e2.py} --- Strategy pattern for EV charging (condensed)}
+\label{lst:app-strategy}
+\end{listing}
+
+% ------------------------------------------------------------------
+\section{Cross-Domain Coupling: Energy--Mobility (E2+M1)}
+\label{sec:code-crossdomain}
+
+Listing~\ref{lst:app-crossdomain} shows the cross-domain scenario architecture. An EV inherits mobility behaviour from the M1 traffic model while carrying an E2 battery model, demonstrating how domain modules interact through shared agent state and module reuse via Python imports.
+
+\begin{listing}[H]
+\begin{minted}[fontsize=\scriptsize]{python}
+from enum import Enum
+from engine.base import BaseFederate
+from scenarios.scenario_m1 import (
+    TrafficNetwork, Vehicle as M1Vehicle,
+    create_random_vehicles, update_signals, move_vehicles_step,
+)
+from scenarios.scenario_e2 import (
+    ElectricVehicle, ChargingStation, SmartChargingController,
+    ChargingStrategy,
+)
+
+class EVTrafficVehicle(M1Vehicle):
+    """EV that drives through traffic to reach a charging station."""
+
+    class Phase(Enum):
+        DRIVING_TO_STATION = "driving_to_station"
+        CHARGING = "charging"
+        DRIVING_BACK = "driving_back"
+        DONE = "done"
+
+    def __init__(self, vehicle_id, origin, station_pos, ev, return_dest):
+        super().__init__(vehicle_id, origin, station_pos)
+        self.ev = ev           # E2 battery model (composition)
+        self.station_pos = station_pos
+        self.return_destination = return_dest
+        self.phase = self.Phase.DRIVING_TO_STATION
+
+    @property
+    def at_station(self):
+        return self.completed and self.phase == self.Phase.DRIVING_TO_STATION
+
+class CrossDomainE2M1(BaseFederate):
+    """Coupled Energy-Mobility simulation on a shared 5x5 traffic grid."""
+
+    def __init__(self, name="CrossE2M1", coupled=True,
+                 num_evs=500, num_background=2000, grid_size=5, **kwargs):
+        super().__init__(name, time_step=1.0,
+                         sim_duration=kwargs.get('sim_duration_hours', 3) * 3600)
+        self.coupled = coupled
+        self.network = TrafficNetwork(grid_size=grid_size, spacing_m=1250.0)
+
+    def initialize_components(self):
+        self._place_charging_stations()
+        self._create_evs()
+        self._create_background_vehicles()
+        if self.coupled:
+            self.all_vehicles = self.ev_vehicles + self.background_vehicles
+        else:
+            self.all_vehicles = self.background_vehicles  # EVs teleport
+
+    def run_simulation(self):
+        current_time = 0.0
+        while current_time < self.sim_duration:
+            # Step 1: Update traffic signals (M1 domain)
+            update_signals(self.network.signals, self.all_vehicles, 1.0)
+            # Step 2: Move vehicles through network (M1 mechanics)
+            move_vehicles_step(self.all_vehicles, self.network, 1.0)
+            # Step 3: Handle EV charging transitions (E2 domain)
+            for ev_veh in self.ev_vehicles:
+                if ev_veh.at_station:
+                    self._charge_ev(ev_veh, current_time)
+            current_time = self.advance_time(current_time)
+
+    def generate_report(self):
+        return {
+            "scenario": f"E2+M1 Cross-Domain (coupled={self.coupled})",
+            "components": {"num_evs": len(self.ev_vehicles),
+                           "num_background": len(self.background_vehicles),
+                           "charging_stations": len(self.charging_stations)},
+            "metrics": {"avg_travel_time_to_station_s": ...,
+                        "co2_emissions_kg": ...,
+                        "charging_target_achievement_pct": ...,
+                        "peak_grid_load_kw": ...}
+        }
+\end{minted}
+\caption{\texttt{scenarios/scenario\_e2m1.py} --- Cross-domain energy--mobility coupling (condensed)}
+\label{lst:app-crossdomain}
+\end{listing}
+
+% ------------------------------------------------------------------
+\section{Scenario Execution Pattern}
+\label{sec:code-runner}
+
+Listing~\ref{lst:app-runner} shows the standard entry-point pattern used by all scenarios. The engine contract ensures that every scenario follows the same lifecycle: initialise, setup federate, simulate, report, cleanup.
+
+\begin{listing}[H]
+\begin{minted}[fontsize=\scriptsize]{python}
+def run_scenario_e1(use_helics=False, **kwargs):
+    """Run Scenario E1 with optional HELICS co-simulation."""
+    grid = SmartGridFederate("SmartGrid_E1", use_helics=use_helics, **kwargs)
+    grid.initialize_components()
+    grid.setup_federate()
+    grid.run_simulation()
+    report = grid.generate_report()
+    grid.cleanup()
+    return report
+
+def compare_strategies():
+    """Compare multiple strategies using the same engine contract."""
+    results = {}
+    for strategy in ChargingStrategy:
+        fed = EVChargingFederate("EV_E2", strategy=strategy)
+        fed.initialize_components()
+        fed.setup_federate()
+        fed.run_simulation()
+        results[strategy.value] = fed.generate_report()
+        fed.cleanup()
+    return results
+\end{minted}
+\caption{Standard scenario execution and strategy comparison pattern}
+\label{lst:app-runner}
+\end{listing}
