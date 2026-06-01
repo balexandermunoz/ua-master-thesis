@@ -346,6 +346,146 @@ class CrossDomainE2M1(BaseFederate):
 \end{listing}
 
 % ------------------------------------------------------------------
+\section{Streamlit Web Dashboard}
+\label{sec:code-ui}
+
+Listing~\ref{lst:app-ui} shows the condensed Streamlit application that provides the interactive dashboard. The UI orchestrates scenario selection, parameter configuration, simulation execution, and result visualisation without requiring users to write code.
+
+\begin{listing}[H]
+\begin{minted}[fontsize=\scriptsize]{python}
+import streamlit as st
+import pandas as pd
+from scenarios.scenario_e1 import run_scenario_e1
+from scenarios.scenario_e2 import run_scenario_e2, ChargingStrategy
+from scenarios.scenario_m1 import run_scenario_m1
+
+st.set_page_config(page_title="Co-Simulation Framework",
+                   page_icon="⚡", layout="wide")
+
+SCENARIOS = {
+    "E1 – Smart Grid": "E1",
+    "E2 – EV Charging": "E2",
+    "M1 – Traffic Management": "M1",
+    "T1 – 5G Slicing": "T1",
+    "E2+M1 – Energy–Mobility": "E2M1",
+    "M1+T1 – Mobility–Telecom": "M1T1",
+}
+
+# Sidebar: scenario selection and parameters
+st.sidebar.title("Co-Simulation Framework")
+scenario_label = st.sidebar.selectbox("Select Scenario",
+                                       list(SCENARIOS.keys()))
+scenario_key = SCENARIOS[scenario_label]
+
+scenario_kwargs = {}
+
+if scenario_key == "E1":
+    with st.sidebar.expander("Parameters", expanded=False):
+        scenario_kwargs["num_solar_pvs"] = st.number_input(
+            "Solar PV count", 1, 500, 50)
+        scenario_kwargs["num_wind_turbines"] = st.number_input(
+            "Wind turbines", 0, 50, 3)
+        scenario_kwargs["num_batteries"] = st.number_input(
+            "Battery count", 0, 100, 5)
+        scenario_kwargs["sim_duration_hours"] = st.number_input(
+            "Duration (h)", 1, 72, 24)
+
+elif scenario_key == "E2":
+    strategy_e2 = st.sidebar.selectbox("Charging Strategy",
+                                        ["Smart", "Uncoordinated", "V2G"])
+    with st.sidebar.expander("Parameters", expanded=False):
+        scenario_kwargs["num_vehicles"] = st.number_input(
+            "Number of EVs", 10, 1000, 100)
+        scenario_kwargs["grid_capacity_kw"] = st.number_input(
+            "Grid capacity (kW)", 500.0, 20000.0, 2500.0)
+        scenario_kwargs["base_load_kw"] = st.number_input(
+            "Base load (kW)", 500.0, 15000.0, 2000.0)
+
+elif scenario_key == "M1":
+    adaptive_m1 = st.sidebar.selectbox("Signal Control",
+                                        ["Adaptive", "Fixed"]) == "Adaptive"
+    with st.sidebar.expander("Parameters", expanded=False):
+        scenario_kwargs["num_vehicles"] = st.number_input(
+            "Number of vehicles", 100, 10000, 2500)
+        scenario_kwargs["grid_size"] = st.number_input(
+            "Grid size (NxN)", 2, 10, 5)
+
+run_button = st.sidebar.button("Run Simulation", type="primary",
+                                use_container_width=True)
+
+# Main content area
+st.title(scenario_label)
+
+def _format_metric_name(key: str) -> str:
+    """Convert snake_case metric keys to readable labels."""
+    return key.replace("_", " ").title()
+
+def _display_report(report: dict):
+    """Render a simulation report with components and metrics."""
+    st.subheader("Components")
+    comp = report.get("components", {})
+    cols = st.columns(min(len(comp), 4))
+    for idx, (key, val) in enumerate(comp.items()):
+        cols[idx % len(cols)].metric(_format_metric_name(key), val)
+
+    st.subheader("Metrics")
+    metrics = report.get("metrics", {})
+    metric_cols = st.columns(4)
+    for idx, (key, val) in enumerate(metrics.items()):
+        if isinstance(val, (int, float)):
+            label = _format_metric_name(key)
+            display = f"{val:,.2f}" if isinstance(val, float) else str(val)
+            metric_cols[idx % 4].metric(label, display)
+
+    with st.expander("Raw Metrics Table"):
+        flat = {_format_metric_name(k): v
+                for k, v in metrics.items()
+                if not isinstance(v, list)}
+        st.dataframe(pd.DataFrame(flat.items(),
+                    columns=["Metric", "Value"]),
+                    use_container_width=True)
+
+# Run simulation and display results
+if run_button:
+    with st.status("Running simulation…", expanded=True) as status:
+        result = None
+        try:
+            if scenario_key == "E1":
+                result = run_scenario_e1(**scenario_kwargs)
+            elif scenario_key == "E2":
+                strat_map = {
+                    "Smart": ChargingStrategy.SMART,
+                    "Uncoordinated": ChargingStrategy.UNCOORDINATED,
+                    "V2G": ChargingStrategy.V2G,
+                }
+                result = run_scenario_e2(
+                    strategy=strat_map[strategy_e2],
+                    **scenario_kwargs)
+            elif scenario_key == "M1":
+                result = run_scenario_m1(
+                    adaptive_signals=adaptive_m1,
+                    **scenario_kwargs)
+
+            status.update(label="Simulation completed",
+                         state="complete", expanded=False)
+            st.session_state["last_result"] = result
+
+        except Exception as e:
+            st.error(f"Simulation failed: {e}")
+
+if "last_result" in st.session_state:
+    result = st.session_state["last_result"]
+    if result is not None:
+        st.success("Simulation completed")
+        _display_report(result)
+else:
+    st.info("Configure the scenario and click **Run Simulation**.")
+\end{minted}
+\caption{\texttt{code/app.py} --- Streamlit dashboard (condensed)}
+\label{lst:app-ui}
+\end{listing}
+
+% ------------------------------------------------------------------
 \section{Scenario Execution Pattern}
 \label{sec:code-runner}
 
