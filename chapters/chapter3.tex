@@ -200,6 +200,7 @@ Net system power at each time step:
 \begin{equation}
 P_{net}(t) = P_{load}^{total}(t) - P_{renewable}(t)
 \end{equation}
+where $P_{load}^{total}(t)$ is the aggregate active power demand of all loads at time step $t$, and $P_{renewable}(t)$ is the total renewable generation (solar + wind) at $t$.
 Batteries charge when $P_{net} < 0$ (surplus) and discharge when $P_{net} > 0$ (deficit). Curtailment occurs when batteries are full and surplus remains:
 \begin{equation}
 P_{curtail}(t) = \max\!\left(0,\; -P_{net}^{final}(t)\right)
