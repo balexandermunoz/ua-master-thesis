@@ -190,7 +190,7 @@ with cut-in $v_{ci} = 3.0\,\text{m/s}$, rated $v_{r} = 12.0\,\text{m/s}$, and cu
 SOC_{new} = SOC_{current} + \frac{P_{charge} \cdot \Delta t \cdot \eta_{charge}}{E_{capacity}}
 \label{eq:soc_charge}
 \end{equation}
-with $\eta_{charge} = 0.92$, giving a round-trip efficiency of $\approx 84.6\%$.
+where $SOC$ denotes state of charge (fraction of usable battery energy, in p.u.), $SOC_{current}$ and $SOC_{new}$ are the pre-step and post-step values, and $\eta_{charge} = 0.92$ gives a round-trip efficiency of $\approx 84.6\%$.
 
 \textbf{Residential loads} use time-varying load factors (0.5 off-peak to 1.0 during evening peak 17:00--22:00) with $\pm 10\%$ stochastic variation. Demand Response (DR) activates for 70\% of loads during peak hours, reducing consumption by 15\%~\cite{der_challenges}.
 
