@@ -265,7 +265,9 @@ Vehicle routes are computed using A* with a Manhattan distance heuristic:
 f(n) = g(n) + h(n), \quad h(n) = |x_n - x_{goal}| + |y_n - y_{goal}|
 \label{eq:astar}
 \end{equation}
+where $g(n)$ is the accumulated path cost from the origin to node $n$ (travel distance/time already incurred), and $h(n)$ is the Manhattan-distance estimate from $n$ to the destination.
 Alternative routes are generated stochastically using neighbor weights $w_n = 1/(d_n + 1) + \xi$, $\xi \sim U(0, 0.3)$, to distribute traffic across the network.
+Here, $d_n$ is the Manhattan distance from candidate neighbor $n$ to the destination, and $w_n$ is the stochastic selection weight used to bias route choice toward closer neighbors while preserving exploration.
 
 \medskip\noindent\textbf{Adaptive Traffic Signal Control}
 
