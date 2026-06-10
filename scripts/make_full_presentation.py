@@ -359,7 +359,7 @@ _add_rect(sl, 0.7, 5.3, 11.9, 0.7, DARK_BG,
 # ── 3. STATE OF THE ART RECAP ─────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
-_slide_title(sl, "State of the Art Recap", "Domain-specific simulators & co-simulation frameworks")
+_slide_title(sl, "State of the Art", "Domain-specific simulators & co-simulation frameworks")
 
 domains_sota = [
     ("Energy Simulators", LAYER1_CLR, [
