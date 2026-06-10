@@ -5,6 +5,7 @@ and Chapter 5 – Conclusions.  (~38 slides, ~20-minute presentation)
 """
 
 from pathlib import Path
+import re
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
@@ -18,6 +19,7 @@ ARCH_IMG = ROOT / "figs" / "architecture.png"
 UI_IMG   = ROOT / "figs" / "UIM1_light.png"
 LOGO_WHITE = ROOT / "figs" / "UbiwhereLogo.png"
 LOGO_BLUE = ROOT / "figs" / "UbiwhereLogoBlue.png"
+NOTES_FILE = ROOT / "scripts" / "presenter_notes.txt"
 
 # ── colour palette ─────────────────────────────────────────────────────
 WHITE      = RGBColor(0xFF, 0xFF, 0xFF)
@@ -63,6 +65,51 @@ def _add_footer(slide, slide_num, total, dark=False):
     p.text = f"{slide_num} / {total}"
     p.font.size = Pt(10); p.font.color.rgb = fg; p.font.name = "Calibri"
     p.alignment = PP_ALIGN.RIGHT
+
+
+def _load_presenter_notes(file_path):
+    """Load presenter notes in [Slide N] sections from a plain text file."""
+    notes = {}
+    if not file_path.exists():
+        return notes
+
+    content = file_path.read_text(encoding="utf-8")
+    current_slide = None
+    buffer = []
+
+    for raw_line in content.splitlines():
+        line = raw_line.rstrip("\n")
+        match = re.match(r"^\[Slide\s+(\d+)\]\s*$", line.strip(), re.IGNORECASE)
+        if match:
+            if current_slide is not None:
+                notes_text = "\n".join(buffer).strip()
+                if notes_text:
+                    notes[current_slide] = notes_text
+            current_slide = int(match.group(1))
+            buffer = []
+            continue
+
+        if current_slide is not None:
+            buffer.append(line)
+
+    if current_slide is not None:
+        notes_text = "\n".join(buffer).strip()
+        if notes_text:
+            notes[current_slide] = notes_text
+
+    return notes
+
+
+def _apply_presenter_notes(presentation, notes_by_slide):
+    """Write presenter notes into each slide notes pane."""
+    for idx, slide in enumerate(presentation.slides, start=1):
+        notes_text = notes_by_slide.get(idx)
+        if not notes_text:
+            continue
+
+        notes_frame = slide.notes_slide.notes_text_frame
+        notes_frame.clear()
+        notes_frame.paragraphs[0].text = notes_text
 
 
 def _is_dark_background(slide):
@@ -1189,6 +1236,9 @@ _add_textbox(sl, 1.0, 6.05, 11.3, 0.8,
 total = len(prs.slides)
 for idx, slide in enumerate(prs.slides, start=1):
     _add_footer(slide, idx, total, dark=_is_dark_background(slide))
+
+notes_map = _load_presenter_notes(NOTES_FILE)
+_apply_presenter_notes(prs, notes_map)
 
 # ── Save ───────────────────────────────────────────────────────────────
 prs.save(str(OUT))
