@@ -740,185 +740,7 @@ for i, (clr, title, desc) in enumerate(challenges):
     _add_textbox(sl, x + 0.1, y + 0.65, 5.5, 1.6, desc,
                  font_size=13, color=BLACK, alignment=PP_ALIGN.LEFT)
 
-# ── 18. RESULTS E1 ────────────────────────────────────────────────────
-sl = prs.slides.add_slide(prs.slide_layouts[6])
-_solid_bg(sl, WHITE)
-_slide_title(sl, "Results: E1 — Smart Grid with Renewables")
-
-headers_e1 = ["Metric", "Value", "Unit"]
-rows_e1 = [
-    ["Total renewable generation", "13,744", "kWh"],
-    ["  of which solar PV", "2,162", "kWh"],
-    ["  of which wind", "11,582", "kWh"],
-    ["Total load consumed", "22,646", "kWh"],
-    ["Renewable penetration", "60.7", "%"],
-    ["Total curtailment", "1,365", "kWh"],
-    ["Curtailment rate", "9.9", "% of generation"],
-    ["Peak load", "1,262", "kW"],
-    ["Estimated DR load reduction", "147.7", "kW (10.5%)"],
-    ["Average bus voltage", "0.998", "p.u."],
-    ["Minimum bus voltage", "0.969", "p.u."],
-    ["Maximum bus voltage", "1.303", "p.u.  ⚠"],
-    ["Voltage violations (steps)", "49 / 96", "—"],
-    ["Curtailment validation", "PASS", "—"],
-]
-_add_table_slide(sl, headers_e1, rows_e1, left=0.7, top=1.6, width=7.5,
-                 col_widths=[4.2, 1.8, 1.5], font_size=13)
-
-_add_rect(sl, 8.5, 1.6, 4.5, 1.1, LIGHT_GRAY,
-          "Wind = 84.3% of renewables;\n60.7% penetration exceeds base load;\ncurtailment in 18 / 96 steps (BESS full)",
-          font_size=13, font_color=DARK_BG, bold=False)
-_add_rect(sl, 8.5, 2.9, 4.5, 1.4, RGBColor(0xFF, 0xF3, 0xCD),
-          "⚠  Max voltage 1.303 p.u. exceeds\nANSI C84.1 limit (1.05 p.u.).\nLinear voltage-drop model lacks\nreactive-power regulation.",
-          font_size=13, font_color=RGBColor(0x85, 0x60, 0x04), bold=False)
-_add_rect(sl, 8.5, 4.5, 4.5, 0.9, DARK_BG,
-          "Future work: replace linear model\nwith Newton–Raphson AC power-flow\n(pandapower / OpenDSS)",
-          font_size=12, font_color=WHITE, bold=False)
-
-# ── 19. RESULTS E2 ────────────────────────────────────────────────────
-sl = prs.slides.add_slide(prs.slide_layouts[6])
-_solid_bg(sl, WHITE)
-_slide_title(sl, "Results: E2 — EV Charging Infrastructure")
-
-headers_e2 = ["Metric", "Uncoordinated", "Smart", "V2G"]
-rows_e2 = [
-    ["Peak load (kW)", "2,512", "2,450", "2,450"],
-    ["Total energy charged (kWh)", "3,112", "3,731", "4,322"],
-    ["Total charging cost (USD)", "$456.44", "$511.96", "$327.88"],
-    ["Avg. cost per vehicle (USD)", "$4.56", "$5.12", "$3.28"],
-    ["Avg. final SoC", "0.81", "0.90", "0.88"],
-    ["Max transformer loading (%)", "117.3", "114.4", "114.4"],
-    ["Transformer overloads (events)", "131", "135", "88"],
-    ["V2G energy provided (kWh)", "0.0", "0.0", "66.1"],
-    ["V2G revenue (USD)", "$0.00", "$0.00", "$171.20"],
-    ["Vehicles meeting SoC target", "100", "100", "97"],
-    ["Load factor", "0.60", "0.62", "0.63"],
-]
-_add_table_slide(sl, headers_e2, rows_e2, left=0.5, top=1.6, width=12.3,
-                 col_widths=[4.0, 2.2, 2.0, 2.1], font_size=13)
-
-key_insight = (
-    "V2G lowest cost ($327.88) via $171.20 export revenue  ·  "
-    "Smart reduces peak but costs more (urgency-first ignores price)  ·  "
-    "3 V2G vehicles miss SoC target (discharged before re-charge)"
-)
-_add_rect(sl, 0.5, 5.95, 12.3, 0.7, DARK_BG, key_insight,
-          font_size=13, font_color=WHITE, bold=False)
-
-# ── 20. RESULTS M1 ────────────────────────────────────────────────────
-sl = prs.slides.add_slide(prs.slide_layouts[6])
-_solid_bg(sl, WHITE)
-_slide_title(sl, "Results: M1 — Urban Traffic Management")
-
-headers_m1 = ["Metric", "Fixed-Time", "Adaptive", "Change"]
-rows_m1 = [
-    ["Completed vehicles", "2,500", "2,500", "—"],
-    ["Completion rate (%)", "100.0", "100.0", "—"],
-    ["Avg. travel time (s)", "583.9", "540.7", "−7.4%"],
-    ["Avg. delay (s)", "66.0", "22.8", "−65.5%"],
-    ["Total system delay (s)", "164,987", "56,942", "−65.5%"],
-    ["Total CO₂ emissions (kg)", "3,081", "2,831", "−8.1%"],
-    ["Emissions per vehicle (g)", "1,232", "1,132", "−8.1%"],
-    ["Max. queue length", "17", "13", "−23.5%"],
-    ["Avg. queue length", "0.66", "0.26", "−60.6%"],
-    ["Throughput (veh/h)", "833", "833", "—"],
-]
-_add_table_slide(sl, headers_m1, rows_m1, left=0.6, top=1.6, width=11.5,
-                 col_widths=[3.8, 2.1, 2.1, 1.8], font_size=13)
-
-_add_rect(sl, 0.6, 5.95, 11.5, 0.7, LAYER2_CLR,
-          "Adaptive signals cut delay by 65.5% (66.0 s → 22.8 s) and CO₂ by 8.1%  ·  "
-          "Throughput unchanged — benefit is in efficiency, not volume  ·  "
-          "Queue-responsive green formula prevents build-up at saturated approaches",
-          font_size=13, font_color=WHITE, bold=False)
-
-# ── 21. RESULTS T1 ────────────────────────────────────────────────────
-sl = prs.slides.add_slide(prs.slide_layouts[6])
-_solid_bg(sl, WHITE)
-_slide_title(sl, "Results: T1 — 5G Slice Resource Allocation")
-
-headers_t1 = ["Metric", "Static", "Dynamic", "Change"]
-rows_t1 = [
-    ["QoS satisfaction — eMBB (%)", "8.6", "49.8", "+479%"],
-    ["QoS satisfaction — URLLC (%)", "55.7", "44.8", "−19.6%"],
-    ["QoS satisfaction — mMTC (%)", "87.1", "48.4", "−44.4%"],
-    ["RB utilisation — eMBB (%)", "71.8", "79.2", "+10.3%"],
-    ["RB utilisation — URLLC (%)", "69.2", "79.6", "+15.0%"],
-    ["RB utilisation — mMTC (%)", "53.9", "53.3", "−1.1%"],
-    ["Overall RB utilisation (%)", "67.5", "75.3", "+11.6%"],
-    ["Resource waste (%)", "32.5", "24.7", "−24.0%"],
-    ["Handover success rate (%)", "95.0", "95.0", "—"],
-]
-_add_table_slide(sl, headers_t1, rows_t1, left=0.6, top=1.6, width=11.5,
-                 col_widths=[3.8, 1.8, 1.8, 1.8], font_size=13)
-
-_add_rect(sl, 0.6, 5.6, 5.5, 1.1, LIGHT_GRAY,
-          "Static: 50% RBs to eMBB → only 50 RBs for 100 users × 2 RB req.\n"
-          "→ eMBB QoS collapses to 8.6%  (demand 200 RBs vs. 50 available)",
-          font_size=13, font_color=DARK_BG, bold=False)
-_add_rect(sl, 6.3, 5.6, 5.8, 1.1, ORANGE,
-          "Trade-off: Dynamic raises eMBB +479% but mMTC drops −44.4%.\n"
-          "Neither strategy achieves uniform QoS — constraint-based\noptimisation needed for heterogeneous SLA targets.",
-          font_size=13, font_color=WHITE, bold=False)
-
-# ── 22. RESULTS E2+M1 ─────────────────────────────────────────────────
-sl = prs.slides.add_slide(prs.slide_layouts[6])
-_solid_bg(sl, WHITE)
-_slide_title(sl, "Results: E2+M1 — Energy–Mobility Cross-Domain")
-
-headers_em = ["Metric", "Uncoupled", "Coupled", "Change"]
-rows_em = [
-    ["— Mobility metrics —", "", "", ""],
-    ["Avg. travel time (s)", "536.2", "536.4", "+0.04%"],
-    ["Avg. delay (s)", "22.5", "22.6", "+0.4%"],
-    ["Total emissions (kg CO₂)", "2,246", "2,729", "+21.5%"],
-    ["— EV travel metrics —", "", "", ""],
-    ["Avg. EV drive time (s)", "0.5", "366.5", "—"],
-    ["Avg. EV total-to-station (s)", "3,069", "3,154", "+2.8%"],
-    ["EVs that reached station", "155", "150", "−3.2%"],
-    ["— Charging metrics —", "", "", ""],
-    ["EVs meeting SoC target", "71", "66", "−7.0%"],
-    ["Total energy charged (kWh)", "3,189", "3,127", "−1.9%"],
-    ["Total charging cost (USD)", "$255.15", "$250.17", "−2.0%"],
-    ["Peak grid load (kW)", "2,107", "2,107", "—"],
-]
-_add_table_slide(sl, headers_em, rows_em, left=0.5, top=1.6, width=12.3,
-                 col_widths=[4.0, 2.0, 2.0, 1.8], font_size=12)
-
-_add_rect(sl, 0.5, 6.15, 12.3, 0.65, ACCENT,
-          "Cross-domain effect: 500 EVs add +21.5% CO₂ and delay 5/500 EVs from reaching SoC target — "
-          "invisible to domain-specific simulation of either energy or mobility alone",
-          font_size=13, font_color=WHITE, bold=True)
-
-# ── 23. RESULTS M1+T1 ─────────────────────────────────────────────────
-sl = prs.slides.add_slide(prs.slide_layouts[6])
-_solid_bg(sl, WHITE)
-_slide_title(sl, "Results: M1+T1 — Mobility–Telecom Cross-Domain")
-
-headers_mt = ["Metric", "Uncoupled", "Coupled", "Change"]
-rows_mt = [
-    ["— Telecommunications —", "", "", ""],
-    ["QoS satisfaction — eMBB (%)", "39.0", "15.4", "−60.5%"],
-    ["QoS satisfaction — URLLC (%)", "39.4", "19.2", "−51.3%"],
-    ["QoS satisfaction — mMTC (%)", "40.5", "16.9", "−58.3%"],
-    ["Overall RB utilisation (%)", "73.8", "60.1", "−18.6%"],
-    ["Total handover events", "134,843", "156,168", "+15.8%"],
-    ["Per-gNB load std dev (users)", "15.6", "7.0", "−55.1%"],
-    ["— Mobility (all vehicles) —", "", "", ""],
-    ["Avg. delay (s)", "22.7", "41.0", "+80.9%"],
-    ["Signal degradation events", "0", "25,915", "—"],
-    ["Intersections affected", "0", "14 / 25", "—"],
-    ["Total CO₂ emissions (kg)", "2,827", "2,933", "+3.7%"],
-]
-_add_table_slide(sl, headers_mt, rows_mt, left=0.5, top=1.6, width=12.3,
-                 col_widths=[3.8, 2.1, 2.1, 1.8], font_size=12)
-
-_add_rect(sl, 0.5, 6.1, 12.3, 0.7, DARK_BG,
-          "T1→M1 causal chain: vehicular RF clustering → URLLC QoS <80% → 14/25 intersections revert to fixed-time → "
-          "+80.9% intersection delay  ·  Only observable through coupled simulation",
-          font_size=13, font_color=WHITE, bold=True)
-
-# ── 24. RESULTS SUMMARY ───────────────────────────────────────────────
+# ── 18. RESULTS SUMMARY ───────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results Summary", "Key findings across all six scenarios")
@@ -948,7 +770,7 @@ for i, (clr, ttl, desc) in enumerate(summary_cards):
                  font_size=13, color=BLACK, alignment=PP_ALIGN.LEFT)
     
 
-# ── 25. MAIN CONTRIBUTIONS ────────────────────────────────────────────
+# ── 19. MAIN CONTRIBUTIONS ────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Main Contributions")
@@ -961,7 +783,7 @@ _add_bullet_list(sl, 0.7, 1.7, 11.9, 5.5, [
     "Reproducible & Accessible Prototype: Streamlit dashboard for no-code execution; deterministic results from any seed; public repository with requirements.txt for full reproducibility",
 ], font_size=16, bold_prefix=True, bullet_color=ACCENT, line_spacing=1.45)
 
-# ── 26. OBJECTIVES ACHIEVEMENT ────────────────────────────────────────
+# ── 20. OBJECTIVES ACHIEVEMENT ────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Objectives Achievement")
@@ -1020,7 +842,7 @@ _add_rect(sl, 0.7, 5.45, 11.9, 0.75, LIGHT_GRAY,
           "technically feasible, planned as future work.",
           font_size=12, font_color=DARK_BG, bold=False)
 
-# ── 27. LIMITATIONS ───────────────────────────────────────────────────
+# ── 21. LIMITATIONS ───────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Limitations")
@@ -1042,7 +864,7 @@ _add_bullet_list(sl, 7.0, 2.1, 5.7, 3.5, [
     "Domain coverage: only 3 verticals (water, waste, safety not addressed)",
 ], font_size=14, bullet_color=RED_LIGHT, bold_prefix=False, line_spacing=1.5)
 
-# ── 28. FUTURE WORK ───────────────────────────────────────────────────
+# ── 22. FUTURE WORK ───────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Future Work")
@@ -1068,7 +890,7 @@ _add_bullet_list(sl, 7.0, 2.1, 5.7, 4.0, [
     "Additional urban verticals: water distribution, waste management, public safety",
 ], font_size=14, bullet_color=ACCENT2, bold_prefix=False, line_spacing=1.45)
 
-# ── 29. FINAL REMARKS & QUESTIONS ─────────────────────────────────────
+# ── 23. FINAL REMARKS & QUESTIONS ─────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, DARK_BG)
 _slide_title(sl, "Final Remarks", dark=True)
@@ -1091,6 +913,184 @@ line2.fill.solid(); line2.fill.fore_color.rgb = ACCENT; line2.line.fill.backgrou
 _add_textbox(sl, 1.0, 6.05, 11.3, 0.8,
              "Thank you — Questions?",
              font_size=30, bold=True, color=WHITE, alignment=PP_ALIGN.CENTER)
+
+# ── 24. RESULTS E1 ────────────────────────────────────────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Results: E1 — Smart Grid with Renewables")
+
+headers_e1 = ["Metric", "Value", "Unit"]
+rows_e1 = [
+    ["Total renewable generation", "13,744", "kWh"],
+    ["  of which solar PV", "2,162", "kWh"],
+    ["  of which wind", "11,582", "kWh"],
+    ["Total load consumed", "22,646", "kWh"],
+    ["Renewable penetration", "60.7", "%"],
+    ["Total curtailment", "1,365", "kWh"],
+    ["Curtailment rate", "9.9", "% of generation"],
+    ["Peak load", "1,262", "kW"],
+    ["Estimated DR load reduction", "147.7", "kW (10.5%)"],
+    ["Average bus voltage", "0.998", "p.u."],
+    ["Minimum bus voltage", "0.969", "p.u."],
+    ["Maximum bus voltage", "1.303", "p.u.  ⚠"],
+    ["Voltage violations (steps)", "49 / 96", "—"],
+    ["Curtailment validation", "PASS", "—"],
+]
+_add_table_slide(sl, headers_e1, rows_e1, left=0.7, top=1.6, width=7.5,
+                 col_widths=[4.2, 1.8, 1.5], font_size=13)
+
+_add_rect(sl, 8.5, 1.6, 4.5, 1.1, LIGHT_GRAY,
+          "Wind = 84.3% of renewables;\n60.7% penetration exceeds base load;\ncurtailment in 18 / 96 steps (BESS full)",
+          font_size=13, font_color=DARK_BG, bold=False)
+_add_rect(sl, 8.5, 2.9, 4.5, 1.4, RGBColor(0xFF, 0xF3, 0xCD),
+          "⚠  Max voltage 1.303 p.u. exceeds\nANSI C84.1 limit (1.05 p.u.).\nLinear voltage-drop model lacks\nreactive-power regulation.",
+          font_size=13, font_color=RGBColor(0x85, 0x60, 0x04), bold=False)
+_add_rect(sl, 8.5, 4.5, 4.5, 0.9, DARK_BG,
+          "Future work: replace linear model\nwith Newton–Raphson AC power-flow\n(pandapower / OpenDSS)",
+          font_size=12, font_color=WHITE, bold=False)
+
+# ── 25. RESULTS E2 ────────────────────────────────────────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Results: E2 — EV Charging Infrastructure")
+
+headers_e2 = ["Metric", "Uncoordinated", "Smart", "V2G"]
+rows_e2 = [
+    ["Peak load (kW)", "2,512", "2,450", "2,450"],
+    ["Total energy charged (kWh)", "3,112", "3,731", "4,322"],
+    ["Total charging cost (USD)", "$456.44", "$511.96", "$327.88"],
+    ["Avg. cost per vehicle (USD)", "$4.56", "$5.12", "$3.28"],
+    ["Avg. final SoC", "0.81", "0.90", "0.88"],
+    ["Max transformer loading (%)", "117.3", "114.4", "114.4"],
+    ["Transformer overloads (events)", "131", "135", "88"],
+    ["V2G energy provided (kWh)", "0.0", "0.0", "66.1"],
+    ["V2G revenue (USD)", "$0.00", "$0.00", "$171.20"],
+    ["Vehicles meeting SoC target", "100", "100", "97"],
+    ["Load factor", "0.60", "0.62", "0.63"],
+]
+_add_table_slide(sl, headers_e2, rows_e2, left=0.5, top=1.6, width=12.3,
+                 col_widths=[4.0, 2.2, 2.0, 2.1], font_size=13)
+
+key_insight = (
+    "V2G lowest cost ($327.88) via $171.20 export revenue  ·  "
+    "Smart reduces peak but costs more (urgency-first ignores price)  ·  "
+    "3 V2G vehicles miss SoC target (discharged before re-charge)"
+)
+_add_rect(sl, 0.5, 5.95, 12.3, 0.7, DARK_BG, key_insight,
+          font_size=13, font_color=WHITE, bold=False)
+
+# ── 26. RESULTS M1 ────────────────────────────────────────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Results: M1 — Urban Traffic Management")
+
+headers_m1 = ["Metric", "Fixed-Time", "Adaptive", "Change"]
+rows_m1 = [
+    ["Completed vehicles", "2,500", "2,500", "—"],
+    ["Completion rate (%)", "100.0", "100.0", "—"],
+    ["Avg. travel time (s)", "583.9", "540.7", "−7.4%"],
+    ["Avg. delay (s)", "66.0", "22.8", "−65.5%"],
+    ["Total system delay (s)", "164,987", "56,942", "−65.5%"],
+    ["Total CO₂ emissions (kg)", "3,081", "2,831", "−8.1%"],
+    ["Emissions per vehicle (g)", "1,232", "1,132", "−8.1%"],
+    ["Max. queue length", "17", "13", "−23.5%"],
+    ["Avg. queue length", "0.66", "0.26", "−60.6%"],
+    ["Throughput (veh/h)", "833", "833", "—"],
+]
+_add_table_slide(sl, headers_m1, rows_m1, left=0.6, top=1.6, width=11.5,
+                 col_widths=[3.8, 2.1, 2.1, 1.8], font_size=13)
+
+_add_rect(sl, 0.6, 5.95, 11.5, 0.7, LAYER2_CLR,
+          "Adaptive signals cut delay by 65.5% (66.0 s → 22.8 s) and CO₂ by 8.1%  ·  "
+          "Throughput unchanged — benefit is in efficiency, not volume  ·  "
+          "Queue-responsive green formula prevents build-up at saturated approaches",
+          font_size=13, font_color=WHITE, bold=False)
+
+# ── 27. RESULTS T1 ────────────────────────────────────────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Results: T1 — 5G Slice Resource Allocation")
+
+headers_t1 = ["Metric", "Static", "Dynamic", "Change"]
+rows_t1 = [
+    ["QoS satisfaction — eMBB (%)", "8.6", "49.8", "+479%"],
+    ["QoS satisfaction — URLLC (%)", "55.7", "44.8", "−19.6%"],
+    ["QoS satisfaction — mMTC (%)", "87.1", "48.4", "−44.4%"],
+    ["RB utilisation — eMBB (%)", "71.8", "79.2", "+10.3%"],
+    ["RB utilisation — URLLC (%)", "69.2", "79.6", "+15.0%"],
+    ["RB utilisation — mMTC (%)", "53.9", "53.3", "−1.1%"],
+    ["Overall RB utilisation (%)", "67.5", "75.3", "+11.6%"],
+    ["Resource waste (%)", "32.5", "24.7", "−24.0%"],
+    ["Handover success rate (%)", "95.0", "95.0", "—"],
+]
+_add_table_slide(sl, headers_t1, rows_t1, left=0.6, top=1.6, width=11.5,
+                 col_widths=[3.8, 1.8, 1.8, 1.8], font_size=13)
+
+_add_rect(sl, 0.6, 5.6, 5.5, 1.1, LIGHT_GRAY,
+          "Static: 50% RBs to eMBB → only 50 RBs for 100 users × 2 RB req.\n"
+          "→ eMBB QoS collapses to 8.6%  (demand 200 RBs vs. 50 available)",
+          font_size=13, font_color=DARK_BG, bold=False)
+_add_rect(sl, 6.3, 5.6, 5.8, 1.1, ORANGE,
+          "Trade-off: Dynamic raises eMBB +479% but mMTC drops −44.4%.\n"
+          "Neither strategy achieves uniform QoS — constraint-based\noptimisation needed for heterogeneous SLA targets.",
+          font_size=13, font_color=WHITE, bold=False)
+
+# ── 28. RESULTS E2+M1 ─────────────────────────────────────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Results: E2+M1 — Energy–Mobility Cross-Domain")
+
+headers_em = ["Metric", "Uncoupled", "Coupled", "Change"]
+rows_em = [
+    ["— Mobility metrics —", "", "", ""],
+    ["Avg. travel time (s)", "536.2", "536.4", "+0.04%"],
+    ["Avg. delay (s)", "22.5", "22.6", "+0.4%"],
+    ["Total emissions (kg CO₂)", "2,246", "2,729", "+21.5%"],
+    ["— EV travel metrics —", "", "", ""],
+    ["Avg. EV drive time (s)", "0.5", "366.5", "—"],
+    ["Avg. EV total-to-station (s)", "3,069", "3,154", "+2.8%"],
+    ["EVs that reached station", "155", "150", "−3.2%"],
+    ["— Charging metrics —", "", "", ""],
+    ["EVs meeting SoC target", "71", "66", "−7.0%"],
+    ["Total energy charged (kWh)", "3,189", "3,127", "−1.9%"],
+    ["Total charging cost (USD)", "$255.15", "$250.17", "−2.0%"],
+    ["Peak grid load (kW)", "2,107", "2,107", "—"],
+]
+_add_table_slide(sl, headers_em, rows_em, left=0.5, top=1.6, width=12.3,
+                 col_widths=[4.0, 2.0, 2.0, 1.8], font_size=12)
+
+_add_rect(sl, 0.5, 6.15, 12.3, 0.65, ACCENT,
+          "Cross-domain effect: 500 EVs add +21.5% CO₂ and delay 5/500 EVs from reaching SoC target — "
+          "invisible to domain-specific simulation of either energy or mobility alone",
+          font_size=13, font_color=WHITE, bold=True)
+
+# ── 29. RESULTS M1+T1 ─────────────────────────────────────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Results: M1+T1 — Mobility–Telecom Cross-Domain")
+
+headers_mt = ["Metric", "Uncoupled", "Coupled", "Change"]
+rows_mt = [
+    ["— Telecommunications —", "", "", ""],
+    ["QoS satisfaction — eMBB (%)", "39.0", "15.4", "−60.5%"],
+    ["QoS satisfaction — URLLC (%)", "39.4", "19.2", "−51.3%"],
+    ["QoS satisfaction — mMTC (%)", "40.5", "16.9", "−58.3%"],
+    ["Overall RB utilisation (%)", "73.8", "60.1", "−18.6%"],
+    ["Total handover events", "134,843", "156,168", "+15.8%"],
+    ["Per-gNB load std dev (users)", "15.6", "7.0", "−55.1%"],
+    ["— Mobility (all vehicles) —", "", "", ""],
+    ["Avg. delay (s)", "22.7", "41.0", "+80.9%"],
+    ["Signal degradation events", "0", "25,915", "—"],
+    ["Intersections affected", "0", "14 / 25", "—"],
+    ["Total CO₂ emissions (kg)", "2,827", "2,933", "+3.7%"],
+]
+_add_table_slide(sl, headers_mt, rows_mt, left=0.5, top=1.6, width=12.3,
+                 col_widths=[3.8, 2.1, 2.1, 1.8], font_size=12)
+
+_add_rect(sl, 0.5, 6.1, 12.3, 0.7, DARK_BG,
+          "T1→M1 causal chain: vehicular RF clustering → URLLC QoS <80% → 14/25 intersections revert to fixed-time → "
+          "+80.9% intersection delay  ·  Only observable through coupled simulation",
+          font_size=13, font_color=WHITE, bold=True)
 
 # ── 30. ENERGY SCENARIOS (E1 + E2) ────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
