@@ -554,147 +554,7 @@ _add_textbox(sl, 0.5, 5.6, 12.0, 0.5,
              "All scenarios support both standalone execution and HELICS co-simulation mode.",
              font_size=14, color=MED_GRAY, alignment=PP_ALIGN.CENTER)
 
-# ── 11. ENERGY SCENARIOS (E1 + E2) ────────────────────────────────────
-sl = prs.slides.add_slide(prs.slide_layouts[6])
-_solid_bg(sl, WHITE)
-_slide_title(sl, "Energy Scenarios: E1 & E2")
-
-_add_rect(sl, 0.7, 1.6, 5.7, 0.55, LAYER1_CLR,
-          "E1: Smart Grid with Renewable Integration", font_size=15)
-_add_bullet_list(sl, 0.7, 2.3, 5.7, 3.0, [
-    "IEEE 33-bus radial distribution network",
-    "50 solar PV (5–10 kW) + 3 wind turbines (500 kW)",
-    "5 BESS units (50 kWh / 25 kW, η = 0.92)",
-    "800 residential loads with demand response",
-    "Voltage model: simplified linear drop (ANSI C84.1)",
-    "Curtailment when batteries full + surplus remains",
-], font_size=13, bullet_color=LAYER1_CLR, bold_prefix=False, line_spacing=1.4)
-
-_add_rect(sl, 6.8, 1.6, 5.8, 0.55, LAYER1_CLR,
-          "E2: EV Charging Infrastructure", font_size=15)
-_add_bullet_list(sl, 6.8, 2.3, 5.8, 3.0, [
-    "100 EVs on IEEE 13-node feeder (2500 kW capacity)",
-    "80 residential (L2, 7.2 kW) + 10 DC-fast (50 kW) ports",
-    "Three strategies: Uncoordinated → Smart → V2G",
-    "Smart: priority by urgency U = E_need / T_available",
-    "V2G: bidirectional flow during peak (17-21h), 20% premium",
-    "Time-of-Use tariff: $0.08 / $0.12 / $0.20 per kWh",
-], font_size=13, bullet_color=LAYER1_CLR, bold_prefix=False, line_spacing=1.4)
-
-_add_rect(sl, 0.7, 5.6, 11.9, 0.6, LIGHT_GRAY,
-          "Strategy Pattern: ChargingStrategy enum selects UNCOORDINATED / SMART / V2G at runtime — comparative evaluation without code duplication",
-          font_size=13, font_color=DARK_BG, bold=False)
-
-# ── 12. MOBILITY SCENARIO M1 ──────────────────────────────────────────
-sl = prs.slides.add_slide(prs.slide_layouts[6])
-_solid_bg(sl, WHITE)
-_slide_title(sl, "Mobility Scenario: M1", "Urban Traffic Congestion Management")
-
-_add_bullet_list(sl, 0.7, 1.7, 5.8, 4.5, [
-    "5×5 km grid, 25 signalized intersections (1250 m spacing)",
-    "2,500 agent-based vehicles, 50 km/h link speed",
-    "Routing: A* algorithm with Manhattan heuristic + stochastic diversity",
-    "1-second resolution, 3 hours (10,800 steps)",
-], font_size=15, bullet_color=LAYER2_CLR, bold_prefix=False, line_spacing=1.6)
-
-_add_textbox(sl, 7.0, 1.6, 5.5, 0.5,
-             "Signal Control Comparison", font_size=18, bold=True, color=DARK_BG)
-_add_rect(sl, 7.0, 2.2, 5.5, 0.55, MED_GRAY,
-          "Fixed-Time: Equal green for both phases", font_size=14)
-_add_rect(sl, 7.0, 2.9, 5.5, 0.55, LAYER2_CLR,
-          "Adaptive: Green ∝ measured queue demand", font_size=14)
-_add_textbox(sl, 7.0, 3.7, 5.5, 0.8,
-             "T_green = T_min + (T_max − T_min) · Q_phase / Q_total\nT_min = 15s, T_max = 90s",
-             font_size=14, color=DARK_BG, alignment=PP_ALIGN.LEFT)
-_add_textbox(sl, 7.0, 4.6, 5.5, 0.4,
-             "Emissions Model:", font_size=16, bold=True, color=DARK_BG)
-_add_bullet_list(sl, 7.0, 5.0, 5.5, 1.5, [
-    "Idle (v < 1 m/s): 2.31 g/s",
-    "Moving: 0.15 g/m",
-], font_size=14, bullet_color=LAYER2_CLR, bold_prefix=False, line_spacing=1.4)
-
-# ── 13. TELECOM SCENARIO T1 ───────────────────────────────────────────
-sl = prs.slides.add_slide(prs.slide_layouts[6])
-_solid_bg(sl, WHITE)
-_slide_title(sl, "Telecom Scenario: T1", "5G Slice Resource Allocation")
-
-_add_bullet_list(sl, 0.7, 1.7, 5.8, 4.5, [
-    "3 gNBs, 100 RBs each (20 MHz, 15 kHz SCS)",
-    "200 users: 100 eMBB + 40 URLLC + 60 mMTC",
-    "3GPP UMa path loss model (TR 38.901)",
-    "Random Waypoint mobility (0.5–2.0 m/s)",
-    "Handover: 3 dB hysteresis, 1s cooldown, 95% success",
-    "mMTC: 30% base activity + periodic bursts (50s cycle)",
-], font_size=15, bullet_color=LAYER3_CLR, bold_prefix=False, line_spacing=1.5)
-
-_add_textbox(sl, 7.0, 1.6, 5.5, 0.5,
-             "Slicing Strategies", font_size=18, bold=True, color=DARK_BG)
-_add_rect(sl, 7.0, 2.2, 5.5, 0.55, MED_GRAY,
-          "Static: Fixed 50% eMBB / 30% URLLC / 20% mMTC", font_size=13)
-_add_rect(sl, 7.0, 2.9, 5.5, 0.55, LAYER3_CLR,
-          "Dynamic: RBs ∝ instantaneous demand (floor = 5 RBs)", font_size=13)
-_add_textbox(sl, 7.0, 3.7, 5.5, 1.0,
-             "QoS satisfied when allocated RBs ≥ requirement:\n• eMBB / URLLC: 2 RBs\n• mMTC: 1 RB",
-             font_size=14, color=DARK_BG)
-_add_textbox(sl, 7.0, 4.9, 5.5, 0.8,
-             "Analogous to M1's adaptive signals:\ncapacity allocated proportional to demand\nrather than fixed a priori.",
-             font_size=13, color=MED_GRAY)
-
-# ── 14. CROSS-DOMAIN E2+M1 ────────────────────────────────────────────
-sl = prs.slides.add_slide(prs.slide_layouts[6])
-_solid_bg(sl, WHITE)
-_slide_title(sl, "Cross-Domain: E2+M1", "Energy–Mobility Integration via HELICS")
-
-_add_bullet_list(sl, 0.7, 1.7, 5.8, 3.5, [
-    "500 EVs + 2000 background vehicles on 5×5 grid",
-    "13 charging stations (5 DC-fast + 8 Level 2, 52 ports)",
-    "Multi-rate: M1 @ 1s base tick, E2 charging logic every 300 ticks (5 min)",
-    "EV lifecycle: DRIVING_TO_STATION → CHARGING → DRIVING_BACK → DONE",
-    "Smart charging allocation reuses E2's urgency-based strategy",
-], font_size=14, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.5)
-
-_add_textbox(sl, 7.0, 1.6, 5.5, 0.5,
-             "Coupled vs. Uncoupled", font_size=18, bold=True, color=DARK_BG)
-_add_rect(sl, 7.0, 2.2, 5.5, 1.0, LAYER2_CLR,
-          "Coupled: EVs navigate traffic,\nwait at signals, cause congestion", font_size=14)
-_add_rect(sl, 7.0, 3.4, 5.5, 1.0, MED_GRAY,
-          "Uncoupled: EVs teleport to station\n(treats domains as independent)", font_size=14)
-_add_textbox(sl, 7.0, 4.7, 5.5, 0.4,
-             "Coupling-Specific Metrics:", font_size=16, bold=True, color=DARK_BG)
-_add_bullet_list(sl, 7.0, 5.1, 5.5, 2.0, [
-    "Avg EV Drive Time (≈0 uncoupled vs. real delay coupled)",
-    "Emission Uplift (additional CO₂ from EV driving)",
-    "SOC Target Deficit (fewer EVs reach target due to travel delays)",
-], font_size=13, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.4)
-
-# ── 15. CROSS-DOMAIN M1+T1 ────────────────────────────────────────────
-sl = prs.slides.add_slide(prs.slide_layouts[6])
-_solid_bg(sl, WHITE)
-_slide_title(sl, "Cross-Domain: M1+T1", "Mobility–Telecommunications Integration via HELICS")
-
-_add_bullet_list(sl, 0.7, 1.7, 5.8, 3.5, [
-    "2,300 background + 200 ConnectedVehicle agents on 5×5 grid",
-    "200 connected vehicles are also T1 users; positions drive RF model",
-    "ConnectedVehicle.sync_position() maps grid node → T1 metres",
-    "T1 path-loss, handover & RB allocation run once per M1 tick (1 s)",
-    "QoS feedback: gNBs below 80% URLLC → revert signals to fixed-time",
-], font_size=14, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.5)
-
-_add_textbox(sl, 7.0, 1.6, 5.5, 0.5,
-             "T1→M1 Feedback Loop", font_size=18, bold=True, color=DARK_BG)
-_add_rect(sl, 7.0, 2.2, 5.5, 1.1, LAYER3_CLR,
-          "Coupled: Vehicular RF clustering\ndegrades URLLC QoS → suppresses\nadaptive signal control", font_size=13)
-_add_rect(sl, 7.0, 3.45, 5.5, 0.9, MED_GRAY,
-          "Uncoupled: 200 T1 users use RWP;\nQoS feedback path disabled", font_size=13)
-_add_textbox(sl, 7.0, 4.55, 5.5, 0.4,
-             "Coupling-Specific Metrics:", font_size=16, bold=True, color=DARK_BG)
-_add_bullet_list(sl, 7.0, 5.0, 5.5, 2.0, [
-    "Handover rate uplift (vehicles cross cells faster than pedestrians)",
-    "QoS degradation in coupled mode (burst loading at red-light releases)",
-    "Signal degradation events & intersection delay uplift (T1→M1 effect)",
-], font_size=13, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.4)
-
-# ── 16. EVALUATION METHODOLOGY ────────────────────────────────────────
+# ── 11. EVALUATION METHODOLOGY ────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Evaluation Methodology")
@@ -719,7 +579,7 @@ _add_bullet_list(sl, 7.0, 2.2, 5.5, 3.5, [
     "Time Synchronization: HELICS grants verified; data arrives before use",
 ], font_size=13, bullet_color=LAYER2_CLR, bold_prefix=True, line_spacing=1.5)
 
-# ── 17. DEVELOPMENT ENVIRONMENT ───────────────────────────────────────
+# ── 12. DEVELOPMENT ENVIRONMENT ───────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Development Environment & Stack")
@@ -753,7 +613,7 @@ for j, (lbl, cmd) in enumerate([
     _add_rect(sl, 7.5, 2.55 + j * 0.85, 5.3, 0.45,
               LIGHT_GRAY, cmd, font_size=12, font_color=DARK_BG, bold=False)
 
-# ── 18. CODEBASE ARCHITECTURE ─────────────────────────────────────────
+# ── 13. CODEBASE ARCHITECTURE ─────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Codebase Architecture", "Three-layer file structure")
@@ -774,9 +634,11 @@ for i, (clr, lyr, path, desc) in enumerate(layers):
     _add_textbox(sl, 7.4, y, 5.5, 0.55, desc,
                  font_size=12, color=MED_GRAY, alignment=PP_ALIGN.LEFT)
 
-# Scenario summary mini-table
-_add_textbox(sl, 0.7, 4.75, 11.5, 0.3,
-             "Scenario Implementation Summary", font_size=14, bold=True, color=DARK_BG)
+# ── 14. SCENARIO IMPLEMENTATION SUMMARY ──────────────────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Scenario Implementation Summary")
+
 headers_sc = ["ID", "Domain", "Agents", "Δt", "Duration", "Strategies"]
 rows_sc = [
     ["E1", "Energy (Smart Grid)", "858", "15 min", "24 h", "—"],
@@ -786,10 +648,10 @@ rows_sc = [
     ["E2+M1", "Cross-domain", "2,513", "1 s", "3 h", "2"],
     ["M1+T1", "Cross-domain", "2,503", "1 s", "3 h", "2"],
 ]
-_add_table_slide(sl, headers_sc, rows_sc, left=0.7, top=5.0, width=11.9,
-                 col_widths=[1.0, 2.8, 1.1, 1.1, 1.1, 1.4], font_size=10, row_height=0.22)
+_add_table_slide(sl, headers_sc, rows_sc, left=0.7, top=1.7, width=11.9,
+                 col_widths=[1.0, 4.1, 1.3, 1.3, 1.3, 1.4], font_size=14, row_height=0.5)
 
-# ── 19. BASEFEDERATE CORE ENGINE ───────────────────────────────────────
+# ── 15. BASEFEDERATE CORE ENGINE ───────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "BaseFederate: Core Engine", "engine/base.py — domain-agnostic simulation infrastructure")
@@ -820,7 +682,7 @@ for j, m in enumerate(contract):
     _add_rect(sl, 7.5, 2.5 + j * 0.6, 5.3, 0.52,
               bg, m, font_size=12, font_color=fc, bold=(j < 3))
 
-# ── 20. USER INTERFACE ────────────────────────────────────────────────
+# ── 16. USER INTERFACE ────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "User Interface", "Streamlit web dashboard — no-code scenario execution")
@@ -846,7 +708,7 @@ _add_bullet_list(sl, right_x, 1.7, 5.1, 5.0, [
     "Launch: streamlit run code/app.py → localhost:8501",
 ], font_size=13, bold_prefix=True, bullet_color=ACCENT, line_spacing=1.4)
 
-# ── 21. TECHNICAL CHALLENGES ──────────────────────────────────────────
+# ── 17. TECHNICAL CHALLENGES ──────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Technical Challenges")
@@ -878,7 +740,7 @@ for i, (clr, title, desc) in enumerate(challenges):
     _add_textbox(sl, x + 0.1, y + 0.65, 5.5, 1.6, desc,
                  font_size=13, color=BLACK, alignment=PP_ALIGN.LEFT)
 
-# ── 22. RESULTS E1 ────────────────────────────────────────────────────
+# ── 18. RESULTS E1 ────────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results: E1 — Smart Grid with Renewables")
@@ -913,7 +775,7 @@ _add_rect(sl, 8.5, 4.5, 4.5, 0.9, DARK_BG,
           "Future work: replace linear model\nwith Newton–Raphson AC power-flow\n(pandapower / OpenDSS)",
           font_size=12, font_color=WHITE, bold=False)
 
-# ── 23. RESULTS E2 ────────────────────────────────────────────────────
+# ── 19. RESULTS E2 ────────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results: E2 — EV Charging Infrastructure")
@@ -943,7 +805,7 @@ key_insight = (
 _add_rect(sl, 0.5, 5.95, 12.3, 0.7, DARK_BG, key_insight,
           font_size=13, font_color=WHITE, bold=False)
 
-# ── 24. RESULTS M1 ────────────────────────────────────────────────────
+# ── 20. RESULTS M1 ────────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results: M1 — Urban Traffic Management")
@@ -970,7 +832,7 @@ _add_rect(sl, 0.6, 5.95, 11.5, 0.7, LAYER2_CLR,
           "Queue-responsive green formula prevents build-up at saturated approaches",
           font_size=13, font_color=WHITE, bold=False)
 
-# ── 25. RESULTS T1 ────────────────────────────────────────────────────
+# ── 21. RESULTS T1 ────────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results: T1 — 5G Slice Resource Allocation")
@@ -999,7 +861,7 @@ _add_rect(sl, 6.3, 5.6, 5.8, 1.1, ORANGE,
           "Neither strategy achieves uniform QoS — constraint-based\noptimisation needed for heterogeneous SLA targets.",
           font_size=13, font_color=WHITE, bold=False)
 
-# ── 26. RESULTS E2+M1 ─────────────────────────────────────────────────
+# ── 22. RESULTS E2+M1 ─────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results: E2+M1 — Energy–Mobility Cross-Domain")
@@ -1028,7 +890,7 @@ _add_rect(sl, 0.5, 6.15, 12.3, 0.65, ACCENT,
           "invisible to domain-specific simulation of either energy or mobility alone",
           font_size=13, font_color=WHITE, bold=True)
 
-# ── 27. RESULTS M1+T1 ─────────────────────────────────────────────────
+# ── 23. RESULTS M1+T1 ─────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results: M1+T1 — Mobility–Telecom Cross-Domain")
@@ -1056,7 +918,7 @@ _add_rect(sl, 0.5, 6.1, 12.3, 0.7, DARK_BG,
           "+80.9% intersection delay  ·  Only observable through coupled simulation",
           font_size=13, font_color=WHITE, bold=True)
 
-# ── 28. RESULTS SUMMARY ───────────────────────────────────────────────
+# ── 24. RESULTS SUMMARY ───────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results Summary", "Key findings across all six scenarios")
@@ -1086,7 +948,7 @@ for i, (clr, ttl, desc) in enumerate(summary_cards):
                  font_size=13, color=BLACK, alignment=PP_ALIGN.LEFT)
     
 
-# ── 29. MAIN CONTRIBUTIONS ────────────────────────────────────────────
+# ── 25. MAIN CONTRIBUTIONS ────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Main Contributions")
@@ -1099,7 +961,7 @@ _add_bullet_list(sl, 0.7, 1.7, 11.9, 5.5, [
     "Reproducible & Accessible Prototype: Streamlit dashboard for no-code execution; deterministic results from any seed; public repository with requirements.txt for full reproducibility",
 ], font_size=16, bold_prefix=True, bullet_color=ACCENT, line_spacing=1.45)
 
-# ── 30. OBJECTIVES ACHIEVEMENT ────────────────────────────────────────
+# ── 26. OBJECTIVES ACHIEVEMENT ────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Objectives Achievement")
@@ -1158,7 +1020,7 @@ _add_rect(sl, 0.7, 5.45, 11.9, 0.75, LIGHT_GRAY,
           "technically feasible, planned as future work.",
           font_size=12, font_color=DARK_BG, bold=False)
 
-# ── 31. LIMITATIONS ───────────────────────────────────────────────────
+# ── 27. LIMITATIONS ───────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Limitations")
@@ -1180,7 +1042,7 @@ _add_bullet_list(sl, 7.0, 2.1, 5.7, 3.5, [
     "Domain coverage: only 3 verticals (water, waste, safety not addressed)",
 ], font_size=14, bullet_color=RED_LIGHT, bold_prefix=False, line_spacing=1.5)
 
-# ── 32. FUTURE WORK ───────────────────────────────────────────────────
+# ── 28. FUTURE WORK ───────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Future Work")
@@ -1206,7 +1068,7 @@ _add_bullet_list(sl, 7.0, 2.1, 5.7, 4.0, [
     "Additional urban verticals: water distribution, waste management, public safety",
 ], font_size=14, bullet_color=ACCENT2, bold_prefix=False, line_spacing=1.45)
 
-# ── 33. FINAL REMARKS & QUESTIONS ─────────────────────────────────────
+# ── 29. FINAL REMARKS & QUESTIONS ─────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, DARK_BG)
 _slide_title(sl, "Final Remarks", dark=True)
@@ -1229,6 +1091,146 @@ line2.fill.solid(); line2.fill.fore_color.rgb = ACCENT; line2.line.fill.backgrou
 _add_textbox(sl, 1.0, 6.05, 11.3, 0.8,
              "Thank you — Questions?",
              font_size=30, bold=True, color=WHITE, alignment=PP_ALIGN.CENTER)
+
+# ── 30. ENERGY SCENARIOS (E1 + E2) ────────────────────────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Energy Scenarios: E1 & E2")
+
+_add_rect(sl, 0.7, 1.6, 5.7, 0.55, LAYER1_CLR,
+          "E1: Smart Grid with Renewable Integration", font_size=15)
+_add_bullet_list(sl, 0.7, 2.3, 5.7, 3.0, [
+    "IEEE 33-bus radial distribution network",
+    "50 solar PV (5–10 kW) + 3 wind turbines (500 kW)",
+    "5 BESS units (50 kWh / 25 kW, η = 0.92)",
+    "800 residential loads with demand response",
+    "Voltage model: simplified linear drop (ANSI C84.1)",
+    "Curtailment when batteries full + surplus remains",
+], font_size=13, bullet_color=LAYER1_CLR, bold_prefix=False, line_spacing=1.4)
+
+_add_rect(sl, 6.8, 1.6, 5.8, 0.55, LAYER1_CLR,
+          "E2: EV Charging Infrastructure", font_size=15)
+_add_bullet_list(sl, 6.8, 2.3, 5.8, 3.0, [
+    "100 EVs on IEEE 13-node feeder (2500 kW capacity)",
+    "80 residential (L2, 7.2 kW) + 10 DC-fast (50 kW) ports",
+    "Three strategies: Uncoordinated → Smart → V2G",
+    "Smart: priority by urgency U = E_need / T_available",
+    "V2G: bidirectional flow during peak (17-21h), 20% premium",
+    "Time-of-Use tariff: $0.08 / $0.12 / $0.20 per kWh",
+], font_size=13, bullet_color=LAYER1_CLR, bold_prefix=False, line_spacing=1.4)
+
+_add_rect(sl, 0.7, 5.6, 11.9, 0.6, LIGHT_GRAY,
+          "Strategy Pattern: ChargingStrategy enum selects UNCOORDINATED / SMART / V2G at runtime — comparative evaluation without code duplication",
+          font_size=13, font_color=DARK_BG, bold=False)
+
+# ── 31. MOBILITY SCENARIO M1 ──────────────────────────────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Mobility Scenario: M1", "Urban Traffic Congestion Management")
+
+_add_bullet_list(sl, 0.7, 1.7, 5.8, 4.5, [
+    "5×5 km grid, 25 signalized intersections (1250 m spacing)",
+    "2,500 agent-based vehicles, 50 km/h link speed",
+    "Routing: A* algorithm with Manhattan heuristic + stochastic diversity",
+    "1-second resolution, 3 hours (10,800 steps)",
+], font_size=15, bullet_color=LAYER2_CLR, bold_prefix=False, line_spacing=1.6)
+
+_add_textbox(sl, 7.0, 1.6, 5.5, 0.5,
+             "Signal Control Comparison", font_size=18, bold=True, color=DARK_BG)
+_add_rect(sl, 7.0, 2.2, 5.5, 0.55, MED_GRAY,
+          "Fixed-Time: Equal green for both phases", font_size=14)
+_add_rect(sl, 7.0, 2.9, 5.5, 0.55, LAYER2_CLR,
+          "Adaptive: Green ∝ measured queue demand", font_size=14)
+_add_textbox(sl, 7.0, 3.7, 5.5, 0.8,
+             "T_green = T_min + (T_max − T_min) · Q_phase / Q_total\nT_min = 15s, T_max = 90s",
+             font_size=14, color=DARK_BG, alignment=PP_ALIGN.LEFT)
+_add_textbox(sl, 7.0, 4.6, 5.5, 0.4,
+             "Emissions Model:", font_size=16, bold=True, color=DARK_BG)
+_add_bullet_list(sl, 7.0, 5.0, 5.5, 1.5, [
+    "Idle (v < 1 m/s): 2.31 g/s",
+    "Moving: 0.15 g/m",
+], font_size=14, bullet_color=LAYER2_CLR, bold_prefix=False, line_spacing=1.4)
+
+# ── 32. TELECOM SCENARIO T1 ───────────────────────────────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Telecom Scenario: T1", "5G Slice Resource Allocation")
+
+_add_bullet_list(sl, 0.7, 1.7, 5.8, 4.5, [
+    "3 gNBs, 100 RBs each (20 MHz, 15 kHz SCS)",
+    "200 users: 100 eMBB + 40 URLLC + 60 mMTC",
+    "3GPP UMa path loss model (TR 38.901)",
+    "Random Waypoint mobility (0.5–2.0 m/s)",
+    "Handover: 3 dB hysteresis, 1s cooldown, 95% success",
+    "mMTC: 30% base activity + periodic bursts (50s cycle)",
+], font_size=15, bullet_color=LAYER3_CLR, bold_prefix=False, line_spacing=1.5)
+
+_add_textbox(sl, 7.0, 1.6, 5.5, 0.5,
+             "Slicing Strategies", font_size=18, bold=True, color=DARK_BG)
+_add_rect(sl, 7.0, 2.2, 5.5, 0.55, MED_GRAY,
+          "Static: Fixed 50% eMBB / 30% URLLC / 20% mMTC", font_size=13)
+_add_rect(sl, 7.0, 2.9, 5.5, 0.55, LAYER3_CLR,
+          "Dynamic: RBs ∝ instantaneous demand (floor = 5 RBs)", font_size=13)
+_add_textbox(sl, 7.0, 3.7, 5.5, 1.0,
+             "QoS satisfied when allocated RBs ≥ requirement:\n• eMBB / URLLC: 2 RBs\n• mMTC: 1 RB",
+             font_size=14, color=DARK_BG)
+_add_textbox(sl, 7.0, 4.9, 5.5, 0.8,
+             "Analogous to M1's adaptive signals:\ncapacity allocated proportional to demand\nrather than fixed a priori.",
+             font_size=13, color=MED_GRAY)
+
+# ── 33. CROSS-DOMAIN E2+M1 ────────────────────────────────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Cross-Domain: E2+M1", "Energy–Mobility Integration via HELICS")
+
+_add_bullet_list(sl, 0.7, 1.7, 5.8, 3.5, [
+    "500 EVs + 2000 background vehicles on 5×5 grid",
+    "13 charging stations (5 DC-fast + 8 Level 2, 52 ports)",
+    "Multi-rate: M1 @ 1s base tick, E2 charging logic every 300 ticks (5 min)",
+    "EV lifecycle: DRIVING_TO_STATION → CHARGING → DRIVING_BACK → DONE",
+    "Smart charging allocation reuses E2's urgency-based strategy",
+], font_size=14, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.5)
+
+_add_textbox(sl, 7.0, 1.6, 5.5, 0.5,
+             "Coupled vs. Uncoupled", font_size=18, bold=True, color=DARK_BG)
+_add_rect(sl, 7.0, 2.2, 5.5, 1.0, LAYER2_CLR,
+          "Coupled: EVs navigate traffic,\nwait at signals, cause congestion", font_size=14)
+_add_rect(sl, 7.0, 3.4, 5.5, 1.0, MED_GRAY,
+          "Uncoupled: EVs teleport to station\n(treats domains as independent)", font_size=14)
+_add_textbox(sl, 7.0, 4.7, 5.5, 0.4,
+             "Coupling-Specific Metrics:", font_size=16, bold=True, color=DARK_BG)
+_add_bullet_list(sl, 7.0, 5.1, 5.5, 2.0, [
+    "Avg EV Drive Time (≈0 uncoupled vs. real delay coupled)",
+    "Emission Uplift (additional CO₂ from EV driving)",
+    "SOC Target Deficit (fewer EVs reach target due to travel delays)",
+], font_size=13, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.4)
+
+# ── 34. CROSS-DOMAIN M1+T1 ────────────────────────────────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Cross-Domain: M1+T1", "Mobility–Telecommunications Integration via HELICS")
+
+_add_bullet_list(sl, 0.7, 1.7, 5.8, 3.5, [
+    "2,300 background + 200 ConnectedVehicle agents on 5×5 grid",
+    "200 connected vehicles are also T1 users; positions drive RF model",
+    "ConnectedVehicle.sync_position() maps grid node → T1 metres",
+    "T1 path-loss, handover & RB allocation run once per M1 tick (1 s)",
+    "QoS feedback: gNBs below 80% URLLC → revert signals to fixed-time",
+], font_size=14, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.5)
+
+_add_textbox(sl, 7.0, 1.6, 5.5, 0.5,
+             "T1→M1 Feedback Loop", font_size=18, bold=True, color=DARK_BG)
+_add_rect(sl, 7.0, 2.2, 5.5, 1.1, LAYER3_CLR,
+          "Coupled: Vehicular RF clustering\ndegrades URLLC QoS → suppresses\nadaptive signal control", font_size=13)
+_add_rect(sl, 7.0, 3.45, 5.5, 0.9, MED_GRAY,
+          "Uncoupled: 200 T1 users use RWP;\nQoS feedback path disabled", font_size=13)
+_add_textbox(sl, 7.0, 4.55, 5.5, 0.4,
+             "Coupling-Specific Metrics:", font_size=16, bold=True, color=DARK_BG)
+_add_bullet_list(sl, 7.0, 5.0, 5.5, 2.0, [
+    "Handover rate uplift (vehicles cross cells faster than pedestrians)",
+    "QoS degradation in coupled mode (burst loading at red-light releases)",
+    "Signal degradation events & intersection delay uplift (T1→M1 effect)",
+], font_size=13, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.4)
 
 # ======================================================================
 #  FOOTERS
