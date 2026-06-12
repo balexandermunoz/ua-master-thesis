@@ -60,40 +60,100 @@ Evaluation has two dimensions. For domain correctness, each scenario has specifi
 
 
 [Slide 12]
-TODO: Add presenter notes.
+This slide summarizes the development environment used to build and reproduce the framework.
+The implementation is fully in Python 3.11, developed on Windows 11 with Visual Studio Code.
+For the technical stack, HELICS provides the co-simulation middleware, NumPy supports numerical operations, and Streamlit powers the web interface for running scenarios.
+Version control is handled with Git and GitHub, and dependency management is intentionally simple through requirements.txt.
+
+From a reproducibility perspective, setup is straightforward: create the virtual environment, install dependencies, and launch the dashboard with streamlit run code/app.py.
+So the key point here is not only what tools were used, but that the full environment can be recreated quickly by any reviewer with standard Python tooling.
 
 [Slide 13]
-TODO: Add presenter notes.
+Here I show how the codebase maps directly to the three-layer architecture proposed in the methodology.
+Layer 1 is the core engine in engine/base.py, where the BaseFederate abstraction handles common simulation concerns like orchestration, time stepping, and HELICS integration points.
+Layer 2 is the scenarios package, with one module per scenario, including the domain-specific and cross-domain cases.
+Layer 3 is app.py, which provides the Streamlit interface and acts as the orchestration entry point for execution and comparison.
+
+This structure enforces separation of concerns: generic logic stays in the engine, domain behavior stays in scenario modules, and user interaction stays in the UI layer.
+That separation is what makes the framework easier to maintain, extend, and validate.
 
 [Slide 14]
-TODO: Add presenter notes.
+This table gives a compact implementation snapshot of all scenarios.
+The first key point is scale: the number of agents ranges from 125 in E2 up to more than 2,500 in the mobility and cross-domain cases.
+The second point is time resolution: each scenario keeps the time step that best matches its domain physics, from 100 milliseconds in telecom to 15 minutes in the smart-grid case.
+The third point is strategy flexibility: several scenarios support two or three strategy variants, which is important for controlled comparisons.
+
+So this slide is not only descriptive; it shows that the framework can handle heterogeneous scales, different temporal granularities, and multiple decision strategies under one common architecture.
 
 [Slide 15]
-TODO: Add presenter notes.
+This slide focuses on BaseFederate, the core abstraction of the engine.
+Conceptually, it defines a clean contract with three abstract methods: initialize components, run the simulation loop, and generate the report.
+Every domain module implements that same contract, which gives us consistency across energy, mobility, telecom, and cross-domain scenarios.
+
+At the same time, BaseFederate provides reusable concrete behavior, especially HELICS setup and time advancement.
+That means domain code does not need to include co-simulation boilerplate.
+Another practical benefit is dual-mode execution: the same module can run standalone or with HELICS by changing a flag, not by rewriting logic.
+This is one of the main reasons the framework remains modular and easy to extend.
 
 [Slide 16]
-TODO: Add presenter notes.
+Here we move from architecture to usability.
+The Streamlit interface is the entry point for running all scenarios without writing code.
+Users select the scenario, adjust parameters, choose strategy or coupling mode, and execute directly from the browser.
+
+A key design decision was to support both single-run reports and compare mode in the same workflow.
+Results are displayed in structured metric sections, and comparison runs are shown side by side so trade-offs become visible quickly.
+We also keep outputs in session state to avoid unnecessary recomputation when users interact with widgets.
+So this layer is not just a demo front-end; it is what makes the framework practical for repeatable experimentation by non-developers.
 
 [Slide 17]
-TODO: Add presenter notes.
+This slide summarizes the main technical challenges we had to solve during implementation.
+First, HELICS dependency isolation: we needed graceful fallback when native libraries are unavailable, so standalone execution still works.
+Second, scalability in mobility loops: with millions of agent steps, we optimized where possible, for example by caching route computation.
+
+Third, cross-domain coordinate alignment: different modules use different spatial representations, so we introduced mapping layers to couple them consistently.
+Fourth, heterogeneous time steps: scenarios span several orders of magnitude in temporal resolution, so synchronization had to remain explicit and robust.
+
+Overall, these challenges were not incidental bugs; they were architectural tests, and solving them strengthened the framework's portability and extensibility.
 
 [Slide 18]
-TODO: Add presenter notes.
+This slide gives the first high-level summary of the results.
+The main takeaway is that the framework reproduces the expected behaviour in each domain: the smart grid shows renewable penetration and curtailment, the EV scenario shows clear differences between charging strategies, and the traffic scenario shows that adaptive control improves delay and emissions.
+So this is the point where I can say the implementation is not just working structurally, but also producing sensible outputs for each individual domain.
+The detailed tables later in the appendix show the exact values, but here I want the audience to keep the overall pattern in mind: each scenario behaves as expected and the strategy choices produce meaningful differences.
 
 [Slide 19]
-TODO: Add presenter notes.
+This slide highlights the main contributions of the framework.
+First, it provides a domain-agnostic simulation engine with a clear contract, so new modules can be added without changing the core.
+Second, it supports multiple domains and cross-domain integrations in a way that keeps the code reusable and modular.
+Third, it makes the trade-offs visible through strategy substitution, which is important for comparing alternatives fairly.
+And finally, it includes a reproducible Streamlit-based interface, so the simulations are accessible even without deep code knowledge.
 
 [Slide 20]
-TODO: Add presenter notes.
+Here I check whether the original objectives were achieved.
+Most of them are fully achieved: the architecture is domain-agnostic, the scenario modules are implemented, the HELICS-based coupling is supported, and the framework is reproducible through the provided environment.
+The only partial objective is the integration with the Ubiwhere platform, because the current prototype is ready for that connection but still needs the final REST or messaging layer.
+So overall, the evaluation is positive: the technical foundation is complete, and the remaining work is mostly integration rather than redesign.
 
 [Slide 21]
-TODO: Add presenter notes.
+This slide is about the limitations, and they are important because they define the boundary of the prototype.
+In the energy case, the voltage model is simplified, so it does not yet capture full AC power-flow behavior.
+In mobility, routes are computed once and not continuously rerouted, which keeps the model manageable but less realistic.
+And in telecom, we still use an abstracted radio model instead of a full packet-level network simulation.
+These are acceptable for this dissertation because the goal was architectural validation, but they are the first places I would improve in future work.
 
 [Slide 22]
-TODO: Add presenter notes.
+This slide points to the next steps.
+The most immediate improvement is to replace the simplified energy model with a proper AC power-flow solver.
+After that, I would extend the framework to a full multi-process HELICS deployment so the coupling runs exactly as it would in a distributed setting.
+I would also add dynamic rerouting in mobility and richer wireless effects in telecom to increase realism.
+So the future work is very clear: keep the same architecture, but progressively increase fidelity and scale.
 
 [Slide 23]
-TODO: Add presenter notes.
+This is the closing slide.
+The main message is that the three-layer design works: the engine stays generic, the domain modules stay independent, and HELICS provides a clean path for coupling them when needed.
+The results also show why the framework matters: cross-domain interactions reveal effects that isolated simulations cannot see.
+So the contribution is both architectural and practical, because it gives a reusable way to study complex urban systems.
+Thank you, and I’m happy to take questions.
 
 [Slide 24]
 TODO: Add presenter notes.
@@ -111,12 +171,7 @@ TODO: Add presenter notes.
 TODO: Add presenter notes.
 
 [Slide 29]
-To summarize: we followed Design Science Research to build a three-layer co-simulation framework. 
-Five scenarios cover energy, mobility, telecom, and cross-domain coupling. The strategy pattern enables 
-clean comparative evaluation. And most importantly, the cross-domain scenario demonstrates that coupling 
-reveals system-level effects that are invisible when domains are simulated in isolation. 
-In the next chapter, we'll present the implementation details and the results from running these scenarios. 
-Thank you.
+TODO: Add presenter notes.
 
 [Slide 30]
 Scenario E1 models an IEEE 33-bus distribution network with 50 solar panels, 3 wind turbines, 
