@@ -596,22 +596,8 @@ rows_env = [
     ["Version control", "Git / GitHub"],
     ["Dependencies", "pip + requirements.txt"],
 ]
-_add_table_slide(sl, headers_env, rows_env, left=0.7, top=1.6, width=6.2,
+_add_table_slide(sl, headers_env, rows_env, left=3.57, top=1.6, width=6.2,
                  col_widths=[2.8, 3.4], font_size=13)
-
-# Right: setup commands
-_add_textbox(sl, 7.5, 1.6, 5.3, 0.5,
-             "Setup & Launch", font_size=18, bold=True, color=DARK_BG)
-for j, (lbl, cmd) in enumerate([
-    ("Create virtual env:", "python -m venv .venv"),
-    ("Install deps:", "pip install -r requirements.txt"),
-    ("Run dashboard:", "streamlit run code/app.py"),
-    ("Open browser:", "http://localhost:8501"),
-]):
-    _add_textbox(sl, 7.5, 2.25 + j * 0.85, 5.3, 0.3,
-                 lbl, font_size=13, bold=True, color=DARK_BG)
-    _add_rect(sl, 7.5, 2.55 + j * 0.85, 5.3, 0.45,
-              LIGHT_GRAY, cmd, font_size=12, font_color=DARK_BG, bold=False)
 
 # ── 13. CODEBASE ARCHITECTURE ─────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
