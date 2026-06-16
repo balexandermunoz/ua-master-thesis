@@ -4,7 +4,7 @@
 # Your notes text...
 
 [Slide 1]
-Good morning everyone, I'm Brayan. Today I'll present the progress on my dissertation — 
+Good morning everyone, I'm Brayan. Today I'll present my dissertation — 
 the modular co-simulation framework.
 
 
@@ -12,11 +12,11 @@ the modular co-simulation framework.
 Here's the roadmap for the presentation.
 First we’re gonna speak real quick about motivations and objectives and then state of the art
 After we'll go through the research approach, the three-layer architecture, design decisions,
-the five simulation scenarios, how we evaluate that everything is correct, and some takeaways.
+the five simulation scenarios, how we evaluate that everything is correct, the code and UI, Results, and some takeaways.
 
 
 [Slide 3]
-Modern cities depend on three interdependent infrastructure networks: energy, mobility, and telecommunications. They are not independent— electric vehicles link power grids and traffic, smart traffic needs telecom, and energy depends on communication networks for coordination.
+Modern cities depend on three infrastructure networks: energy, mobility, and telecommunications. They are not independent— electric vehicles link power grids and traffic, smart traffic needs telecom, and energy depends on communication networks for coordination.
 
 The problem is that today's simulation tools work in isolation. Each one handles a single domain very well, but none of them can model interactions across domains. There are some platforms that are great at monitoring and aggregating data, but they can't answer predictive cross-domain questions — things like "what happens to the power grid when 500 EVs charge for one hour?" or "how does closing a road affect both traffic and the energy network?"
 
@@ -38,7 +38,7 @@ Here you can see the overall architecture. It follows three layers. At the botto
 
 
 [Slide 7]
-The core engine provides four functionalities. Agents are autonomous entities with a step function called every tick. Time control supports configurable resolution from 100 milliseconds up to 15 minutes. The engine defines a contract: every domain module must implement initialize, step, and generate_report. And a generic collector accumulates metrics without knowing what they represent. This means adding a new domain — say water or waste management — requires no changes to the engine. You just implement the contract and plug in.
+The core engine provides four functionalities. Agents are autonomous entities with a step function called every tick (Battery, a car...). Time control supports configurable resolution from 100 milliseconds up to 15 minutes. The engine defines a contract: every domain module must implement initialize, step, and generate_report. And a generic collector accumulates metrics without knowing what they represent. This means adding a new domain — say water or waste management — requires no changes to the engine. You just implement the contract and plug in.
 
 
 [Slide 8]
