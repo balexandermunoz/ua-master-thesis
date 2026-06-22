@@ -696,14 +696,8 @@ sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results Summary", "Key findings across all six scenarios")
 
-# 3*2 summary cards
+# Left side: Summary cards (3 cards in a single vertical column)
 summary_cards = [
-    (LAYER1_CLR, "E1 — Smart Grid",
-     "60.7% renewable penetration\n9.9% curtailment (battery-full)\n49/96 steps: voltage > 1.05 p.u."),
-    (LAYER1_CLR, "E2 — EV Charging",
-     "V2G cheapest: $327.88 net cost\nSmart reduces peak by 2.5%\nV2G: 88 overloads (vs. 131/135)"),
-    (LAYER2_CLR, "M1 — Traffic",
-     "Adaptive: -65.5% delay, -8.1% CO₂\nAll 2,500 vehicles complete trips\nQueue drops 0.66 → 0.26 veh"),
     (LAYER3_CLR, "T1 — 5G Slicing",
      "Dynamic eMBB QoS: +479%\nTrade-off: mMTC -44.4%\nRB waste: 32.5% → 24.7%"),
     (ACCENT, "E2+M1 — Cross-domain",
@@ -712,13 +706,29 @@ summary_cards = [
      "Handovers +15.8% (vehicles vs. RWP)\n14/25 signals revert to fixed-time\nIntersection delay +80.9%"),
 ]
 for i, (clr, ttl, desc) in enumerate(summary_cards):
-    row = i // 3
-    col = i % 3
-    x = 0.7 + col * 4.2
-    y = 1.65 + row * 2.55
-    _add_rect(sl, x, y, 3.8, 0.55, clr, ttl, font_size=14)
-    _add_textbox(sl, x + 0.1, y + 0.65, 3.6, 1.7, desc,
-                 font_size=13, color=BLACK, alignment=PP_ALIGN.LEFT)
+    x = 0.5
+    y = 1.9 + i * 1.75
+    _add_rect(sl, x, y, 5.0, 0.42, clr, ttl, font_size=14)
+    _add_textbox(sl, x + 0.12, y + 0.52, 5.25, 1.05, desc,
+                 font_size=12, color=BLACK, alignment=PP_ALIGN.LEFT)
+
+# Right side: Energy and Mobility charts stacked vertically
+energy_chart = ROOT / "figs" / "energy_domain_summary.png"
+mobility_chart = ROOT / "figs" / "mobility_domain_summary.png"
+
+if energy_chart.exists():
+    sl.shapes.add_picture(str(energy_chart), Inches(6.2), Inches(1.5), width=Inches(6.5))
+else:
+    _add_rect(sl, 6.2, 1.5, 6.5, 2.5, LIGHT_GRAY,
+              "[Energy Domain Summary]",
+              font_size=12, font_color=MED_GRAY, bold=False)
+
+if mobility_chart.exists():
+    sl.shapes.add_picture(str(mobility_chart), Inches(6.2), Inches(4.0), width=Inches(6.5))
+else:
+    _add_rect(sl, 6.2, 4.0, 6.5, 2.5, LIGHT_GRAY,
+              "[Mobility Domain Summary]",
+              font_size=12, font_color=MED_GRAY, bold=False)
 
 # ── 18. MAIN CONTRIBUTIONS ────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
