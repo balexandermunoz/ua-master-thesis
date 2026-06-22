@@ -579,27 +579,7 @@ _add_bullet_list(sl, 7.0, 2.2, 5.5, 3.5, [
     "Time Synchronization: HELICS grants verified; data arrives before use",
 ], font_size=13, bullet_color=LAYER2_CLR, bold_prefix=True, line_spacing=1.5)
 
-# ── 12. DEVELOPMENT ENVIRONMENT ───────────────────────────────────────
-sl = prs.slides.add_slide(prs.slide_layouts[6])
-_solid_bg(sl, WHITE)
-_slide_title(sl, "Development Environment & Stack")
-
-# Left: tech table
-headers_env = ["Component", "Technology / Version"]
-rows_env = [
-    ["Operating System", "Windows 11 (64-bit)"],
-    ["IDE", "Visual Studio Code 1.99"],
-    ["Language", "Python 3.11"],
-    ["Co-sim middleware", "HELICS 3.x (helics package)"],
-    ["Numerical computing", "NumPy 1.26"],
-    ["Web UI", "Streamlit 1.34"],
-    ["Version control", "Git / GitHub"],
-    ["Dependencies", "pip + requirements.txt"],
-]
-_add_table_slide(sl, headers_env, rows_env, left=3.57, top=1.6, width=6.2,
-                 col_widths=[2.8, 3.4], font_size=13)
-
-# ── 14. BASEFEDERATE CORE ENGINE ───────────────────────────────────────
+# ── 12. BASEFEDERATE CORE ENGINE ───────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "BaseFederate: Core Engine", "engine/base.py — domain-agnostic simulation infrastructure")
@@ -630,7 +610,7 @@ for j, m in enumerate(contract):
     _add_rect(sl, 7.5, 2.5 + j * 0.6, 5.3, 0.52,
               bg, m, font_size=12, font_color=fc, bold=(j < 3))
 
-# ── 15. USER INTERFACE ────────────────────────────────────────────────
+# ── 13. USER INTERFACE ────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "User Interface", "Streamlit web dashboard — no-code scenario execution")
@@ -643,7 +623,7 @@ sl.shapes.add_movie(
     mime_type="video/mp4",
 )
 
-# ── 16. TECHNICAL CHALLENGES ──────────────────────────────────────────
+# ── 14. TECHNICAL CHALLENGES ──────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Technical Challenges")
@@ -670,7 +650,7 @@ for i, (clr, title, desc) in enumerate(challenges):
     _add_textbox(sl, x + 0.1, y + 0.65, 5.5, 1.3, desc,
                  font_size=12, color=BLACK, alignment=PP_ALIGN.LEFT)
 
-# ── 17. RESULTS SUMMARY ───────────────────────────────────────────────
+# ── 15. RESULTS SUMMARY ───────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results Summary", "Key findings across all six scenarios")
@@ -709,7 +689,7 @@ else:
               "[Mobility Domain Summary]",
               font_size=12, font_color=MED_GRAY, bold=False)
 
-# ── 18. MAIN CONTRIBUTIONS ────────────────────────────────────────────
+# ── 16. MAIN CONTRIBUTIONS ────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Main Contributions")
@@ -722,7 +702,7 @@ _add_bullet_list(sl, 0.7, 1.7, 11.9, 5.5, [
     "Reproducible & Accessible Prototype: Streamlit dashboard for no-code execution; deterministic results from any seed; public repository with requirements.txt for full reproducibility",
 ], font_size=16, bold_prefix=True, bullet_color=ACCENT, line_spacing=1.45)
 
-# ── 19. OBJECTIVES ACHIEVEMENT ────────────────────────────────────────
+# ── 17. OBJECTIVES ACHIEVEMENT ────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Objectives Achievement")
@@ -781,7 +761,7 @@ _add_rect(sl, 0.7, 5.45, 11.9, 0.75, LIGHT_GRAY,
           "technically feasible, planned as future work.",
           font_size=12, font_color=DARK_BG, bold=False)
 
-# ── 20. LIMITATIONS ───────────────────────────────────────────────────
+# ── 18. LIMITATIONS ───────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Limitations")
@@ -803,7 +783,7 @@ _add_bullet_list(sl, 7.0, 2.1, 5.7, 3.5, [
     "Domain coverage: only 3 verticals (water, waste, safety not addressed)",
 ], font_size=14, bullet_color=RED_LIGHT, bold_prefix=False, line_spacing=1.5)
 
-# ── 21. FUTURE WORK ───────────────────────────────────────────────────
+# ── 19. FUTURE WORK ───────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Future Work")
@@ -829,7 +809,7 @@ _add_bullet_list(sl, 7.0, 2.1, 5.7, 4.0, [
     "Additional urban verticals: water distribution, waste management, public safety",
 ], font_size=14, bullet_color=ACCENT2, bold_prefix=False, line_spacing=1.45)
 
-# ── 22. FINAL REMARKS & QUESTIONS ─────────────────────────────────────
+# ── 20. FINAL REMARKS & QUESTIONS ─────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, DARK_BG)
 _slide_title(sl, "Final Remarks", dark=True)
@@ -853,7 +833,7 @@ _add_textbox(sl, 1.0, 6.05, 11.3, 0.8,
              "Thank you — Questions?",
              font_size=30, bold=True, color=WHITE, alignment=PP_ALIGN.CENTER)
 
-# ── 23. RESULTS E1 ────────────────────────────────────────────────────
+# ── 21. RESULTS E1 ────────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results: E1 — Smart Grid with Renewables")
@@ -888,7 +868,7 @@ _add_rect(sl, 8.5, 4.5, 4.5, 0.9, DARK_BG,
           "Future work: replace linear model\nwith Newton-Raphson AC power-flow\n(pandapower / OpenDSS)",
           font_size=12, font_color=WHITE, bold=False)
 
-# ── 24. RESULTS E2 ────────────────────────────────────────────────────
+# ── 22. RESULTS E2 ────────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results: E2 — EV Charging Infrastructure")
@@ -918,7 +898,7 @@ key_insight = (
 _add_rect(sl, 0.5, 5.95, 12.3, 0.7, DARK_BG, key_insight,
           font_size=13, font_color=WHITE, bold=False)
 
-# ── 25. RESULTS M1 ────────────────────────────────────────────────────
+# ── 23. RESULTS M1 ────────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results: M1 — Urban Traffic Management")
@@ -945,7 +925,7 @@ _add_rect(sl, 0.6, 5.95, 11.5, 0.7, LAYER2_CLR,
           "Queue-responsive green formula prevents build-up at saturated approaches",
           font_size=13, font_color=WHITE, bold=False)
 
-# ── 26. RESULTS T1 ────────────────────────────────────────────────────
+# ── 24. RESULTS T1 ────────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results: T1 — 5G Slice Resource Allocation")
@@ -974,7 +954,7 @@ _add_rect(sl, 6.3, 5.6, 5.8, 1.1, ORANGE,
           "Neither strategy achieves uniform QoS — constraint-based\noptimisation needed for heterogeneous SLA targets.",
           font_size=13, font_color=WHITE, bold=False)
 
-# ── 27. RESULTS E2+M1 ─────────────────────────────────────────────────
+# ── 25. RESULTS E2+M1 ─────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results: E2+M1 — Energy-Mobility Cross-Domain")
@@ -1003,7 +983,7 @@ _add_rect(sl, 0.5, 6.15, 12.3, 0.65, ACCENT,
           "invisible to domain-specific simulation of either energy or mobility alone",
           font_size=13, font_color=WHITE, bold=True)
 
-# ── 28. RESULTS M1+T1 ─────────────────────────────────────────────────
+# ── 26. RESULTS M1+T1 ─────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results: M1+T1 — Mobility-Telecom Cross-Domain")
@@ -1031,7 +1011,7 @@ _add_rect(sl, 0.5, 6.1, 12.3, 0.7, DARK_BG,
           "+80.9% intersection delay  ·  Only observable through coupled simulation",
           font_size=13, font_color=WHITE, bold=True)
 
-# ── 29. ENERGY SCENARIOS (E1 + E2) ────────────────────────────────────
+# ── 27. ENERGY SCENARIOS (E1 + E2) ────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Energy Scenarios: E1 & E2")
@@ -1062,7 +1042,7 @@ _add_rect(sl, 0.7, 5.6, 11.9, 0.6, LIGHT_GRAY,
           "Strategy Pattern: ChargingStrategy enum selects UNCOORDINATED / SMART / V2G at runtime — comparative evaluation without code duplication",
           font_size=13, font_color=DARK_BG, bold=False)
 
-# ── 30. MOBILITY SCENARIO M1 ──────────────────────────────────────────
+# ── 28. MOBILITY SCENARIO M1 ──────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Mobility Scenario: M1", "Urban Traffic Congestion Management")
@@ -1090,7 +1070,7 @@ _add_bullet_list(sl, 7.0, 5.0, 5.5, 1.5, [
     "Moving: 0.15 g/m",
 ], font_size=14, bullet_color=LAYER2_CLR, bold_prefix=False, line_spacing=1.4)
 
-# ── 31. TELECOM SCENARIO T1 ───────────────────────────────────────────
+# ── 29. TELECOM SCENARIO T1 ───────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Telecom Scenario: T1", "5G Slice Resource Allocation")
@@ -1117,7 +1097,7 @@ _add_textbox(sl, 7.0, 4.9, 5.5, 0.8,
              "Analogous to M1's adaptive signals:\ncapacity allocated proportional to demand\nrather than fixed a priori.",
              font_size=13, color=MED_GRAY)
 
-# ── 32. CROSS-DOMAIN E2+M1 ────────────────────────────────────────────
+# ── 30. CROSS-DOMAIN E2+M1 ────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Cross-Domain: E2+M1", "Energy-Mobility Integration via HELICS")
@@ -1144,7 +1124,7 @@ _add_bullet_list(sl, 7.0, 5.1, 5.5, 2.0, [
     "SOC Target Deficit (fewer EVs reach target due to travel delays)",
 ], font_size=13, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.4)
 
-# ── 33. CROSS-DOMAIN M1+T1 ────────────────────────────────────────────
+# ── 31. CROSS-DOMAIN M1+T1 ────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Cross-Domain: M1+T1", "Mobility-Telecommunications Integration via HELICS")
