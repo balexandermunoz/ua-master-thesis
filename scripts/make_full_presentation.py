@@ -17,6 +17,7 @@ ROOT     = Path(__file__).resolve().parent.parent
 OUT      = ROOT / "Dissertation_Presentation.pptx"
 ARCH_IMG = ROOT / "figs" / "architecture.png"
 UI_IMG   = ROOT / "figs" / "UIM1_light.png"
+DEMO_VIDEO = ROOT / "figs" / "shortDemo.mp4"
 LOGO_WHITE = ROOT / "figs" / "UbiwhereLogo.png"
 LOGO_BLUE = ROOT / "figs" / "UbiwhereLogoBlue.png"
 NOTES_FILE = ROOT / "scripts" / "presenter_notes.txt"
@@ -671,27 +672,14 @@ for j, m in enumerate(contract):
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "User Interface", "Streamlit web dashboard — no-code scenario execution")
-
-if UI_IMG.exists():
-    sl.shapes.add_picture(str(UI_IMG), Inches(0.4), Inches(1.55), width=Inches(7.0))
-    right_x = 7.8
-else:
-    _add_rect(sl, 0.4, 1.55, 7.0, 5.2, LIGHT_GRAY,
-              "[Streamlit screenshot: UIM1_light.png]",
-              font_size=14, font_color=MED_GRAY, bold=False)
-    right_x = 7.8
-
-_add_bullet_list(sl, right_x, 1.7, 5.1, 5.0, [
-    "Scenario selector: dropdown switches between all 6 scenarios",
-    "Parameter widgets: st.number_input & st.selectbox per scenario",
-    "Strategy selector: maps enum values at runtime",
-    "Compare mode: checkbox runs all variants, returns keyed dict",
-    "session_state: results persist across widget interactions",
-    "_display_report(): Components + Metrics + raw-metrics table",
-    "_display_comparison(): per-strategy tabs + bar chart summary",
-    "Simulation Log: StringIO capture in collapsible expander",
-    "Launch: streamlit run code/app.py → localhost:8501",
-], font_size=13, bold_prefix=True, bullet_color=ACCENT, line_spacing=1.4)
+poster = str(UI_IMG) if UI_IMG.exists() else None
+sl.shapes.add_movie(
+    str(DEMO_VIDEO),
+    Inches(1.67), Inches(1.2),
+    width=Inches(10.0), height=Inches(5.625),
+    poster_frame_image=poster,
+    mime_type="video/mp4",
+)
 
 # ── 17. TECHNICAL CHALLENGES ──────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
