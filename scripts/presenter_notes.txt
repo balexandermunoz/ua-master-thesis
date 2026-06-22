@@ -33,7 +33,8 @@ We adopted Design Science Research, which is convenient when the goal is to buil
 
 
 [Slide 6]
-Here you can see the overall architecture. It follows three layers. At the bottom, a domain-agnostic core engine handles all generic simulation concerns. In the middle, independent domain modules encapsulate the logic for energy, mobility, and telecom. At the top, HELICS orchestrates cross-domain co-simulation. The key principle is strict separation: the engine knows nothing about power grids or vehicles, and domain modules know nothing about each other. They only communicate through well-defined interfaces and HELICS publish-subscribe topics.
+Here you can see the overall architecture. It follows three layers. The main goal is to have a separation between the generic logic and the domain logic.
+At the bottom, a domain-agnostic core engine handles all generic simulation concerns. In the middle, independent domain modules encapsulate the logic for energy, mobility, and telecom. At the top, HELICS orchestrates cross-domain co-simulation.
 
 
 
@@ -68,24 +69,8 @@ Version control is handled with Git and GitHub, and dependency management is int
 From a reproducibility perspective, setup is straightforward: create the virtual environment, install dependencies, and launch the dashboard with streamlit run code/app.py.
 So the key point here is not only what tools were used, but that the full environment can be recreated quickly by any reviewer with standard Python tooling.
 
+
 [Slide 13]
-Here I show how the codebase maps directly to the three-layer architecture proposed in the methodology.
-Layer 1 is the core engine in engine/base.py, where the BaseFederate abstraction handles common simulation concerns like orchestration, time stepping, and HELICS integration points.
-Layer 2 is the scenarios package, with one module per scenario, including the domain-specific and cross-domain cases.
-Layer 3 is app.py, which provides the Streamlit interface and acts as the orchestration entry point for execution and comparison.
-
-This structure enforces separation of concerns: generic logic stays in the engine, domain behavior stays in scenario modules, and user interaction stays in the UI layer.
-That separation is what makes the framework easier to maintain, extend, and validate.
-
-[Slide 14]
-This table gives a compact implementation snapshot of all scenarios.
-The first key point is scale: the number of agents ranges from 125 in E2 up to more than 2,500 in the mobility and cross-domain cases.
-The second point is time resolution: each scenario keeps the time step that best matches its domain physics, from 100 milliseconds in telecom to 15 minutes in the smart-grid case.
-The third point is strategy flexibility: several scenarios support two or three strategy variants, which is important for controlled comparisons.
-
-So this slide is not only descriptive; it shows that the framework can handle heterogeneous scales, different temporal granularities, and multiple decision strategies under one common architecture.
-
-[Slide 15]
 This slide focuses on BaseFederate, the core abstraction of the engine.
 Conceptually, it defines a clean contract with three abstract methods: initialize components, run the simulation loop, and generate the report.
 Every domain module implements that same contract, which gives us consistency across energy, mobility, telecom, and cross-domain scenarios.
@@ -95,7 +80,7 @@ That means domain code does not need to include co-simulation boilerplate.
 Another practical benefit is dual-mode execution: the same module can run standalone or with HELICS by changing a flag, not by rewriting logic.
 This is one of the main reasons the framework remains modular and easy to extend.
 
-[Slide 16]
+[Slide 14]
 Here we move from architecture to usability.
 The Streamlit interface is the entry point for running all scenarios without writing code.
 Users select the scenario, adjust parameters, choose strategy or coupling mode, and execute directly from the browser.
@@ -105,55 +90,62 @@ Results are displayed in structured metric sections, and comparison runs are sho
 We also keep outputs in session state to avoid unnecessary recomputation when users interact with widgets.
 So this layer is not just a demo front-end; it is what makes the framework practical for repeatable experimentation by non-developers.
 
-[Slide 17]
-This slide summarizes the main technical challenges we had to solve during implementation.
-First, HELICS dependency isolation: we needed graceful fallback when native libraries are unavailable, so standalone execution still works.
-Second, scalability in mobility loops: with millions of agent steps, we optimized where possible, for example by caching route computation.
+[Slide 15]
+Now let's speak about the technical challenges we had to solve during implementation.
+First, scalability in mobility loops: with millions of agent steps, we optimized where possible, mainly by computing each vehicle route once and reusing it.
+Second, cross-domain coordinate alignment: different modules use different spatial representations, so we introduced a mapping layer to couple them consistently.
 
-Third, cross-domain coordinate alignment: different modules use different spatial representations, so we introduced mapping layers to couple them consistently.
-Fourth, heterogeneous time steps: scenarios span several orders of magnitude in temporal resolution, so synchronization had to remain explicit and robust.
+The plot on this slide gives a simple view of why the scalability decision works.
+On the left, execution time grows almost linearly as the number of vehicles increases, which is what we expect from this design and confirms it remains manageable at 2,500 vehicles.
+On the right, adaptive signal control keeps average queue length low, showing that performance is acceptable while preserving traffic quality.
 
-Overall, these challenges were not incidental bugs; they were architectural tests, and solving them strengthened the framework's portability and extensibility.
+So the key message is: we kept the model scalable and stable without breaking modularity between domains.
 
-[Slide 18]
+[Slide 16]
 This slide gives the first high-level summary of the results.
 The main takeaway is that the framework reproduces the expected behaviour in each domain: the smart grid shows renewable penetration and curtailment, the EV scenario shows clear differences between charging strategies, and the traffic scenario shows that adaptive control improves delay and emissions.
 So this is the point where I can say the implementation is not just working structurally, but also producing sensible outputs for each individual domain.
 The detailed tables later in the appendix show the exact values, but here I want the audience to keep the overall pattern in mind: each scenario behaves as expected and the strategy choices produce meaningful differences.
 
-[Slide 19]
+[Slide 17]
 This slide highlights the main contributions of the framework.
 First, it provides a domain-agnostic simulation engine with a clear contract, so new modules can be added without changing the core.
 Second, it supports multiple domains and cross-domain integrations in a way that keeps the code reusable and modular.
 Third, it makes the trade-offs visible through strategy substitution, which is important for comparing alternatives fairly.
 And finally, it includes a reproducible Streamlit-based interface, so the simulations are accessible even without deep code knowledge.
 
-[Slide 20]
+[Slide 18]
 Here I check whether the original objectives were achieved.
 Most of them are fully achieved: the architecture is domain-agnostic, the scenario modules are implemented, the HELICS-based coupling is supported, and the framework is reproducible through the provided environment.
 The only partial objective is the integration with the Ubiwhere platform, because the current prototype is ready for that connection but still needs the final REST or messaging layer.
 So overall, the evaluation is positive: the technical foundation is complete, and the remaining work is mostly integration rather than redesign.
 
-[Slide 21]
+[Slide 19]
 This slide is about the limitations, and they are important because they define the boundary of the prototype.
 In the energy case, the voltage model is simplified, so it does not yet capture full AC power-flow behavior.
 In mobility, routes are computed once and not continuously rerouted, which keeps the model manageable but less realistic.
 And in telecom, we still use an abstracted radio model instead of a full packet-level network simulation.
 These are acceptable for this dissertation because the goal was architectural validation, but they are the first places I would improve in future work.
 
-[Slide 22]
+[Slide 20]
 This slide points to the next steps.
 The most immediate improvement is to replace the simplified energy model with a proper AC power-flow solver.
 After that, I would extend the framework to a full multi-process HELICS deployment so the coupling runs exactly as it would in a distributed setting.
 I would also add dynamic rerouting in mobility and richer wireless effects in telecom to increase realism.
 So the future work is very clear: keep the same architecture, but progressively increase fidelity and scale.
 
-[Slide 23]
+[Slide 21]
 This is the closing slide.
 The main message is that the three-layer design works: the engine stays generic, the domain modules stay independent, and HELICS provides a clean path for coupling them when needed.
 The results also show why the framework matters: cross-domain interactions reveal effects that isolated simulations cannot see.
 So the contribution is both architectural and practical, because it gives a reusable way to study complex urban systems.
 Thank you, and I’m happy to take questions.
+
+[Slide 22]
+TODO: Add presenter notes.
+
+[Slide 23]
+TODO: Add presenter notes.
 
 [Slide 24]
 TODO: Add presenter notes.
@@ -168,12 +160,6 @@ TODO: Add presenter notes.
 TODO: Add presenter notes.
 
 [Slide 28]
-TODO: Add presenter notes.
-
-[Slide 29]
-TODO: Add presenter notes.
-
-[Slide 30]
 Scenario E1 models an IEEE 33-bus distribution network with 50 solar panels, 3 wind turbines, 
 5 battery units, and 800 residential loads with demand response. We validate voltage profiles, 
 curtailment behavior, and DR load reduction. Scenario E2 puts 100 EVs on a 13-node feeder and compares 
@@ -182,14 +168,14 @@ which prioritizes by urgency — energy needed divided by time available; and V2
 power flow during peak hours at a 20% premium. We use the strategy pattern so all three variants share 
 the same simulation loop with no code duplication.
 
-[Slide 31]
+[Slide 29]
 M1 simulates 2,500 vehicles on a 5-by-5 kilometer grid with 25 signalized intersections. Vehicles route using A-star with a Manhattan heuristic plus random perturbation for route diversity. We compare fixed-time signals, which give equal green to both directions, against adaptive signals, which allocate green time proportionally to the measured queue at each phase change. The formula is simple: green time scales linearly between 15 and 90 seconds based on the ratio of directional demand. We also track CO2 emissions with a two-state model — idle emissions at 2.3 grams per second and moving emissions at 0.15 grams per meter.
 
-[Slide 32]
+[Slide 30]
 T1 simulates three 5G base stations serving 200 mobile users across three network slices: eMBB for broadband, URLLC for low-latency, and mMTC for IoT devices. We use the 3GPP path loss model with shadow fading, random waypoint mobility, and a handover mechanism with hysteresis and cooldown to prevent ping-pong effects. We compare static slicing, which fixes resource block allocation at 50-30-20 percent, against dynamic slicing, which redistributes proportionally to instantaneous demand. This is conceptually analogous to M1's adaptive traffic signals — both allocate capacity based on real-time demand rather than fixed assumptions.
 
-[Slide 33]
+[Slide 31]
 This is the key integration scenario. Five hundred EVs share the road network with 2,000 background vehicles. Thirteen charging stations provide 52 ports. We compare two modes under the same random seed. In coupled mode, EVs physically drive through traffic, wait at red lights, and cause congestion. In uncoupled mode, EVs teleport to their station — treating energy and mobility as independent domains. The multi-rate alignment runs traffic at 1-second ticks and charging logic every 5 minutes. We measure three coupling-specific metrics: average EV drive time, which should be zero uncoupled but significant coupled; emission uplift from EV driving; and SOC target deficit, since travel delays reduce available charging time.
 
-[Slide 34]
+[Slide 32]
 TODO: Add presenter notes.

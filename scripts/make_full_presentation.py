@@ -599,27 +599,6 @@ rows_env = [
 _add_table_slide(sl, headers_env, rows_env, left=3.57, top=1.6, width=6.2,
                  col_widths=[2.8, 3.4], font_size=13)
 
-# ── 13. CODEBASE ARCHITECTURE ─────────────────────────────────────────
-sl = prs.slides.add_slide(prs.slide_layouts[6])
-_solid_bg(sl, WHITE)
-_slide_title(sl, "Codebase Architecture", "Three-layer file structure")
-
-# Three layer boxes
-layers = [
-    (LAYER1_CLR, "Layer 1 — Core Engine",  "engine/base.py",
-     "BaseFederate abstract class · HELICS wiring · time stepping"),
-    (LAYER2_CLR, "Layer 2 — Domain Modules", "scenarios/",
-     "scenario_e1.py  scenario_e2.py  scenario_m1.py\nscenario_t1.py  scenario_e2m1.py  scenario_m1t1.py"),
-    (LAYER3_CLR, "Layer 3 — UI & Orchestration", "app.py",
-     "Streamlit dashboard · scenario runner · HELICS broker entry-point"),
-]
-for i, (clr, lyr, path, desc) in enumerate(layers):
-    y = 1.65 + i * 1.5
-    _add_rect(sl, 0.7, y, 3.5, 0.55, clr, lyr, font_size=14)
-    _add_rect(sl, 4.4, y, 2.8, 0.55, DARK_BG, path, font_size=13)
-    _add_textbox(sl, 7.4, y, 5.5, 0.55, desc,
-                 font_size=12, color=MED_GRAY, alignment=PP_ALIGN.LEFT)
-
 # ── 14. BASEFEDERATE CORE ENGINE ───────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
