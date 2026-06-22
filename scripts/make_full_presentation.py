@@ -337,8 +337,7 @@ _slide_title(sl, "Motivation & Objective")
 _add_textbox(sl, 0.7, 1.6, 5.5, 0.5,
              "The Problem", font_size=22, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 0.7, 2.2, 5.5, 3.0, [
-    "Cities depend on interdependent infrastructure: energy, mobility, telecom",
-    "EVs link power grids and traffic; smart grids need telecom for coordination",
+    "Cities depend on interdependent infrastructure: energy, mobility, telecom (EV, PowerGrids, Sync)",
     "Existing simulators operate in isolation — one domain each, not integrated",
     "Urban platforms (e.g. Ubiwhere UBP) monitor data but cannot predict cross-domain effects",
 ], font_size=15, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.5)
@@ -346,10 +345,10 @@ _add_bullet_list(sl, 0.7, 2.2, 5.5, 3.0, [
 _add_textbox(sl, 7.0, 1.6, 5.5, 0.5,
              "Our Goal", font_size=22, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 7.0, 2.2, 5.5, 3.0, [
+    "Enable urban platforms to answer cross-domain \"what-if\" questions",
     "Build a flexible, reusable, domain-agnostic simulation engine",
     "Support multi-domain co-simulation (energy + mobility + telecom)",
     "Validate through practical scenarios — standalone and coupled",
-    "Enable urban platforms to answer cross-domain \"what-if\" questions",
 ], font_size=15, bullet_color=ACCENT2, bold_prefix=False, line_spacing=1.5)
 
 _add_rect(sl, 0.7, 5.3, 11.9, 0.7, DARK_BG,
