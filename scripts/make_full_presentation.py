@@ -408,7 +408,7 @@ _solid_bg(sl, WHITE)
 _slide_title(sl, "Research Approach", "Design Science Research (DSR)")
 
 phases = [
-    ("1", "Problem\nIdentification", "Gaps in cross-domain\nsimulation tools\n(Chapter 2)"),
+    ("1", "Problem\nIdentification", "Gaps in cross-domain\nsimulation tools"),
     ("2", "Architecture\nDesign", "Three-layer modular\narchitecture with\nseparation of concerns"),
     ("3", "Framework\nDevelopment", "Python prototype,\ndomain modules,\nHELICS co-simulation"),
     ("4", "Empirical\nValidation", "Benchmarks, metrics,\ncoupled vs. uncoupled\ncomparison"),
