@@ -681,16 +681,17 @@ sl.shapes.add_movie(
     mime_type="video/mp4",
 )
 
-# ── 17. TECHNICAL CHALLENGES ──────────────────────────────────────────
+# ── 16. TECHNICAL CHALLENGES ──────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Technical Challenges")
 
+# Add M1 scaling performance plot
+M1_PLOT = ROOT / "figs" / "m1_scaling_performance.png"
+sl.shapes.add_picture(str(M1_PLOT), Inches(1.1), Inches(1.2), width=Inches(11))
+
+# Challenge cards below plot
 challenges = [
-    (LAYER1_CLR, "HELICS Dependency Isolation",
-     "try/except wraps HELICS call site in setup_federate();\n"
-     "catches ImportError & runtime exceptions;\n"
-     "domain modules never import helics directly"),
     (LAYER2_CLR, "M1 Scalability (27 M agent-steps)",
      "A* computed once per vehicle at departure & cached;\n"
      "O(N) queue scan acceptable at N=2,500;\n"
@@ -699,21 +700,15 @@ challenges = [
      "E2: IEEE 13-node indices  ↔  M1: (x,y) grid tuples;\n"
      "_station_by_pos dict → O(1) lookup;\n"
      "M1+T1: T1 area_size rescaled to 5,000 m"),
-    (ACCENT, "Time-Step Heterogeneity (4 orders)",
-     "Spans 100 ms (T1) → 15 min (E1);\n"
-     "time_step param → helicsFederateInfoSetTimeProperty();\n"
-     "finer federates advance more steps per coarse tick"),
 ]
 for i, (clr, title, desc) in enumerate(challenges):
-    row = i // 2
-    col = i % 2
-    x = 0.7 + col * 6.1
-    y = 1.65 + row * 2.4
-    _add_rect(sl, x, y, 5.7, 0.55, clr, title, font_size=14)
-    _add_textbox(sl, x + 0.1, y + 0.65, 5.5, 1.6, desc,
-                 font_size=13, color=BLACK, alignment=PP_ALIGN.LEFT)
+    x = 0.7 + i * 6.1
+    y = 4.9
+    _add_rect(sl, x, y, 5.7, 0.55, clr, title, font_size=13)
+    _add_textbox(sl, x + 0.1, y + 0.65, 5.5, 1.3, desc,
+                 font_size=12, color=BLACK, alignment=PP_ALIGN.LEFT)
 
-# ── 18. RESULTS SUMMARY ───────────────────────────────────────────────
+# ── 17. RESULTS SUMMARY ───────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results Summary", "Key findings across all six scenarios")
