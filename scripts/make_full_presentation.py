@@ -763,7 +763,7 @@ _add_rect(sl, 0.7, 5.45, 11.9, 0.75, LIGHT_GRAY,
 # ── 18. LIMITATIONS ───────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
-_slide_title(sl, "Limitations")
+_slide_title(sl, "Limitations", "Self-imposed design choices to maintain prototype simplicity")
 
 _add_textbox(sl, 0.7, 1.6, 5.7, 0.4,
              "Model Fidelity", font_size=18, bold=True, color=DARK_BG)
