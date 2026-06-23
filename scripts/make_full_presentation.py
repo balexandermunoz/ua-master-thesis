@@ -777,7 +777,6 @@ _add_textbox(sl, 7.0, 1.6, 5.7, 0.4,
              "Architecture & Scale", font_size=18, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 7.0, 2.1, 5.7, 3.5, [
     "Static routing: M1 routes computed once at departure, not updated for changing congestion",
-    "Intra-process coupling: E2+M1 & M1+T1 use shared object refs, not full HELICS inter-process federation",
     "Scale constraints: O(N) queue scan; 27 M agent-steps; no spatial indexing beyond N=2,500",
     "Domain coverage: only 3 verticals (water, waste, safety not addressed)",
 ], font_size=14, bullet_color=RED_LIGHT, bold_prefix=False, line_spacing=1.5)
