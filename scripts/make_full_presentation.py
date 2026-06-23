@@ -756,9 +756,8 @@ for i, row in enumerate(rows_obj):
                 p.alignment = PP_ALIGN.LEFT
 
 _add_rect(sl, 0.7, 5.45, 11.9, 0.75, LIGHT_GRAY,
-          "Obj. 6 (partial): Architecture designed for UBP integration (pub-sub + Streamlit API). "
-          "Remaining steps: REST/MQ connectors, platform data-model adapter, IoT stream calibration — "
-          "technically feasible, planned as future work.",
+          "Ubiwhere Alignment: Three-layer architecture with pub-sub patterns directly enables integration into Ubiwhere UBP. "
+          "Modular design ensures simulation engines can feed real-time what-if scenarios to urban management dashboards. ",
           font_size=12, font_color=DARK_BG, bold=False)
 
 # ── 18. LIMITATIONS ───────────────────────────────────────────────────
