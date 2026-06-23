@@ -781,6 +781,11 @@ _add_bullet_list(sl, 7.0, 2.1, 5.7, 3.5, [
     "Domain coverage: only 3 verticals (water, waste, safety not addressed)",
 ], font_size=14, bullet_color=RED_LIGHT, bold_prefix=False, line_spacing=1.5)
 
+_add_rect(sl, 0.7, 5.8, 11.9, 0.65, LIGHT_GRAY,
+          "All limitations are deliberate trade-offs: chosen to keep the prototype manageable while preserving architectural soundness. "
+          "The three-layer design is fully extensible — each limitation lifts independently without restructuring.",
+          font_size=12, font_color=DARK_BG, bold=False)
+
 # ── 19. FUTURE WORK ───────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
