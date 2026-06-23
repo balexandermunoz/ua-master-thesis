@@ -36,6 +36,8 @@ We adopted Design Science Research, which is convenient when the goal is to buil
 Here you can see the overall architecture. It follows three layers. The main goal is to have a separation between the generic logic and the domain logic.
 At the bottom, a domain-agnostic core engine handles all generic simulation concerns. In the middle, independent domain modules encapsulate the logic for energy, mobility, and telecom. At the top, HELICS orchestrates cross-domain co-simulation.
 
+This design is specifically tailored for integration with Ubiwhere's Urban Business Platform. The pub-sub architecture and modular interfaces mean that simulation outputs can directly feed into UBP's data pipelines without custom adapters. This alignment ensures that research prototypes can transition into production platform capabilities with minimal redesign.
+
 
 
 [Slide 7]
@@ -53,11 +55,12 @@ Helics supports both time-stepped and event-driven federates, which is essential
 
 
 [Slide 10]
-We implemented five scenarios. E1 and E2 cover the energy domain — smart grid with renewables and EV charging infrastructure. M1 covers urban traffic. T1 covers 5G network slicing. And E2 plus M1 is our cross-domain scenario coupling energy and mobility. Time steps range from 100 milliseconds in telecom to 15 minutes in the grid scenario. All scenarios support both standalone and co-simulation modes.
+We implemented six scenarios. E1 and E2 cover the energy domain — smart grid with renewables and EV charging infrastructure. M1 covers urban traffic. T1 covers 5G network slicing. E2+M1 couples energy and mobility, while M1+T1 couples mobility and telecommunications. Time steps range from 100 milliseconds in telecom to 15 minutes in the grid scenario. All six scenarios support both standalone and co-simulation modes, enabling comparative evaluation of domain isolation versus integrated cross-domain effects.
 
 
 [Slide 11]
-Evaluation has two dimensions. For domain correctness, each scenario has specific physical expectations — voltages within IEEE bounds, smart charging reducing peak demand, adaptive signals reducing travel time, dynamic slicing improving utilization, and coupling producing measurably different outcomes than isolation. For architectural validation, we verify that modules behave identically in standalone and co-simulation modes, that all agents comply with the engine contract, that strategy variants produce statistically distinct results, and that HELICS time grants ensure proper synchronization.
+Evaluation has two dimensions. For domain correctness, each scenario has specific physical expectations — voltages within IEEE bounds, smart charging reducing peak demand, adaptive signals reducing travel time, dynamic slicing improving utilization, and coupling producing measurably different outcomes than isolation. 
+For architectural validation, we verify that modules behave identically in standalone and co-simulation modes, that all agents comply with the engine contract, that strategy variants produce statistically distinct results, and that HELICS time grants ensure proper synchronization.
 
 
 [Slide 12]
@@ -111,11 +114,12 @@ The only partial objective is the integration with the Ubiwhere platform, becaus
 So overall, the evaluation is positive: the technical foundation is complete, and the remaining work is mostly integration rather than redesign.
 
 [Slide 18]
-This slide is about the limitations, and they are important because they define the boundary of the prototype.
-In the energy case, the voltage model is simplified, so it does not yet capture full AC power-flow behavior.
-In mobility, routes are computed once and not continuously rerouted, which keeps the model manageable but less realistic.
-And in telecom, we still use an abstracted radio model instead of a full packet-level network simulation.
-These are acceptable for this dissertation because the goal was architectural validation, but they are the first places I would improve in future work.
+This slide is about the limitations, and I want to be clear: these are not accidental shortcomings — they are self-imposed design choices made deliberately to keep the prototype simpler and more focused.
+In the energy case, the voltage model is simplified to linear, avoiding the complexity of AC power-flow solvers while still capturing grid behavior for our scenarios.
+In mobility, routes are computed once at departure rather than continuously rerouted, which keeps computation tractable for 2,500 vehicles.
+And in telecom, we use an abstracted radio model instead of full packet-level simulation to maintain clarity in the cross-domain integration.
+These trade-offs are intentional and justified because the goal was to prove the three-layer architecture works for multi-domain coupling, not to be a production simulator.
+The critical point is: the architecture itself is not limited. Each of these simplifications can be lifted independently — better voltage solvers, dynamic routing, detailed radio models — without requiring structural changes. That's the power of the modular design.
 
 [Slide 19]
 This slide points to the next steps.
