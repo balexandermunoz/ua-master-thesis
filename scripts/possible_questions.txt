@@ -1,0 +1,10 @@
+[Slide 6]
+- What's the difference between time syncronization in layer 1 vs in layer 3:
++ The difference is that in layer 1 we manage time for agents only: A car, a battery, a turbine. In layer 3 we syncronize those times and exchange data between them
+
+[Slide 10]
+- How did you choose the time stamps in every scenario?
++ It's actually a convention regarding how much the phenomena can change over time, you can make it more precise sacrifizing time. I mean, you can reduce all times to 100 ms, but the simulations would last way more for 24h, in the energy case
+
+- How the times syncronize in the cross domain scenarios?
++ 
