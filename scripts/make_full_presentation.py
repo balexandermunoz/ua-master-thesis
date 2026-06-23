@@ -823,7 +823,7 @@ _add_bullet_list(sl, 0.8, 1.75, 11.5, 4.0, [
     "Cross-domain coupling reveals effects invisible to siloed simulation:",
     "   → E2+M1: 500 EVs increase fleet CO₂ by 21.5%",
     "   → M1+T1: vehicular RF clustering raises intersection delay by 80.9% via T1→M1 feedback",
-    "Extensibility validated: E2+M1 reuses E2 & M1 components with zero modifications to source files",
+    "Extensibility evaluated: E2+M1 reuses E2 & M1 components with zero modifications to source files",
     "Streamlit dashboard enables no-code scenario execution and strategy comparison",
 ], font_size=17, color=WHITE, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.5)
 
