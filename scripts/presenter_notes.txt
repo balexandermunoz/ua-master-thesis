@@ -85,20 +85,30 @@ So this layer is not just a demo front-end; it is what makes the framework pract
 
 [Slide 14]
 Now let's speak about the technical challenges we had to solve during implementation.
-First, scalability in mobility loops: with millions of agent steps, we optimized where possible, mainly by computing each vehicle route once and reusing it.
+First, scalability in mobility loops: with millions of agent steps, we needed to optimized where possible, mainly by computing each vehicle route once and reusing it.
 Second, cross-domain coordinate alignment: different modules use different spatial representations, so we introduced a mapping layer to couple them consistently.
 
 The plot on this slide gives a simple view of why the scalability decision works.
 On the left, execution time grows almost linearly as the number of vehicles increases, which is what we expect from this design and confirms it remains manageable at 2,500 vehicles.
-On the right, adaptive signal control keeps average queue length low, showing that performance is acceptable while preserving traffic quality.
 
-So the key message is: we kept the model scalable and stable without breaking modularity between domains.
+On the right, we see something interesting: average queue length actually decreases at higher volumes. Showing that regardless the amount of cars, we can generate useful insights
+
+So the key message is: we kept the model scalable and stable without breaking modularity between domains — and the data shows that adaptive control actually improves with scale.
 
 [Slide 15]
 This slide gives the first high-level summary of the results.
 The main takeaway is that the framework reproduces the expected behaviour in each domain: the smart grid shows renewable penetration and curtailment, the EV scenario shows clear differences between charging strategies, and the traffic scenario shows that adaptive control improves delay and emissions.
 So this is the point where I can say the implementation is not just working structurally, but also producing sensible outputs for each individual domain.
 The detailed tables later in the appendix show the exact values, but here I want the audience to keep the overall pattern in mind: each scenario behaves as expected and the strategy choices produce meaningful differences.
+
+Quick note on T1 terminology (5G Slicing):
+• eMBB = Enhanced Mobile Broadband: high-speed internet, video streaming — needs 2 resource blocks
+• URLLC = Ultra-Reliable Low-Latency Communication: autonomous vehicles, remote surgery — also needs 2 RBs but is failure-intolerant
+• mMTC = Massive Machine-Type Communication: IoT sensors, smart meters, intermittent traffic — needs only 1 RB
+• RB (Resource Block) = smallest unit of 5G spectrum; we have 100 total per base station
+• Static slicing: reserves 50% for eMBB, 30% for URLLC, 20% for mMTC — regardless of actual demand
+• Dynamic slicing: allocates RBs based on real-time usage — improves overall utilization but creates winners and losers
+The key insight is that dynamic allocation helps broadband users (+479% QoS) but hurts IoT devices (-44.4%), which is why operators need fairness constraints in production systems.
 
 [Slide 16]
 This slide highlights the main contributions of the framework.
