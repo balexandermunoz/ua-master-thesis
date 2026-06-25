@@ -12,7 +12,7 @@ the modular co-simulation framework.
 Here's the roadmap for the presentation.
 First we’re gonna speak real quick about motivations and objectives and then state of the art
 After we'll go through the research approach, the three-layer architecture, design decisions,
-the five simulation scenarios, how we evaluate that everything is correct, the code and UI, Results, and some takeaways.
+the six simulation scenarios, how we evaluate that everything is correct, the code and UI, Results, and some takeaways.
 
 
 [Slide 3]
@@ -133,8 +133,7 @@ The critical point is: the architecture itself is not limited. Each of these sim
 
 [Slide 19]
 This slide points to the next steps.
-The most immediate improvement is to replace the simplified energy model with a proper AC power-flow solver.
-After that, I would extend the framework to a full multi-process HELICS deployment so the coupling runs exactly as it would in a distributed setting.
+The most immediate improvement is finish the integration with the Ubiwhere manager Platform, after that we can think about replacing the simplified energy model with a proper AC power-flow solver.
 I would also add dynamic rerouting in mobility and richer wireless effects in telecom to increase realism.
 So the future work is very clear: keep the same architecture, but progressively increase fidelity and scale.
 

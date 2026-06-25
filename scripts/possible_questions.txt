@@ -13,6 +13,9 @@
 - Why at 2500 cars the average queue drops drastically?
 + You might expect congestion to worsen with more vehicles, but what's happening is that the adaptive signal control becomes more effective at scale. At low volumes — 500 to 1,500 vehicles — traffic is sparse and bursty, so the controller gets weak, unpredictable feedback signals, leading to local bottlenecks and higher queues. But at 2,500 vehicles, traffic reaches a uniform, continuous distribution across the network. The adaptive algorithm now receives strong, reliable feedback at every intersection, allowing it to make decisive green-time allocations based on real queue measurements. The system reaches an equilibrium where vehicles flow smoothly through coordinated signals. This counterintuitive result actually validates that our O(N) queue-scanning approach doesn't just scale — it scales intelligently, with network performance improving as volume increases.
 
+- How did you solve the second challenge? Can you emphasize more in how did you map the indexes?
++
+
 [Slide 15]
 - Better explanation of the results.
 + Quality of Service for eMBB (Enhanced Mobile Broadband) users — the percentage of time steps where each eMBB user receives enough resource blocks to meet their throughput requirement.

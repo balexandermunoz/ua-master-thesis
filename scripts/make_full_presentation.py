@@ -786,7 +786,6 @@ _add_textbox(sl, 7.0, 1.6, 5.7, 0.4,
              "Architecture & Scale", font_size=18, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 7.0, 2.1, 5.7, 3.5, [
     "Static routing: M1 routes computed once at departure, not updated for changing congestion",
-    "Scale constraints: O(N) queue scan; 27 M agent-steps; no spatial indexing beyond N=2,500",
     "Domain coverage: only 3 verticals (water, waste, safety not addressed)",
 ], font_size=14, bullet_color=RED_LIGHT, bold_prefix=False, line_spacing=1.5)
 
@@ -803,23 +802,22 @@ _slide_title(sl, "Future Work")
 _add_textbox(sl, 0.7, 1.6, 5.7, 0.4,
              "Near-Term Extensions", font_size=18, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 0.7, 2.1, 5.7, 4.0, [
-    "AC power-flow solver for E1 (pandapower / OpenDSS) — eliminates voltage over-estimation",
-    "Full HELICS multi-process deployment — validate broker, ZeroMQ, time-sync under real network latency",
     "UBP integration: REST/MQ connectors, data-model adapter, IoT stream calibration (Obj. 6 completion)",
+    "AC power-flow solver for E1 (pandapower / OpenDSS) — eliminates voltage over-estimation",
     "Dynamic vehicle rerouting in M1 (real-time congestion feedback for connected vehicles)",
-    "Correlated shadow fading & packet-level URLLC delay in T1",
-], font_size=14, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.45)
+    "M2+T1 & E1+T2 cross-domain scenarios",
+    "Full cross-domain scenario: M2+E2+T1 (autonomous vehicles, EV charging, 5G slices)",
+], font_size=16, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.45)
 
 _add_textbox(sl, 7.0, 1.6, 5.7, 0.4,
              "Long-Term Research Directions", font_size=18, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 7.0, 2.1, 5.7, 4.0, [
     "Scenario M2: Autonomous vehicle integration (mixed autonomy, platoon, V2X)",
     "Scenario T2: Dense IoT network (thousands of low-power devices, collision model)",
-    "M2+T1 & E1+T2 cross-domain scenarios",
     "RL / meta-heuristic optimisation over joint charging+signal+slice strategy space",
     "City-scale deployment: spatial indexing, parallel agent stepping, distributed HELICS federation",
     "Additional urban verticals: water distribution, waste management, public safety",
-], font_size=14, bullet_color=ACCENT2, bold_prefix=False, line_spacing=1.45)
+], font_size=16, bullet_color=ACCENT2, bold_prefix=False, line_spacing=1.45)
 
 # ── 20. FINAL REMARKS & QUESTIONS ─────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
