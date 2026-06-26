@@ -579,38 +579,7 @@ _add_bullet_list(sl, 7.0, 2.2, 5.5, 3.5, [
     "Time Synchronization: HELICS grants verified; data arrives before use",
 ], font_size=13, bullet_color=LAYER2_CLR, bold_prefix=True, line_spacing=1.5)
 
-# ── 12. BASEFEDERATE CORE ENGINE ───────────────────────────────────────
-sl = prs.slides.add_slide(prs.slide_layouts[6])
-_solid_bg(sl, WHITE)
-_slide_title(sl, "BaseFederate: Core Engine", "engine/base.py — domain-agnostic simulation infrastructure")
-
-_add_bullet_list(sl, 0.7, 1.7, 5.8, 4.8, [
-    "Constructor: name, use_helics, time_step, sim_duration",
-    "Abstract method 1: initialize_components() — create agents",
-    "Abstract method 2: run_simulation() — main stepping loop",
-    "Abstract method 3: generate_report() → Dict — metrics",
-    "Concrete: setup_federate() — HELICS init or graceful fallback",
-    "Concrete: advance_time(t) — HELICS grant or arithmetic step",
-    "Dual-mode: use_helics flag only; all domain logic identical",
-    "HELICS failure → catches ImportError/runtime, logs warning, continues standalone",
-], font_size=14, bold_prefix=True, bullet_color=LAYER1_CLR, line_spacing=1.4)
-
-_add_rect(sl, 7.5, 1.8, 5.3, 0.55, DARK_BG, "BaseFederate (ABC)", font_size=15)
-contract = [
-    "initialize_components(self)",
-    "run_simulation(self)",
-    "generate_report(self) → Dict",
-    "─────────────────────────",
-    "setup_federate()",
-    "advance_time(current_t)",
-]
-for j, m in enumerate(contract):
-    bg = LAYER1_CLR if j < 3 else LIGHT_GRAY
-    fc = WHITE if j < 3 else DARK_BG
-    _add_rect(sl, 7.5, 2.5 + j * 0.6, 5.3, 0.52,
-              bg, m, font_size=12, font_color=fc, bold=(j < 3))
-
-# ── 13. USER INTERFACE ────────────────────────────────────────────────
+# ── 12. USER INTERFACE ────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "User Interface", "Streamlit web dashboard — no-code scenario execution")
@@ -623,7 +592,7 @@ sl.shapes.add_movie(
     mime_type="video/mp4",
 )
 
-# ── 14. TECHNICAL CHALLENGES ──────────────────────────────────────────
+# ── 13. TECHNICAL CHALLENGES ──────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Technical Challenges")
@@ -650,7 +619,7 @@ for i, (clr, title, desc) in enumerate(challenges):
     _add_textbox(sl, x + 0.1, y + 0.65, 5.5, 1.3, desc,
                  font_size=12, color=BLACK, alignment=PP_ALIGN.LEFT)
 
-# ── 15. RESULTS SUMMARY ───────────────────────────────────────────────
+# ── 14. RESULTS SUMMARY ───────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Results Summary", "Key findings across all six scenarios")
@@ -698,7 +667,7 @@ else:
               "[Mobility Domain Summary]",
               font_size=12, font_color=MED_GRAY, bold=False)
 
-# ── 16. MAIN CONTRIBUTIONS ────────────────────────────────────────────
+# ── 15. MAIN CONTRIBUTIONS ────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Main Contributions")
@@ -711,7 +680,7 @@ _add_bullet_list(sl, 0.7, 1.7, 11.9, 5.5, [
     "Reproducible & Accessible Prototype: Streamlit dashboard for no-code execution; deterministic results from any seed; public repository with requirements.txt for full reproducibility",
 ], font_size=16, bold_prefix=True, bullet_color=ACCENT, line_spacing=1.45)
 
-# ── 17. OBJECTIVES ACHIEVEMENT ────────────────────────────────────────
+# ── 16. OBJECTIVES ACHIEVEMENT ────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Objectives Achievement")
@@ -769,7 +738,7 @@ _add_rect(sl, 0.7, 5.45, 11.9, 0.75, LIGHT_GRAY,
           "Modular design ensures simulation engines can feed real-time what-if scenarios to urban management dashboards. ",
           font_size=12, font_color=DARK_BG, bold=False)
 
-# ── 18. LIMITATIONS ───────────────────────────────────────────────────
+# ── 17. LIMITATIONS ───────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Limitations", "Self-imposed design choices to maintain prototype simplicity")
@@ -794,7 +763,7 @@ _add_rect(sl, 0.7, 5.8, 11.9, 0.65, LIGHT_GRAY,
           "The three-layer design is fully extensible — each limitation lifts independently without restructuring.",
           font_size=12, font_color=DARK_BG, bold=False)
 
-# ── 19. FUTURE WORK ───────────────────────────────────────────────────
+# ── 18. FUTURE WORK ───────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Future Work")
@@ -819,7 +788,7 @@ _add_bullet_list(sl, 7.0, 2.1, 5.7, 4.0, [
     "Additional urban verticals: water distribution, waste management, public safety",
 ], font_size=16, bullet_color=ACCENT2, bold_prefix=False, line_spacing=1.45)
 
-# ── 20. FINAL REMARKS & QUESTIONS ─────────────────────────────────────
+# ── 19. FINAL REMARKS & QUESTIONS ─────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, DARK_BG)
 _slide_title(sl, "Final Remarks", dark=True)
@@ -842,6 +811,37 @@ line2.fill.solid(); line2.fill.fore_color.rgb = ACCENT; line2.line.fill.backgrou
 _add_textbox(sl, 1.0, 6.05, 11.3, 0.8,
              "Thank you — Questions?",
              font_size=30, bold=True, color=WHITE, alignment=PP_ALIGN.CENTER)
+
+# ── 20. BASEFEDERATE CORE ENGINE ──────────────────────────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "BaseFederate: Core Engine", "engine/base.py — domain-agnostic simulation infrastructure")
+
+_add_bullet_list(sl, 0.7, 1.7, 5.8, 4.8, [
+    "Constructor: name, use_helics, time_step, sim_duration",
+    "Abstract method 1: initialize_components() — create agents",
+    "Abstract method 2: run_simulation() — main stepping loop",
+    "Abstract method 3: generate_report() → Dict — metrics",
+    "Concrete: setup_federate() — HELICS init or graceful fallback",
+    "Concrete: advance_time(t) — HELICS grant or arithmetic step",
+    "Dual-mode: use_helics flag only; all domain logic identical",
+    "HELICS failure → catches ImportError/runtime, logs warning, continues standalone",
+], font_size=14, bold_prefix=True, bullet_color=LAYER1_CLR, line_spacing=1.4)
+
+_add_rect(sl, 7.5, 1.8, 5.3, 0.55, DARK_BG, "BaseFederate (ABC)", font_size=15)
+contract = [
+    "initialize_components(self)",
+    "run_simulation(self)",
+    "generate_report(self) → Dict",
+    "─────────────────────────",
+    "setup_federate()",
+    "advance_time(current_t)",
+]
+for j, m in enumerate(contract):
+    bg = LAYER1_CLR if j < 3 else LIGHT_GRAY
+    fc = WHITE if j < 3 else DARK_BG
+    _add_rect(sl, 7.5, 2.5 + j * 0.6, 5.3, 0.52,
+              bg, m, font_size=12, font_color=fc, bold=(j < 3))
 
 # ── 21. RESULTS E1 ────────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])

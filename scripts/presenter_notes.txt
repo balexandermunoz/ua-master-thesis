@@ -64,16 +64,6 @@ For architectural validation, we verify that modules behave identically in stand
 
 
 [Slide 12]
-This slide focuses on BaseFederate, the core abstraction of the engine.
-Conceptually, it defines a clean contract with three abstract methods: initialize components, run the simulation loop, and generate the report.
-Every domain module implements that same contract, which gives us consistency across energy, mobility, telecom, and cross-domain scenarios.
-
-At the same time, BaseFederate provides reusable concrete behavior, especially HELICS setup and time advancement.
-That means domain code does not need to include co-simulation boilerplate.
-Another practical benefit is dual-mode execution: the same module can run standalone or with HELICS by changing a flag, not by rewriting logic.
-This is one of the main reasons the framework remains modular and easy to extend.
-
-[Slide 13]
 Here we move from architecture to usability.
 The Streamlit interface is the entry point for running all scenarios without writing code.
 Users select the scenario, adjust parameters, choose strategy or coupling mode, and execute directly from the browser.
@@ -83,7 +73,7 @@ Results are displayed in structured metric sections, and comparison runs are sho
 We also keep outputs in session state to avoid unnecessary recomputation when users interact with widgets.
 So this layer is not just a demo front-end; it is what makes the framework practical for repeatable experimentation by non-developers.
 
-[Slide 14]
+[Slide 13]
 Now let's speak about the technical challenges we had to solve during implementation.
 First, scalability in mobility loops: with millions of agent steps, we needed to optimized where possible, mainly by computing each vehicle route once and reusing it.
 Second, cross-domain coordinate alignment: different modules use different spatial representations, so we introduced a mapping layer to couple them consistently.
@@ -95,7 +85,7 @@ On the right, we see something interesting: average queue length actually decrea
 
 So the key message is: we kept the model scalable and stable without breaking modularity between domains — and the data shows that adaptive control actually improves with scale.
 
-[Slide 15]
+[Slide 14]
 This slide gives the first high-level summary of the results.
 The main takeaway is that the framework reproduces the expected behaviour in each domain: the smart grid shows renewable penetration and curtailment, the EV scenario shows clear differences between charging strategies, and the traffic scenario shows that adaptive control improves delay and emissions.
 So this is the point where I can say the implementation is not just working structurally, but also producing sensible outputs for each individual domain.
@@ -110,20 +100,20 @@ Quick note on T1 terminology (5G Slicing):
 • Dynamic slicing: allocates RBs based on real-time usage — improves overall utilization but creates winners and losers
 The key insight is that dynamic allocation helps broadband users (+479% QoS) but hurts IoT devices (-44.4%), which is why operators need fairness constraints in production systems.
 
-[Slide 16]
+[Slide 15]
 This slide highlights the main contributions of the framework.
 First, it provides a domain-agnostic simulation engine with a clear contract, so new modules can be added without changing the core.
 Second, it supports multiple domains and cross-domain integrations in a way that keeps the code reusable and modular.
 Third, it makes the trade-offs visible through strategy substitution, which is important for comparing alternatives fairly.
 And finally, it includes a reproducible Streamlit-based interface, so the simulations are accessible even without deep code knowledge.
 
-[Slide 17]
+[Slide 16]
 Here I check whether the original objectives were achieved.
 Most of them are fully achieved: the architecture is domain-agnostic, the scenario modules are implemented, the HELICS-based coupling is supported, and the framework is reproducible through the provided environment.
 The only partial objective is the integration with the Ubiwhere platform, because the current prototype is ready for that connection but still needs the final REST or messaging layer.
 So overall, the evaluation is positive: the technical foundation is complete, and the remaining work is mostly integration rather than redesign.
 
-[Slide 18]
+[Slide 17]
 This slide is about the limitations, and I want to be clear: these are not accidental shortcomings — they are self-imposed design choices made deliberately to keep the prototype simpler and more focused.
 In the energy case, the voltage model is simplified to linear, avoiding the complexity of AC power-flow solvers while still capturing grid behavior for our scenarios.
 In mobility, routes are computed once at departure rather than continuously rerouted, which keeps computation tractable for 2,500 vehicles.
@@ -131,18 +121,28 @@ And in telecom, we use an abstracted radio model instead of full packet-level si
 These trade-offs are intentional and justified because the goal was to prove the three-layer architecture works for multi-domain coupling, not to be a production simulator.
 The critical point is: the architecture itself is not limited. Each of these simplifications can be lifted independently — better voltage solvers, dynamic routing, detailed radio models — without requiring structural changes. That's the power of the modular design.
 
-[Slide 19]
+[Slide 18]
 This slide points to the next steps.
 The most immediate improvement is finish the integration with the Ubiwhere manager Platform, after that we can think about replacing the simplified energy model with a proper AC power-flow solver.
 I would also add dynamic rerouting in mobility and richer wireless effects in telecom to increase realism.
 So the future work is very clear: keep the same architecture, but progressively increase fidelity and scale.
 
-[Slide 20]
+[Slide 19]
 This is the closing slide.
 The main message is that the three-layer design works: the engine stays generic, the domain modules stay independent, and HELICS provides a clean path for coupling them when needed.
 The results also show why the framework matters: cross-domain interactions reveal effects that isolated simulations cannot see.
 So the contribution is both architectural and practical, because it gives a reusable way to study complex urban systems.
 Thank you, and I’m happy to take questions.
+
+[Slide 20]
+This slide focuses on BaseFederate, the core abstraction of the engine.
+Conceptually, it defines a clean contract with three abstract methods: initialize components, run the simulation loop, and generate the report.
+Every domain module implements that same contract, which gives us consistency across energy, mobility, telecom, and cross-domain scenarios.
+
+At the same time, BaseFederate provides reusable concrete behavior, especially HELICS setup and time advancement.
+That means domain code does not need to include co-simulation boilerplate.
+Another practical benefit is dual-mode execution: the same module can run standalone or with HELICS by changing a flag, not by rewriting logic.
+This is one of the main reasons the framework remains modular and easy to extend.
 
 [Slide 21]
 TODO: Add presenter notes.
