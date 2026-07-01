@@ -771,10 +771,10 @@ _add_textbox(sl, 0.7, 1.6, 5.7, 0.4,
              "Near-Term Extensions", font_size=18, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 0.7, 2.1, 5.7, 4.0, [
     "UBP integration: REST/MQ connectors, data-model adapter (Obj. 6 completion)",
+    "Full cross-domain scenario: M2+E2+T1 (autonomous vehicles, EV charging, 5G slices)",
     "AC power-flow solver for E1 (pandapower / OpenDSS) - eliminates voltage over-estimation",
     "Dynamic vehicle rerouting in M1 (real-time congestion feedback for connected vehicles)",
     "M2+T1 & E1+T2 cross-domain scenarios",
-    "Full cross-domain scenario: M2+E2+T1 (autonomous vehicles, EV charging, 5G slices)",
 ], font_size=16, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.45)
 
 _add_textbox(sl, 7.0, 1.6, 5.7, 0.4,

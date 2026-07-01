@@ -25,7 +25,7 @@ Our goal is to build a flexible, domain-agnostic simulation engine that supports
 
 [Slide 4]
 In the state of the art, we reviewed the main simulation tools in each domain. (Read and speak about the domains)
-We also reviewed co-simulation frameworks: Mosaik is smart-grid focused, MECSYCO is DEVS-based, and HELICS was designed specifically for multi-domain infrastructure co-simulation with flexible time management. We chose HELICS. (bc mult domain, scalable, flexible time management = useful in the simulations and I’ll explain why later)
+We also analized co-simulation frameworks: and HELICS was designed specifically for multi-domain infrastructure co-simulation with flexible time management. We chose HELICS. (bc mult domain, scalable, flexible time management = useful in the simulations)
 
 
 [Slide 5]
@@ -123,7 +123,8 @@ The critical point is: the architecture itself is not limited. Each of these sim
 
 [Slide 18]
 This slide points to the next steps.
-The most immediate improvement is finish the integration with the Ubiwhere manager Platform, after that we can think about replacing the simplified energy model with a proper AC power-flow solver.
+The most immediate improvement is finish the integration with the Ubiwhere manager Platform, 
+After that making a full cross-domain scenario would be really interesting. Then we can think about replacing the simplified energy model with a proper AC power-flow solver.
 I would also add dynamic rerouting in mobility and richer wireless effects in telecom to increase realism.
 So the future work is very clear: keep the same architecture, but progressively increase fidelity and scale.
 
