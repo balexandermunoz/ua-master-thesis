@@ -743,21 +743,21 @@ sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Limitations", "Self-imposed design choices to maintain prototype simplicity")
 
-_add_textbox(sl, 0.7, 1.6, 5.7, 0.4,
+_add_textbox(sl, 0.7, 1.95, 5.7, 0.4,
              "Model Fidelity", font_size=18, bold=True, color=DARK_BG)
-_add_bullet_list(sl, 0.7, 2.1, 5.7, 3.5, [
+_add_bullet_list(sl, 0.7, 2.45, 5.7, 3.5, [
     "E1 voltage model: linear approximation, not AC power-flow → max 1.303 p.u. (real TAP regulators would prevent this)",
     "E2 perfect information: controller assumes known departure time & battery state",
 ], font_size=14, bullet_color=ORANGE, bold_prefix=False, line_spacing=1.5)
 
-_add_textbox(sl, 7.0, 1.6, 5.7, 0.4,
+_add_textbox(sl, 7.0, 1.95, 5.7, 0.4,
              "Architecture & Scale", font_size=18, bold=True, color=DARK_BG)
-_add_bullet_list(sl, 7.0, 2.1, 5.7, 3.5, [
+_add_bullet_list(sl, 7.0, 2.45, 5.7, 3.5, [
     "Static routing: M1 routes computed once at departure, not updated for changing congestion",
     "Domain coverage: only 3 verticals (water, waste, safety not addressed)",
 ], font_size=14, bullet_color=RED_LIGHT, bold_prefix=False, line_spacing=1.5)
 
-_add_rect(sl, 0.7, 5.8, 11.9, 0.65, LIGHT_GRAY,
+_add_rect(sl, 0.7, 6.05, 11.9, 0.65, LIGHT_GRAY,
           "All limitations are deliberate trade-offs: chosen to keep the prototype manageable while preserving architectural soundness. "
           "The three-layer design is fully extensible - each limitation lifts independently without restructuring.",
           font_size=12, font_color=DARK_BG, bold=False)
