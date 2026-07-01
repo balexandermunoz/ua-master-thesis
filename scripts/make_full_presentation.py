@@ -770,6 +770,7 @@ _add_bullet_list(sl, 0.7, 2.1, 5.7, 4.0, [
 _add_textbox(sl, 7.0, 1.6, 5.7, 0.4,
              "Long-Term Research Directions", font_size=18, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 7.0, 2.1, 5.7, 4.0, [
+    "More indicators: Improve the quality of validation metrics",
     "Scenario M2: Autonomous vehicle integration (mixed autonomy, platoon, V2X)",
     "Scenario T2: Dense IoT network (thousands of low-power devices, collision model)",
     "City-scale deployment: spatial indexing, parallel agent stepping, distributed HELICS federation",
