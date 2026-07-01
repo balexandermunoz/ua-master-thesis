@@ -296,20 +296,38 @@ _add_textbox(sl, 1.0, 4.4, 11.3, 0.5,
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Outline")
-items = [
-    "Motivation & Objective",
-    "State of the Art",
-    "Research Approach",
-    "System Architecture",
-    "Design Decisions",
-    "Simulation Scenarios",
-    "Evaluation Methodology",
-    "Implementation",
-    "Results",
-    "Conclusions",
+
+outline_items = [
+    "1. 🎯 Motivation & Objective",
+    "2. 📚 State of the Art",
+    "3. 🧪 Research Approach",
+    "4. 🏗️ System Architecture",
+    "5. ⚙️ Design Decisions",
+    "6. 🧭 Simulation Scenarios",
+    "7. 📊 Evaluation Methodology",
+    "8. 💻 Implementation",
+    "9. 📈 Results",
+    "10. ✅ Conclusions",
 ]
-_add_bullet_list(sl, 1.0, 1.7, 10.0, 5.0, items,
-                 font_size=18, bold_prefix=True, bullet_color=ACCENT)
+
+left_x = 1.0
+right_x = 6.7
+start_y = 1.8
+line_gap = 0.55
+
+for i, label in enumerate(outline_items):
+    if i < 5:
+        x = left_x
+        y = start_y + i * line_gap
+    else:
+        x = right_x
+        y = start_y + (i - 5) * line_gap
+    _add_textbox(sl, x, y, 4.8, 0.35, label,
+                 font_size=17, color=DARK_BG, bold=True)
+
+_add_textbox(sl, 0.7, 6.0, 11.5, 0.4,
+             "A concise roadmap of the dissertation narrative: from motivation to conclusions.",
+             font_size=14, color=MED_GRAY, alignment=PP_ALIGN.CENTER)
 
 # ── 3. MOTIVATION & OBJECTIVE ─────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
