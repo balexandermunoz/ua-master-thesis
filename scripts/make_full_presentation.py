@@ -627,20 +627,11 @@ _slide_title(sl, "Results Summary", "Key findings across all six scenarios")
 # Left side: Summary cards (3 cards in a single vertical column)
 summary_cards = [
     (LAYER3_CLR, "T1 - 5G Slicing",
-     "Dynamic allocation ↔ demand-responsive resource scheduling\n"
-     "Broadband users (eMBB) QoS +479% by reallocating from fixed quotas\n"
-     "Trade-off: IoT devices (mMTC) drops -44.4% (starved for bandwidth)\n"
-     "Resource waste reduced 32.5% → 24.7% via better utilization"),
+     "Dynamic slicing improves broadband QoS while revealing a clear fairness trade-off for IoT traffic."),
     (ACCENT, "E2+M1 - Cross-domain",
-     "500 EVs navigate real traffic + charging infrastructure\n"
-     "Coupled: EV drive time 366s avg (real delays from congestion)\n"
-     "Uncoupled: EV teleport (0s) - ignores mobility effects\n"
-     "CO₂ +21.5% uplift; 5 EVs miss SoC targets (-7.0%)"),
+     "Coupled EV routing adds real congestion effects that are invisible when energy and mobility are simulated separately."),
     (ACCENT2, "M1+T1 - Cross-domain",
-     "Vehicular clustering → RF congestion → signal impairment\n"
-     "Handovers +15.8% (vehicles move 50 km/h vs. 0.5–2 m/s RWP)\n"
-     "14/25 signals revert to fixed-time when URLLC QoS drops <80%\n"
-     "Intersection delay +80.9% from degraded signal control"),
+     "Mobility and telecom feedback jointly degrade signal control and increase intersection delay under congestion."),
 ]
 for i, (clr, ttl, desc) in enumerate(summary_cards):
     x = 0.5
