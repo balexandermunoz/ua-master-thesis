@@ -390,7 +390,7 @@ _add_textbox(sl, 0.7, 4.6, 11.5, 0.4,
 cosim_items = [
     ("Mosaik", MED_GRAY, "Smart-grid focus, Python API"),
     ("MECSYCO", MED_GRAY, "DEVS-based, multi-paradigm"),
-    ("HELICS  ✓", ACCENT, "Multi-domain, scalable, flexible time mgmt"),
+    ("HELICS  ✓", RGBColor(0xA1, 0x6C, 0xFF), "Multi-domain, scalable, flexible time mgmt"),
 ]
 for i, (name, clr, desc) in enumerate(cosim_items):
     x = 0.7 + i * 4.2
