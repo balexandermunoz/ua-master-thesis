@@ -582,7 +582,7 @@ _add_bullet_list(sl, 7.0, 2.2, 5.5, 3.5, [
 # ── 12. USER INTERFACE ────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
-_slide_title(sl, "User Interface", "Streamlit web dashboard - no-code scenario execution")
+_slide_title(sl, "User Interface", "")
 poster = str(UI_IMG) if UI_IMG.exists() else None
 sl.shapes.add_movie(
     str(DEMO_VIDEO),
@@ -747,7 +747,6 @@ _add_textbox(sl, 0.7, 1.6, 5.7, 0.4,
              "Model Fidelity", font_size=18, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 0.7, 2.1, 5.7, 3.5, [
     "E1 voltage model: linear approximation, not AC power-flow → max 1.303 p.u. (real TAP regulators would prevent this)",
-    "T1 path-loss: no shadowing correlation, multipath fading, or inter-cell interference",
     "E2 perfect information: controller assumes known departure time & battery state",
 ], font_size=14, bullet_color=ORANGE, bold_prefix=False, line_spacing=1.5)
 
@@ -771,7 +770,7 @@ _slide_title(sl, "Future Work")
 _add_textbox(sl, 0.7, 1.6, 5.7, 0.4,
              "Near-Term Extensions", font_size=18, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 0.7, 2.1, 5.7, 4.0, [
-    "UBP integration: REST/MQ connectors, data-model adapter, IoT stream calibration (Obj. 6 completion)",
+    "UBP integration: REST/MQ connectors, data-model adapter (Obj. 6 completion)",
     "AC power-flow solver for E1 (pandapower / OpenDSS) - eliminates voltage over-estimation",
     "Dynamic vehicle rerouting in M1 (real-time congestion feedback for connected vehicles)",
     "M2+T1 & E1+T2 cross-domain scenarios",
@@ -783,7 +782,6 @@ _add_textbox(sl, 7.0, 1.6, 5.7, 0.4,
 _add_bullet_list(sl, 7.0, 2.1, 5.7, 4.0, [
     "Scenario M2: Autonomous vehicle integration (mixed autonomy, platoon, V2X)",
     "Scenario T2: Dense IoT network (thousands of low-power devices, collision model)",
-    "RL / meta-heuristic optimisation over joint charging+signal+slice strategy space",
     "City-scale deployment: spatial indexing, parallel agent stepping, distributed HELICS federation",
     "Additional urban verticals: water distribution, waste management, public safety",
 ], font_size=16, bullet_color=ACCENT2, bold_prefix=False, line_spacing=1.45)
