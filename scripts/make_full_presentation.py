@@ -272,25 +272,6 @@ def _add_table_slide(slide, headers, rows, left=0.7, top=1.6, width=11.9,
                 paragraph.alignment = PP_ALIGN.CENTER
     return table
 
-def _chapter_divider(title, subtitle, chapter_label):
-    """Add a dark chapter-divider slide; returns the slide object."""
-    sl = prs.slides.add_slide(prs.slide_layouts[6])
-    _solid_bg(sl, DARK_BG)
-    # small chapter label top-center
-    _add_textbox(sl, 1.0, 2.0, 11.3, 0.5, chapter_label,
-                 font_size=18, color=ACCENT, alignment=PP_ALIGN.CENTER)
-    # big title
-    _add_textbox(sl, 1.0, 2.6, 11.3, 1.0, title,
-                 font_size=44, bold=True, color=WHITE, alignment=PP_ALIGN.CENTER)
-    # accent line
-    line = sl.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE, Inches(4.5), Inches(3.8), Inches(4.3), Inches(0.06))
-    line.fill.solid(); line.fill.fore_color.rgb = ACCENT; line.line.fill.background()
-    # subtitle
-    _add_textbox(sl, 1.0, 4.0, 11.3, 0.6, subtitle,
-                 font_size=18, color=MED_GRAY, alignment=PP_ALIGN.CENTER)
-    return sl
-
 # ======================================================================
 #  CHAPTER 3 - METHODOLOGY (slides 1-16, unchanged)
 # ======================================================================
