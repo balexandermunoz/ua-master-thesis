@@ -1145,6 +1145,69 @@ _add_bullet_list(sl, 7.0, 5.0, 5.5, 2.0, [
     "Signal degradation events & intersection delay uplift (T1→M1 effect)",
 ], font_size=13, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.4)
 
+# ── 32. MATHEMATICAL FOUNDATIONS: ENERGY DOMAIN ────────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Mathematical Foundations", "Energy domain: E1 and E2")
+
+_add_textbox(sl, 0.7, 1.7, 11.5, 0.6,
+             "The energy scenarios use compact equations for renewable generation, battery dynamics, power balance, and voltage estimation.",
+             font_size=15, color=MED_GRAY, bold=True, alignment=PP_ALIGN.CENTER)
+_add_rect(sl, 0.7, 2.4, 5.6, 1.2, LAYER1_CLR,
+          "Solar PV\n𝑃ₛₒₗₐᵣ(𝑡) = 𝑃ᵣₐₜₑ𝑑 · sin((ℎ−6)π/12) · 𝐶_cloud · 𝜂_sys\nℎ = hour, 𝐶_cloud ∼ 𝑈(0.8, 1.0), 𝜂_sys = 0.85",
+          font_size=12, font_color=WHITE, bold=False)
+_add_rect(sl, 6.5, 2.4, 5.6, 1.2, ACCENT,
+          "Wind turbine\n𝑃_wind(𝑣) = 0 if 𝑣 < 𝑣_ci; 𝑃_rated ((𝑣−𝑣_ci)/(𝑣_r−𝑣_ci))³ if 𝑣_ci ≤ 𝑣 < 𝑣_r; 𝑃_rated if 𝑣_r ≤ 𝑣 < 𝑣_co; 0 if 𝑣 ≥ 𝑣_co\n𝑣_ci, 𝑣_r, 𝑣_co = cut-in/rated/cut-out speed",
+          font_size=11.5, font_color=WHITE, bold=False)
+_add_rect(sl, 0.7, 3.95, 5.6, 1.2, LIGHT_GRAY,
+          "Battery SOC\n𝑆𝑂𝐶_new = 𝑆𝑂𝐶_current + (𝑃_charge · Δ𝑡 · 𝜂_charge)/𝐸_capacity\n𝑆𝑂𝐶 = state of charge, 𝜂_charge = 0.92",
+          font_size=13, font_color=DARK_BG, bold=False)
+_add_rect(sl, 6.5, 3.95, 5.6, 1.2, LIGHT_GRAY,
+          "Power balance / curtailment\n𝑃_net = 𝑃_load^total − 𝑃_renewable\n𝑃_curtail = max(0, −𝑃_net^final)\n𝑃_load^total = total load, 𝑃_renewable = solar + wind",
+          font_size=12, font_color=DARK_BG, bold=False)
+_add_rect(sl, 0.7, 5.45, 11.5, 0.8, DARK_BG,
+          "Voltage drop model\n𝑉_bus(𝑖) = 𝑉_base − 𝑘_drop · 𝑃_bus(𝑖) · 𝑖\n𝑉_base = nominal voltage, 𝑘_drop = sensitivity coefficient, 𝑖 = bus index",
+          font_size=13, font_color=WHITE, bold=False)
+
+# ── 33. MATHEMATICAL FOUNDATIONS: MOBILITY DOMAIN ───────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Mathematical Foundations", "Mobility domain: M1")
+
+_add_textbox(sl, 0.7, 1.7, 11.5, 0.6,
+             "The mobility scenario uses route-planning, queue-based signal control, and emissions rules to model traffic dynamics.",
+             font_size=15, color=MED_GRAY, bold=True, alignment=PP_ALIGN.CENTER)
+_add_rect(sl, 0.7, 2.4, 5.6, 1.25, LAYER2_CLR,
+          "A* routing\n𝑓(𝑛) = 𝑔(𝑛) + ℎ(𝑛),  ℎ(𝑛) = |𝑥ₙ − 𝑥_goal| + |𝑦ₙ − 𝑦_goal|\n𝑔(𝑛) = cost so far, ℎ(𝑛) = Manhattan heuristic",
+          font_size=12, font_color=WHITE, bold=False)
+_add_rect(sl, 6.5, 2.4, 5.6, 1.25, ACCENT,
+          "Adaptive signals\n𝑇_green = 𝑇_min + (𝑇_max − 𝑇_min) · 𝑄_phase / (𝑄_NS + 𝑄_EW)\n𝑄_phase = current queue, 𝑄_NS/𝑄_EW = directional demand",
+          font_size=12, font_color=WHITE, bold=False)
+_add_rect(sl, 0.7, 4.0, 11.5, 1.15, LIGHT_GRAY,
+          "Emissions model\nΔ𝐸_CO₂ = 𝛼_idle · Δ𝑡 if 𝑣 < 1 m/s; 𝛼_move · 𝑣 · Δ𝑡 if 𝑣 ≥ 1 m/s\n𝛼_idle = 2.31 g/s, 𝛼_move = 0.15 g/m",
+          font_size=13, font_color=DARK_BG, bold=False)
+
+# ── 34. MATHEMATICAL FOUNDATIONS: TELECOM DOMAIN ───────────────────
+sl = prs.slides.add_slide(prs.slide_layouts[6])
+_solid_bg(sl, WHITE)
+_slide_title(sl, "Mathematical Foundations", "Telecom domain: T1")
+
+_add_textbox(sl, 0.7, 1.7, 11.5, 0.6,
+             "The telecom scenario uses path-loss, resource-allocation, and QoS equations to represent 5G slice behavior.",
+             font_size=15, color=MED_GRAY, bold=True, alignment=PP_ALIGN.CENTER)
+_add_rect(sl, 0.7, 2.4, 5.6, 1.2, LAYER3_CLR,
+          "Path loss\n𝑃_rx(𝑑) = 𝑃_tx − 128.1 − 37.6 log₁₀(𝑑_km) + 𝑋_sigma\n𝑃_tx = 46 dBm, 𝑑_km = distance, 𝑋_sigma = shadow fading",
+          font_size=11.5, font_color=WHITE, bold=False)
+_add_rect(sl, 6.5, 2.4, 5.6, 1.2, ACCENT2,
+          "Static slicing\n𝑅𝐵_user = floor(𝑅𝐵_slice / 𝑁_slice,gNB)\n𝑅𝐵_slice = slice RB budget, 𝑁_slice,gNB = users attached to that slice",
+          font_size=11.5, font_color=WHITE, bold=False)
+_add_rect(sl, 0.7, 3.95, 5.6, 1.2, LIGHT_GRAY,
+          "Dynamic slicing\n𝑅𝐵_slice = max(𝑅𝐵_min, floor(𝐷_slice / 𝐷_total · 𝑁_RB))\n𝐷_slice = slice demand, 𝐷_total = total demand, 𝑅𝐵_min = 5",
+          font_size=12, font_color=DARK_BG, bold=False)
+_add_rect(sl, 6.5, 3.95, 5.6, 1.2, LIGHT_GRAY,
+          "QoS condition\n𝑄𝑜𝑆(𝑢) = 1 if 𝑅𝐵_user(𝑢) ≥ 𝑅𝐵_req(𝑠), else 0\n𝑅𝐵_req(eMBB/URLLC)=2, 𝑅𝐵_req(mMTC)=1",
+          font_size=12, font_color=DARK_BG, bold=False)
+
 # ======================================================================
 #  FOOTERS
 # ======================================================================
