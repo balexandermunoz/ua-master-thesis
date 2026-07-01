@@ -205,6 +205,7 @@ Batteries charge when $P_{net} < 0$ (surplus) and discharge when $P_{net} > 0$ (
 \begin{equation}
 P_{curtail}(t) = \max\!\left(0,\; -P_{net}^{final}(t)\right)
 \end{equation}
+where $P_{net}^{final}(t)$ is net power after battery charge/discharge dispatch at time $t$, so $P_{curtail}(t)$ captures any remaining surplus that cannot be absorbed.
 
 \medskip\noindent\textbf{Voltage Model}
 
@@ -212,6 +213,7 @@ Bus voltages are estimated via a simplified linear drop model:
 \begin{equation}
 V_{bus}(i) = V_{base} - k_{drop} \cdot P_{bus}(i) \cdot i
 \end{equation}
+where $V_{base}$ is nominal voltage (1.0 p.u.), $P_{bus}(i)$ is the active power associated with bus $i$, and $k_{drop}$ is a linear voltage-sensitivity coefficient.
 Violations are counted against ANSI C84.1 limits ($V \notin [0.95,\, 1.05]$ p.u.).
 
 % -------------------------------------------------------
@@ -245,6 +247,7 @@ c(h) = \begin{cases}
 U_i(t) = \frac{E_{need,i}(t)}{T_{available,i}(t)}
 \label{eq:urgency}
 \end{equation}
+where $E_{need,i}(t)$ is the remaining energy required by vehicle $i$ and $T_{available,i}(t)$ is its remaining time until departure.
 combined with a price factor ($F_{price} = 0.5$ during on-peak, 1.0 otherwise), ensuring vehicles with less time and more remaining energy need are served first.
 
 \textbf{V2G}: Extends smart charging with bidirectional power flow. V2G-capable vehicles (50\% of fleet, $P_{discharge}^{max} = 10\,\text{kW}$) export energy to the grid during on-peak hours (17:00--21:00) whenever their SOC exceeds the minimum threshold, and recharge during off-peak hours. V2G revenue is compensated at a 20\% premium over the current TOU rate.
@@ -278,6 +281,7 @@ In adaptive mode, green time is allocated proportionally to the measured demand:
 T_{green} = T_{min} + (T_{max} - T_{min}) \cdot \frac{Q_{phase}}{Q_{NS} + Q_{EW}}
 \label{eq:adaptive_signal}
 \end{equation}
+where $Q_{phase}$ is the queue of the currently served phase, and $Q_{NS}$ and $Q_{EW}$ are the measured North--South and East--West queues.
 with $T_{min} = 15\,\text{s}$ and $T_{max} = 90\,\text{s}$. When one direction is heavily loaded (e.g.\ $Q_{NS} \gg Q_{EW}$), that phase receives a green time close to $T_{max}$, while the lightly loaded phase receives only $T_{min}$. Under equal demand the two phases share the available green time equally, replicating fixed-time behaviour as a special case.
 
 In fixed-time mode, the controller ignores the measured queues and assigns equal weight to both phases ($Q_{NS} = Q_{EW} = 1$), yielding a constant cycle length regardless of traffic conditions. This provides a baseline against which the adaptive strategy is compared.
@@ -293,6 +297,7 @@ CO$_2$ emissions are computed using a two-state model:
 \end{cases}
 \label{eq:emissions}
 \end{equation}
+where $\Delta E_{CO_2}$ is per-step emissions, $v$ is vehicle speed, and $\Delta t$ is the simulation time step.
 with $\alpha_{idle} = 2.31\,\text{g/s}$ and $\alpha_{move} = 0.15\,\text{g/m}$.
 
 % -------------------------------------------------------
@@ -315,7 +320,7 @@ Received signal strength at distance $d$ from a gNB is computed using the 3GPP U
     P_{rx}(d) = P_{tx} - 128.1 - 37.6\,\log_{10}(d_{km}) + X_\sigma
     \label{eq:path_loss_t1}
 \end{equation}
-where $P_{tx} = 46\,\text{dBm}$ is the gNB transmit power, $d_{km}$ is the Euclidean distance in kilometres (minimum 10\,m enforced to avoid singularity), and $X_\sigma \sim \mathcal{N}(0, \sigma^2)$ with $\sigma = 4$\,dB is a log-normal shadow fading component representing slow variations caused by buildings and terrain~\cite{3gpp_38901}.
+where $P_{rx}(d)$ is the received power at distance $d$, $P_{tx} = 46\,\text{dBm}$ is the gNB transmit power, $d_{km}$ is the Euclidean distance in kilometres (minimum 10\,m enforced to avoid singularity), and $X_\sigma \sim \mathcal{N}(0, \sigma^2)$ with $\sigma = 4$\,dB is a log-normal shadow fading component representing slow variations caused by buildings and terrain~\cite{3gpp_38901}.
 
 \medskip\noindent\textbf{User Mobility and Handover}
 
@@ -328,12 +333,14 @@ Users move within the service area following the Random Waypoint (RWP) mobility 
     RB_{user} = \left\lfloor \frac{RB_{slice}}{N_{slice,gNB}} \right\rfloor
     \label{eq:static_alloc}
 \end{equation}
+where $RB_{slice}$ is the number of RBs assigned to a slice at a given gNB, and $N_{slice,gNB}$ is the number of users of that slice currently attached to that gNB.
 
 \textbf{Dynamic Slicing}~\cite{network_slicing_survey}: RBs are allocated proportionally to each slice's instantaneous demand, with a guaranteed floor of $RB_{min} = 5$:
 \begin{equation}
     RB_{slice} = \max\!\left(RB_{min},\; \left\lfloor \frac{D_{slice}}{D_{total}} \cdot N_{RB} \right\rfloor\right), \quad D_{slice} = N_{slice,gNB} \cdot RB_{req,slice}
     \label{eq:dynamic_alloc}
 \end{equation}
+where $N_{RB}$ is the total RB budget per gNB and $D_{total}$ is the sum of all slice demands at that gNB.
 This is analogous to the adaptive green time allocation in Scenario~M1 (Equation~\ref{eq:adaptive_signal}), where capacity is distributed proportionally to measured demand rather than fixed a priori.
 
 \medskip\noindent\textbf{QoS Evaluation}
@@ -343,7 +350,7 @@ QoS is satisfied for user $u$ in slice $s$ when the allocated RBs meet or exceed
     QoS(u) = \mathbf{1}\!\left[RB_{user}(u) \geq RB_{req}(s)\right]
     \label{eq:qos_t1}
 \end{equation}
-where $RB_{req}$ is 2 for eMBB and URLLC (reflecting their higher throughput and reliability requirements), and 1 for mMTC (which transmits small, infrequent payloads)~\cite{3gpp_23501}. Users undergoing a failed handover automatically have QoS unsatisfied for that step.
+where $\mathbf{1}[\cdot]$ is the indicator function (1 when the condition is true, 0 otherwise), and $RB_{req}$ is 2 for eMBB and URLLC (reflecting their higher throughput and reliability requirements), and 1 for mMTC (which transmits small, infrequent payloads)~\cite{3gpp_23501}. Users undergoing a failed handover automatically have QoS unsatisfied for that step.
 
 \medskip\noindent\textbf{mMTC Activity Model}
 
@@ -375,6 +382,7 @@ Each EV follows a four-phase lifecycle:
 \end{aligned}
 \label{eq:ev_phases}
 \end{equation}
+where $SOC_{target}$ is the minimum charge level required before the return trip.
 
 where the \texttt{DRIVING} phases reuse M1's movement mechanics (A* routing, signal waiting, link travel) and the \texttt{CHARGING} phase reuses E2's smart-charging allocation strategy~(Eq.~\ref{eq:urgency}).
 
@@ -441,6 +449,7 @@ A connected vehicle at grid node $(i,\,j)$ maps to T1 coordinates as:
     x_{T1} = i \times 1{,}250\;\text{m}, \quad y_{T1} = j \times 1{,}250\;\text{m}
     \label{eq:m1t1_mapping}
 \end{equation}
+where $(i,j)$ are integer M1 grid-node indices.
 
 \medskip\noindent\textbf{Bidirectional Coupling}
 

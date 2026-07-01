@@ -292,7 +292,7 @@ def _chapter_divider(title, subtitle, chapter_label):
     return sl
 
 # ======================================================================
-#  CHAPTER 3 — METHODOLOGY (slides 1-16, unchanged)
+#  CHAPTER 3 - METHODOLOGY (slides 1-16, unchanged)
 # ======================================================================
 
 # ── 1. TITLE SLIDE ────────────────────────────────────────────────────
@@ -339,7 +339,7 @@ _add_textbox(sl, 0.7, 1.6, 5.5, 0.5,
              "The Problem", font_size=22, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 0.7, 2.2, 5.5, 3.0, [
     "Cities depend on interdependent infrastructure: energy, mobility, telecom (EV, PowerGrids, Sync)",
-    "Existing simulators operate in isolation — one domain each, not integrated",
+    "Existing simulators operate in isolation - one domain each, not integrated",
     "Urban platforms (e.g. Ubiwhere UBP) monitor data but cannot predict cross-domain effects",
 ], font_size=15, bullet_color=ACCENT, bold_prefix=False, line_spacing=1.5)
 
@@ -349,7 +349,7 @@ _add_bullet_list(sl, 7.0, 2.2, 5.5, 3.0, [
     "Enable urban platforms to answer cross-domain \"what-if\" questions",
     "Build a flexible, reusable, domain-agnostic simulation engine",
     "Support multi-domain co-simulation (energy + mobility + telecom)",
-    "Validate through practical scenarios — standalone and coupled",
+    "Validate through practical scenarios - standalone and coupled",
 ], font_size=15, bullet_color=ACCENT2, bold_prefix=False, line_spacing=1.5)
 
 _add_rect(sl, 0.7, 5.3, 11.9, 0.7, DARK_BG,
@@ -363,20 +363,20 @@ _slide_title(sl, "State of the Art", "Domain-specific simulators & co-simulation
 
 domains_sota = [
     ("Energy Simulators", LAYER1_CLR, [
-        "PyPSA — optimization & sector coupling",
-        "GridLAB-D — agent-based smart grid",
-        "Pandapower — Python, distribution networks",
-        "OpenDSS — industry standard, DER integration",
+        "PyPSA - optimization & sector coupling",
+        "GridLAB-D - agent-based smart grid",
+        "Pandapower - Python, distribution networks",
+        "OpenDSS - industry standard, DER integration",
     ]),
     ("Mobility Simulators", LAYER2_CLR, [
-        "SUMO — microscopic, TraCI interface",
-        "MATSim — large-scale, activity-based",
-        "OpenTrafficSim — multi-level (micro/meso/macro)",
+        "SUMO - microscopic, TraCI interface",
+        "MATSim - large-scale, activity-based",
+        "OpenTrafficSim - multi-level (micro/meso/macro)",
     ]),
     ("Telecom Simulators", LAYER3_CLR, [
-        "ns-3 — discrete-event, protocol fidelity",
-        "SimuLTE/Simu5G — LTE/5G system-level",
-        "OMNeT++ — modular, event-driven framework",
+        "ns-3 - discrete-event, protocol fidelity",
+        "SimuLTE/Simu5G - LTE/5G system-level",
+        "OMNeT++ - modular, event-driven framework",
     ]),
 ]
 for i, (title, clr, items) in enumerate(domains_sota):
@@ -530,7 +530,7 @@ _add_bullet_list(sl, 7.0, 2.2, 5.5, 3.5, [
 ], font_size=14, bullet_color=ACCENT, bold_prefix=True, line_spacing=1.5)
 
 _add_rect(sl, 0.7, 5.0, 11.9, 0.7, LIGHT_GRAY,
-          "Federation Pattern: Modules communicate exclusively through HELICS topics (publish-subscribe) — adding a new domain requires only new topics, not modifying existing modules",
+          "Federation Pattern: Modules communicate exclusively through HELICS topics (publish-subscribe) - adding a new domain requires only new topics, not modifying existing modules",
           font_size=13, font_color=DARK_BG, bold=False)
 
 # ── 10. SCENARIO OVERVIEW TABLE ───────────────────────────────────────
@@ -582,7 +582,7 @@ _add_bullet_list(sl, 7.0, 2.2, 5.5, 3.5, [
 # ── 12. USER INTERFACE ────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
-_slide_title(sl, "User Interface", "Streamlit web dashboard — no-code scenario execution")
+_slide_title(sl, "User Interface", "Streamlit web dashboard - no-code scenario execution")
 poster = str(UI_IMG) if UI_IMG.exists() else None
 sl.shapes.add_movie(
     str(DEMO_VIDEO),
@@ -626,17 +626,17 @@ _slide_title(sl, "Results Summary", "Key findings across all six scenarios")
 
 # Left side: Summary cards (3 cards in a single vertical column)
 summary_cards = [
-    (LAYER3_CLR, "T1 — 5G Slicing",
+    (LAYER3_CLR, "T1 - 5G Slicing",
      "Dynamic allocation ↔ demand-responsive resource scheduling\n"
      "Broadband users (eMBB) QoS +479% by reallocating from fixed quotas\n"
      "Trade-off: IoT devices (mMTC) drops -44.4% (starved for bandwidth)\n"
      "Resource waste reduced 32.5% → 24.7% via better utilization"),
-    (ACCENT, "E2+M1 — Cross-domain",
+    (ACCENT, "E2+M1 - Cross-domain",
      "500 EVs navigate real traffic + charging infrastructure\n"
      "Coupled: EV drive time 366s avg (real delays from congestion)\n"
-     "Uncoupled: EV teleport (0s) — ignores mobility effects\n"
+     "Uncoupled: EV teleport (0s) - ignores mobility effects\n"
      "CO₂ +21.5% uplift; 5 EVs miss SoC targets (-7.0%)"),
-    (ACCENT2, "M1+T1 — Cross-domain",
+    (ACCENT2, "M1+T1 - Cross-domain",
      "Vehicular clustering → RF congestion → signal impairment\n"
      "Handovers +15.8% (vehicles move 50 km/h vs. 0.5–2 m/s RWP)\n"
      "14/25 signals revert to fixed-time when URLLC QoS drops <80%\n"
@@ -676,7 +676,7 @@ _add_bullet_list(sl, 0.7, 1.7, 11.9, 5.5, [
     "Domain-Agnostic Simulation Engine: BaseFederate ABC with 3-method contract; transparent standalone/co-sim dual mode via use_helics flag; no domain knowledge in engine internals",
     "Multi-Domain Scenario Framework: 6 autonomous modules spanning energy (E1, E2), mobility (M1), telecommunications (T1), and two cross-domain integrations (E2+M1, M1+T1)",
     "Quantification of Cross-Domain Interactions: EV traffic +21.5% CO₂ & -7.0% SoC targets (E2+M1); vehicular RF clustering raises intersection delay +80.9% via T1→M1 feedback (M1+T1)",
-    "Strategy Substitutability via Design Patterns: ChargingStrategy, adaptive_signals, SlicingStrategy enums enable comparative evaluation without code duplication — validates engine contract",
+    "Strategy Substitutability via Design Patterns: ChargingStrategy, adaptive_signals, SlicingStrategy enums enable comparative evaluation without code duplication - validates engine contract",
     "Reproducible & Accessible Prototype: Streamlit dashboard for no-code execution; deterministic results from any seed; public repository with requirements.txt for full reproducibility",
 ], font_size=16, bold_prefix=True, bullet_color=ACCENT, line_spacing=1.45)
 
@@ -760,7 +760,7 @@ _add_bullet_list(sl, 7.0, 2.1, 5.7, 3.5, [
 
 _add_rect(sl, 0.7, 5.8, 11.9, 0.65, LIGHT_GRAY,
           "All limitations are deliberate trade-offs: chosen to keep the prototype manageable while preserving architectural soundness. "
-          "The three-layer design is fully extensible — each limitation lifts independently without restructuring.",
+          "The three-layer design is fully extensible - each limitation lifts independently without restructuring.",
           font_size=12, font_color=DARK_BG, bold=False)
 
 # ── 18. FUTURE WORK ───────────────────────────────────────────────────
@@ -772,7 +772,7 @@ _add_textbox(sl, 0.7, 1.6, 5.7, 0.4,
              "Near-Term Extensions", font_size=18, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 0.7, 2.1, 5.7, 4.0, [
     "UBP integration: REST/MQ connectors, data-model adapter, IoT stream calibration (Obj. 6 completion)",
-    "AC power-flow solver for E1 (pandapower / OpenDSS) — eliminates voltage over-estimation",
+    "AC power-flow solver for E1 (pandapower / OpenDSS) - eliminates voltage over-estimation",
     "Dynamic vehicle rerouting in M1 (real-time congestion feedback for connected vehicles)",
     "M2+T1 & E1+T2 cross-domain scenarios",
     "Full cross-domain scenario: M2+E2+T1 (autonomous vehicles, EV charging, 5G slices)",
@@ -795,7 +795,7 @@ _slide_title(sl, "Final Remarks", dark=True)
 
 _add_bullet_list(sl, 0.8, 1.75, 11.5, 4.0, [
     "Three-layer architecture achieves strict separation: engine ↔ domain modules ↔ HELICS orchestration",
-    "Dual-mode execution (standalone / co-sim) validated — domain logic identical under both modes",
+    "Dual-mode execution (standalone / co-sim) validated - domain logic identical under both modes",
     "Cross-domain coupling reveals effects invisible to siloed simulation:",
     "   → E2+M1: 500 EVs increase fleet CO₂ by 21.5%",
     "   → M1+T1: vehicular RF clustering raises intersection delay by 80.9% via T1→M1 feedback",
@@ -809,21 +809,21 @@ line2 = sl.shapes.add_shape(
 line2.fill.solid(); line2.fill.fore_color.rgb = ACCENT; line2.line.fill.background()
 
 _add_textbox(sl, 1.0, 6.05, 11.3, 0.8,
-             "Thank you — Questions?",
+             "Thank you - Questions?",
              font_size=30, bold=True, color=WHITE, alignment=PP_ALIGN.CENTER)
 
 # ── 20. BASEFEDERATE CORE ENGINE ──────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
-_slide_title(sl, "BaseFederate: Core Engine", "engine/base.py — domain-agnostic simulation infrastructure")
+_slide_title(sl, "BaseFederate: Core Engine", "engine/base.py - domain-agnostic simulation infrastructure")
 
 _add_bullet_list(sl, 0.7, 1.7, 5.8, 4.8, [
     "Constructor: name, use_helics, time_step, sim_duration",
-    "Abstract method 1: initialize_components() — create agents",
-    "Abstract method 2: run_simulation() — main stepping loop",
-    "Abstract method 3: generate_report() → Dict — metrics",
-    "Concrete: setup_federate() — HELICS init or graceful fallback",
-    "Concrete: advance_time(t) — HELICS grant or arithmetic step",
+    "Abstract method 1: initialize_components() - create agents",
+    "Abstract method 2: run_simulation() - main stepping loop",
+    "Abstract method 3: generate_report() → Dict - metrics",
+    "Concrete: setup_federate() - HELICS init or graceful fallback",
+    "Concrete: advance_time(t) - HELICS grant or arithmetic step",
     "Dual-mode: use_helics flag only; all domain logic identical",
     "HELICS failure → catches ImportError/runtime, logs warning, continues standalone",
 ], font_size=14, bold_prefix=True, bullet_color=LAYER1_CLR, line_spacing=1.4)
@@ -846,7 +846,7 @@ for j, m in enumerate(contract):
 # ── 21. RESULTS E1 ────────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
-_slide_title(sl, "Results: E1 — Smart Grid with Renewables")
+_slide_title(sl, "Results: E1 - Smart Grid with Renewables")
 
 headers_e1 = ["Metric", "Value", "Unit"]
 rows_e1 = [
@@ -862,8 +862,8 @@ rows_e1 = [
     ["Average bus voltage", "0.998", "p.u."],
     ["Minimum bus voltage", "0.969", "p.u."],
     ["Maximum bus voltage", "1.303", "p.u.  ⚠"],
-    ["Voltage violations (steps)", "49 / 96", "—"],
-    ["Curtailment validation", "PASS", "—"],
+    ["Voltage violations (steps)", "49 / 96", "-"],
+    ["Curtailment validation", "PASS", "-"],
 ]
 _add_table_slide(sl, headers_e1, rows_e1, left=0.7, top=1.6, width=7.5,
                  col_widths=[4.2, 1.8, 1.5], font_size=13)
@@ -881,7 +881,7 @@ _add_rect(sl, 8.5, 4.5, 4.5, 0.9, DARK_BG,
 # ── 22. RESULTS E2 ────────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
-_slide_title(sl, "Results: E2 — EV Charging Infrastructure")
+_slide_title(sl, "Results: E2 - EV Charging Infrastructure")
 
 headers_e2 = ["Metric", "Uncoordinated", "Smart", "V2G"]
 rows_e2 = [
@@ -911,12 +911,12 @@ _add_rect(sl, 0.5, 5.95, 12.3, 0.7, DARK_BG, key_insight,
 # ── 23. RESULTS M1 ────────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
-_slide_title(sl, "Results: M1 — Urban Traffic Management")
+_slide_title(sl, "Results: M1 - Urban Traffic Management")
 
 headers_m1 = ["Metric", "Fixed-Time", "Adaptive", "Change"]
 rows_m1 = [
-    ["Completed vehicles", "2,500", "2,500", "—"],
-    ["Completion rate (%)", "100.0", "100.0", "—"],
+    ["Completed vehicles", "2,500", "2,500", "-"],
+    ["Completion rate (%)", "100.0", "100.0", "-"],
     ["Avg. travel time (s)", "583.9", "540.7", "-7.4%"],
     ["Avg. delay (s)", "66.0", "22.8", "-65.5%"],
     ["Total system delay (s)", "164,987", "56,942", "-65.5%"],
@@ -924,33 +924,33 @@ rows_m1 = [
     ["Emissions per vehicle (g)", "1,232", "1,132", "-8.1%"],
     ["Max. queue length", "17", "13", "-23.5%"],
     ["Avg. queue length", "0.66", "0.26", "-60.6%"],
-    ["Throughput (veh/h)", "833", "833", "—"],
+    ["Throughput (veh/h)", "833", "833", "-"],
 ]
 _add_table_slide(sl, headers_m1, rows_m1, left=0.6, top=1.6, width=11.5,
                  col_widths=[3.8, 2.1, 2.1, 1.8], font_size=13)
 
 _add_rect(sl, 0.6, 5.95, 11.5, 0.7, LAYER2_CLR,
           "Adaptive signals cut delay by 65.5% (66.0 s → 22.8 s) and CO₂ by 8.1%  ·  "
-          "Throughput unchanged — benefit is in efficiency, not volume  ·  "
+          "Throughput unchanged - benefit is in efficiency, not volume  ·  "
           "Queue-responsive green formula prevents build-up at saturated approaches",
           font_size=13, font_color=WHITE, bold=False)
 
 # ── 24. RESULTS T1 ────────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
-_slide_title(sl, "Results: T1 — 5G Slice Resource Allocation")
+_slide_title(sl, "Results: T1 - 5G Slice Resource Allocation")
 
 headers_t1 = ["Metric", "Static", "Dynamic", "Change"]
 rows_t1 = [
-    ["QoS satisfaction — eMBB (%)", "8.6", "49.8", "+479%"],
-    ["QoS satisfaction — URLLC (%)", "55.7", "44.8", "-19.6%"],
-    ["QoS satisfaction — mMTC (%)", "87.1", "48.4", "-44.4%"],
-    ["RB utilisation — eMBB (%)", "71.8", "79.2", "+10.3%"],
-    ["RB utilisation — URLLC (%)", "69.2", "79.6", "+15.0%"],
-    ["RB utilisation — mMTC (%)", "53.9", "53.3", "-1.1%"],
+    ["QoS satisfaction - eMBB (%)", "8.6", "49.8", "+479%"],
+    ["QoS satisfaction - URLLC (%)", "55.7", "44.8", "-19.6%"],
+    ["QoS satisfaction - mMTC (%)", "87.1", "48.4", "-44.4%"],
+    ["RB utilisation - eMBB (%)", "71.8", "79.2", "+10.3%"],
+    ["RB utilisation - URLLC (%)", "69.2", "79.6", "+15.0%"],
+    ["RB utilisation - mMTC (%)", "53.9", "53.3", "-1.1%"],
     ["Overall RB utilisation (%)", "67.5", "75.3", "+11.6%"],
     ["Resource waste (%)", "32.5", "24.7", "-24.0%"],
-    ["Handover success rate (%)", "95.0", "95.0", "—"],
+    ["Handover success rate (%)", "95.0", "95.0", "-"],
 ]
 _add_table_slide(sl, headers_t1, rows_t1, left=0.6, top=1.6, width=11.5,
                  col_widths=[3.8, 1.8, 1.8, 1.8], font_size=13)
@@ -961,56 +961,56 @@ _add_rect(sl, 0.6, 5.6, 5.5, 1.1, LIGHT_GRAY,
           font_size=13, font_color=DARK_BG, bold=False)
 _add_rect(sl, 6.3, 5.6, 5.8, 1.1, ORANGE,
           "Trade-off: Dynamic raises eMBB +479% but mMTC drops -44.4%.\n"
-          "Neither strategy achieves uniform QoS — constraint-based\noptimisation needed for heterogeneous SLA targets.",
+          "Neither strategy achieves uniform QoS - constraint-based\noptimisation needed for heterogeneous SLA targets.",
           font_size=13, font_color=WHITE, bold=False)
 
 # ── 25. RESULTS E2+M1 ─────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
-_slide_title(sl, "Results: E2+M1 — Energy-Mobility Cross-Domain")
+_slide_title(sl, "Results: E2+M1 - Energy-Mobility Cross-Domain")
 
 headers_em = ["Metric", "Uncoupled", "Coupled", "Change"]
 rows_em = [
-    ["— Mobility metrics —", "", "", ""],
+    ["- Mobility metrics -", "", "", ""],
     ["Avg. travel time (s)", "536.2", "536.4", "+0.04%"],
     ["Avg. delay (s)", "22.5", "22.6", "+0.4%"],
     ["Total emissions (kg CO₂)", "2,246", "2,729", "+21.5%"],
-    ["— EV travel metrics —", "", "", ""],
-    ["Avg. EV drive time (s)", "0.5", "366.5", "—"],
+    ["- EV travel metrics -", "", "", ""],
+    ["Avg. EV drive time (s)", "0.5", "366.5", "-"],
     ["Avg. EV total-to-station (s)", "3,069", "3,154", "+2.8%"],
     ["EVs that reached station", "155", "150", "-3.2%"],
-    ["— Charging metrics —", "", "", ""],
+    ["- Charging metrics -", "", "", ""],
     ["EVs meeting SoC target", "71", "66", "-7.0%"],
     ["Total energy charged (kWh)", "3,189", "3,127", "-1.9%"],
     ["Total charging cost (USD)", "$255.15", "$250.17", "-2.0%"],
-    ["Peak grid load (kW)", "2,107", "2,107", "—"],
+    ["Peak grid load (kW)", "2,107", "2,107", "-"],
 ]
 _add_table_slide(sl, headers_em, rows_em, left=0.5, top=1.6, width=12.3,
                  col_widths=[4.0, 2.0, 2.0, 1.8], font_size=12)
 
 _add_rect(sl, 0.5, 6.15, 12.3, 0.65, ACCENT,
-          "Cross-domain effect: 500 EVs add +21.5% CO₂ and delay 5/500 EVs from reaching SoC target — "
+          "Cross-domain effect: 500 EVs add +21.5% CO₂ and delay 5/500 EVs from reaching SoC target - "
           "invisible to domain-specific simulation of either energy or mobility alone",
           font_size=13, font_color=WHITE, bold=True)
 
 # ── 26. RESULTS M1+T1 ─────────────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
-_slide_title(sl, "Results: M1+T1 — Mobility-Telecom Cross-Domain")
+_slide_title(sl, "Results: M1+T1 - Mobility-Telecom Cross-Domain")
 
 headers_mt = ["Metric", "Uncoupled", "Coupled", "Change"]
 rows_mt = [
-    ["— Telecommunications —", "", "", ""],
-    ["QoS satisfaction — eMBB (%)", "39.0", "15.4", "-60.5%"],
-    ["QoS satisfaction — URLLC (%)", "39.4", "19.2", "-51.3%"],
-    ["QoS satisfaction — mMTC (%)", "40.5", "16.9", "-58.3%"],
+    ["- Telecommunications -", "", "", ""],
+    ["QoS satisfaction - eMBB (%)", "39.0", "15.4", "-60.5%"],
+    ["QoS satisfaction - URLLC (%)", "39.4", "19.2", "-51.3%"],
+    ["QoS satisfaction - mMTC (%)", "40.5", "16.9", "-58.3%"],
     ["Overall RB utilisation (%)", "73.8", "60.1", "-18.6%"],
     ["Total handover events", "134,843", "156,168", "+15.8%"],
     ["Per-gNB load std dev (users)", "15.6", "7.0", "-55.1%"],
-    ["— Mobility (all vehicles) —", "", "", ""],
+    ["- Mobility (all vehicles) -", "", "", ""],
     ["Avg. delay (s)", "22.7", "41.0", "+80.9%"],
-    ["Signal degradation events", "0", "25,915", "—"],
-    ["Intersections affected", "0", "14 / 25", "—"],
+    ["Signal degradation events", "0", "25,915", "-"],
+    ["Intersections affected", "0", "14 / 25", "-"],
     ["Total CO₂ emissions (kg)", "2,827", "2,933", "+3.7%"],
 ]
 _add_table_slide(sl, headers_mt, rows_mt, left=0.5, top=1.6, width=12.3,
@@ -1049,7 +1049,7 @@ _add_bullet_list(sl, 6.8, 2.3, 5.8, 3.0, [
 ], font_size=13, bullet_color=LAYER1_CLR, bold_prefix=False, line_spacing=1.4)
 
 _add_rect(sl, 0.7, 5.6, 11.9, 0.6, LIGHT_GRAY,
-          "Strategy Pattern: ChargingStrategy enum selects UNCOORDINATED / SMART / V2G at runtime — comparative evaluation without code duplication",
+          "Strategy Pattern: ChargingStrategy enum selects UNCOORDINATED / SMART / V2G at runtime - comparative evaluation without code duplication",
           font_size=13, font_color=DARK_BG, bold=False)
 
 # ── 28. MOBILITY SCENARIO M1 ──────────────────────────────────────────
