@@ -58,7 +58,7 @@ def _add_footer(slide, slide_num, total, dark=False):
         p.font.bold = True; p.alignment = PP_ALIGN.LEFT
     txBox = slide.shapes.add_textbox(Inches(4.2), Inches(y), Inches(5.0), Inches(0.3))
     p = txBox.text_frame.paragraphs[0]
-    p.text = "bbarrera@ubiwhere.com"
+    p.text = "balexandermunoz@ua.pt"
     p.font.size = Pt(10); p.font.color.rgb = fg; p.font.name = "Calibri"
     p.alignment = PP_ALIGN.CENTER
     txBox = slide.shapes.add_textbox(Inches(10.3), Inches(y), Inches(2.3), Inches(0.3))
