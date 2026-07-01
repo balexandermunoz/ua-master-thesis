@@ -63,7 +63,7 @@ def _add_footer(slide, slide_num, total, dark=False):
     p.alignment = PP_ALIGN.CENTER
     txBox = slide.shapes.add_textbox(Inches(10.3), Inches(y), Inches(2.3), Inches(0.3))
     p = txBox.text_frame.paragraphs[0]
-    p.text = f"{slide_num} / {total}"
+    p.text = str(slide_num)
     p.font.size = Pt(10); p.font.color.rgb = fg; p.font.name = "Calibri"
     p.alignment = PP_ALIGN.RIGHT
 
