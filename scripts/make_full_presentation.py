@@ -731,7 +731,7 @@ _slide_title(sl, "Limitations", "Self-imposed design choices to maintain prototy
 _add_textbox(sl, 0.7, 1.95, 5.7, 0.4,
              "Model Fidelity", font_size=18, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 0.7, 2.45, 5.7, 3.5, [
-    "E1 voltage model: linear approximation, not AC power-flow → max 1.303 p.u. (real TAP regulators would prevent this)",
+    "E1 voltage model: linear approximation, not AC power-flow",
     "E2 perfect information: controller assumes known departure time & battery state",
 ], font_size=14, bullet_color=ORANGE, bold_prefix=False, line_spacing=1.5)
 
@@ -755,7 +755,7 @@ _slide_title(sl, "Future Work")
 _add_textbox(sl, 0.7, 1.6, 5.7, 0.4,
              "Near-Term Extensions", font_size=18, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 0.7, 2.1, 5.7, 4.0, [
-    "UBP integration: REST/MQ connectors, data-model adapter (Obj. 6 completion)",
+    "UBP integration: connectors, data-model adapter (Obj. 6 completion)",
     "Full cross-domain scenario: M2+E2+T1 (autonomous vehicles, EV charging, 5G slices)",
     "AC power-flow solver for E1 (pandapower / OpenDSS) - eliminates voltage over-estimation",
     "Dynamic vehicle rerouting in M1 (real-time congestion feedback for connected vehicles)",
