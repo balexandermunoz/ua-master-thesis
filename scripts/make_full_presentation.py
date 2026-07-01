@@ -434,20 +434,15 @@ _add_textbox(sl, 1.0, 5.4, 11.0, 0.6,
 # ── 6. SYSTEM ARCHITECTURE OVERVIEW ───────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
-_slide_title(sl, "System Architecture", "Three-layer modular design")
+_slide_title(sl, "System Architecture", "Three-layer modular design - Strict separation between generic infrastructure and domain-specific logic")
 
 if ARCH_IMG.exists():
-    sl.shapes.add_picture(str(ARCH_IMG), Inches(0.5), Inches(1.5), width=Inches(6.5))
-    desc_left = 7.3
+    image_width = Inches(7.0)
+    image_height = Inches(4.4)
+    sl.shapes.add_picture(str(ARCH_IMG), Inches(3.2), Inches(1.7), width=image_width)
+    image_height_in = 4.4
 else:
-    desc_left = 1.0
-
-_add_bullet_list(sl, desc_left, 1.7, 5.5, 5.0, [
-    "Key principle: Strict separation between generic infrastructure and domain-specific logic",
-    "Layer 1 - Core Engine: Domain-agnostic simulation infrastructure (agents, time control, collectors)",
-    "Layer 2 - Domain Modules: Independent modules for Energy, Mobility, and Telecom",
-    "Layer 3 - Co-Simulation: HELICS-based orchestration for cross-domain coupling",
-], font_size=15, bold_prefix=True, bullet_color=ACCENT, line_spacing=1.5)
+    image_height_in = 0.0
 
 # ── 7. CORE ENGINE (LAYER 1) ──────────────────────────────────────────
 sl = prs.slides.add_slide(prs.slide_layouts[6])
