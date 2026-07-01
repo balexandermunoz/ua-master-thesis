@@ -297,16 +297,16 @@ sl = prs.slides.add_slide(prs.slide_layouts[6])
 _solid_bg(sl, WHITE)
 _slide_title(sl, "Outline")
 items = [
-    "Motivation & Objective - Why cross-domain simulation matters",
-    "State of the Art - Domain simulators & co-simulation gap",
-    "Research Approach - Design Science Research",
-    "System Architecture - Three-layer modular design",
-    "Design Decisions - HELICS, Python, patterns",
-    "Simulation Scenarios - E1, E2, M1, T1, E2+M1, M1+T1",
-    "Evaluation Methodology - Validation strategy & metrics",
-    "Implementation - Codebase, engine, domain modules, UI",
-    "Results - Per-scenario outcomes & cross-domain effects",
-    "Conclusions - Contributions, limitations, future work",
+    "Motivation & Objective",
+    "State of the Art",
+    "Research Approach",
+    "System Architecture",
+    "Design Decisions",
+    "Simulation Scenarios",
+    "Evaluation Methodology",
+    "Implementation",
+    "Results",
+    "Conclusions",
 ]
 _add_bullet_list(sl, 1.0, 1.7, 10.0, 5.0, items,
                  font_size=18, bold_prefix=True, bullet_color=ACCENT)

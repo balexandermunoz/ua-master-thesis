@@ -10,8 +10,11 @@ the modular co-simulation framework.
 
 [Slide 2]
 Here's the roadmap for the presentation.
-First we’re gonna speak real quick about motivations and objectives and then state of the art
-After we'll go through the research approach, the three-layer architecture, design decisions,
+First we’re gonna speak real quick about motivations and objectives - Why cross-domain simulation matters
+and then state of the art - Domain simulators & co-simulation gap
+After we'll go through the research approach - Design Science Research
+the three-layer architecture
+design decisions - HELICS, Python, patterns,
 the six simulation scenarios, how we evaluate that everything is correct, the code and UI, Results, and some takeaways.
 
 
