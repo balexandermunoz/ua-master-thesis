@@ -518,7 +518,7 @@ _add_textbox(sl, 7.0, 1.6, 5.5, 0.5,
              "HELICS Manages:", font_size=20, bold=True, color=DARK_BG)
 _add_bullet_list(sl, 7.0, 2.2, 5.5, 3.5, [
     "Federate Registration: Publications & subscriptions per module",
-    "Time Synchronization: Grant-request protocol (no federate advances ahead)",
+    "Time Synchronization: Grant-request protocol — a federate asks to advance, HELICS checks for earlier-time data, and only then grants the step",
     "Data Exchange: State variables flow through value federates (no API coupling)",
     "Broker: Single process coordinates up to 3+ federates",
 ], font_size=14, bullet_color=ACCENT, bold_prefix=True, line_spacing=1.5)
